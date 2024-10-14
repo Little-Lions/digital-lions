@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     API_KEY: str | None = None
     OAUTH_DOMAIN: str | None = None
     OAUTH_AUDIENCE: str | None = None
+    OAUTH_CLIENT_ID: str | None = None
+    OAUTH_CLIENT_SECRET: str | None = None
 
     # networking
     ALLOWED_ORIGINS: str

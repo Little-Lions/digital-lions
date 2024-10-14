@@ -164,12 +164,6 @@ class TeamRepository(BaseRepository[schema.Team]):
     _model = schema.Team
 
 
-class UserRepository(BaseRepository[schema.User]):
-    """Repository to interact with users table."""
-
-    _model = schema.User
-
-
 class WorkshopRepository(BaseRepository[schema.Workshop]):
     """Repository to interact with Workshop table."""
 

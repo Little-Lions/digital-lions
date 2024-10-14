@@ -1,10 +1,11 @@
 import logging
 
-import bcrypt
 from core import exceptions
-from database.schema import User
-from models.api import Message, RecordCreated
-from models.api.user import UserGetByIdOut, UserPostIn, UserSessionOut, UserUpdate
+from core.settings import get_settings
+from database import repositories
+from database.auth0 import Auth0Repository
+from database.session import SessionDependency
+from models.api import user
 from services.base import AbstractService, BaseService
 
 logger = logging.getLogger()
@@ -13,31 +14,50 @@ logger = logging.getLogger()
 class UserService(BaseService, AbstractService):
     """User service layer to do anything related to users."""
 
-    PASSWORD_ENCODING: str = "utf-8"
+    AUTH0_USER_CONNECTION = "Username-Password-Authentication"
 
-    def create(self, user: UserPostIn) -> RecordCreated:
+    def __init__(self, session: SessionDependency) -> None:
+        """Instantiate all repositories.
+
+        Args:
+            session: database session.
+        """
+        self._session: SessionDependency = session
+        self.settings = get_settings()
+        self._attendances = repositories.AttendanceRepository(session=self._session)
+        self._communities = repositories.CommunityRepository(session=self._session)
+        self._children = repositories.ChildRepository(session=self._session)
+        self._teams = repositories.TeamRepository(session=self._session)
+        self._workshops = repositories.WorkshopRepository(session=self._session)
+        # self.permissions = repositories.PermissionRepository(session=self._session)
+        self.auth0 = Auth0Repository(settings=self.settings)
+
+        self._cols = repositories.Columns
+
+    def create(self, obj: user.UserPostIn):
         """Create a new user."""
-
-        # validate email address does not exist already
-        if self.users.where([("email_address", user.email_address)]):
-            raise exceptions.UserEmailAlreadyExistsException(
-                f"A user with email {user.email_address} already exists."
+        try:
+            import uuid
+            password = uuid.uuid4()
+            user = self.auth0.create_user({"email": obj.email, "connection": self.AUTH0_USER_CONNECTION, "password": str(password)})
+            logger.info(
+                f"User with email {obj.email} created"
             )
+        except exceptions.ItemAlreadyExistsException:
+            raise exceptions.UserEmailExistsError(f"User with email {obj.email} already exists.")
 
-        # get hashed password and salt
-        hashed_pwd, salt = self._hash_password(user.password)
-
-        user = User(hashed_password=hashed_pwd, salt=salt, **user.dict())
-        new_user = self.users.create(user)
-        self.commit()
-        return new_user
-
-    def get_all(self) -> list[User] | None:
+    def get_all(self) -> list[user.UserGetOut] | None:
         """Get all users from the table."""
-        return self.users.read_all()
+        users = self.auth0.list_users()["users"]
+        return [user.UserGetOut(id=u["user_id"], email=u["email"]) for u in users]
 
-    def get(self, user_id) -> User:
-        """Get a User from the table by id."""
+    def get(self, user_id: str) -> user.UserGetOut:
+        """Get a user from Auth0 by ID. 
+        In Auth0 user ID is of format Auth0|<user_id>.
+
+        Args:
+            user_id: Auth0 user ID without the prefix.
+        """
         try:
             return self.users.read(object_id=user_id)
         except exceptions.ItemNotFoundException:
@@ -45,7 +65,7 @@ class UserService(BaseService, AbstractService):
             logger.error(msg)
             raise exceptions.UserNotFoundException(msg)
 
-    def get_user_by_email(self, email_address: str) -> User | exceptions.UserNotFoundException:
+    def get_user_by_email(self, email_address: str) -> user.UserGetOut | exceptions.UserNotFoundError:
         """Get a User from the table by email address."""
         user = self._get_user_by_email(email_address)
         if not user:
@@ -54,7 +74,7 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserNotFoundException(msg)
         return user
 
-    def update(self, user_id: int, user: UserUpdate) -> UserGetByIdOut:
+    def update(self, user_id: int, user: user.UserUpdate) -> user.UserGetByIdOut:
         """Update a user."""
 
         self._validate_user_exists(user_id)
@@ -64,87 +84,31 @@ class UserService(BaseService, AbstractService):
         self.commit()
         return user
 
-    def delete(self, user_id: int) -> Message:
-        """Delete a user by id."""
-        try:
-            self.users.delete(user_id)
-            self.commit()
-            return Message(detail=f"User with ID {user_id} deleted.")
-        except exceptions.ItemNotFoundException:
-            raise exceptions.UserNotFoundException(f"User with ID {user_id} not found.")
-
-    def login(self, user: User) -> UserSessionOut:
-        """Get session token for user."""
-
-        try:
-            user = self._validate_user_exists(user)
-        except exceptions.ItemNotFoundException:
-            raise exceptions.UserNotFoundException(
-                f"User with email {user.email_address} not found."
-            )
-
-        # todo get jwt
-        jwt = None
-
-        return jwt
-
-    def reset_password(self, email_address: str) -> Message:
-        """Send reset password email to user."""
-        if not self._get_user_by_email(email_address):
-            raise exceptions.UserNotFoundException(f"User with email {email_address} not found.")
-        token = "1234567890"
-        reset_link = "https://staging.digitallions.annelohmeijer.com/reset-password?token=" + token
-
-        self.email_service.send_reset_password_link(
-            email_address=email_address, reset_link=reset_link
-        )
-        return Message(detail="Email sent to reset password.")
-
-    def invite_user(self, user: UserPostIn) -> Message:
-        """Invite a user to join the app."""
-        user_in_db = self._get_user_by_email(user.email_address)
-        if user_in_db:
-            if user_in_db.is_registered:
-                msg = f"User with email {user.email_address} already registered."
-                logger.error(msg)
-                raise exceptions.UserAlreadyRegisteredException(msg)
-
-        # add user to database with dummy password
-
-        # create JWT wiht dummy password
-        token = "1234567890"
-        sender = "Stijn de Leeuw"
-
-        self.email_service.send_register_link(
-            email_address=user.email_address, sender=sender, token=token
-        )
-        return Message(detail="Email sent to invite new user.")
-
-    def _hash_password(self, password: str, salt: bytes = None) -> [bytes, bytes]:
-        """Hash password. If salt is not provided (i.e. during user creation),
-        then create a new salt and return it with the hashed password. If salt is
-        provided (i.e. during user login), then use the provided salt to hash the password.
+    def delete(self, user_id: str) -> None:
+        """Delete a user by ID.
 
         Args:
-            password (str): plain password to be hashed.
-            salt (str | None): salt to use in hashing.
+            user_id: str: Auth0 user ID without the 'Auth0|' prefix.
         """
-        salt = salt or bcrypt.gensalt()
-        hashed_password = bcrypt.hashpw(bytes(password, self.PASSWORD_ENCODING), salt)
-        return hashed_password, salt
+        try:
+            self.auth0.get_user(user_id=user_id)
+        except exceptions.ItemNotFoundException:
+            error_msg = f"User with ID {user_id} not found."
+            logger.error(error_msg)
+            raise exceptions.UserNotFoundException(error_msg)
 
-    def _validate_user_exists(self, user_id: int) -> User:
+        self.auth0.delete_user(user_id)
+        logger.info(f"User with ID {user_id} deleted.")
+
+
+    def _validate_user_exists(self, user_id: int) -> user.UserGetOut:
         """Check if user exists in the database."""
         user = self.users.read(object_id=user_id)
         if not user:
             raise exceptions.ItemNotFoundException()
         return user
 
-    def _create_jwt(self, user: User) -> UserSessionOut:
-        """Create a JWT token for the user."""
-        pass
-
-    def _get_user_by_email(self, email_address: str) -> User | None:
+    def _get_user_by_email(self, email_address: str) -> user.UserGetOut | None:
         """Get a user by email address."""
         users = self.users.where([("email_address", email_address)])
         if users:

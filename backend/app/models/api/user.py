@@ -1,4 +1,4 @@
-from models.generic import CreateProperties, UpdateProperties
+from models.generic import UpdateProperties
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlmodel import AutoString, Field, SQLModel
 
@@ -14,37 +14,25 @@ class UserValidators:
             raise ValueError("Invalid role")
 
 
-class UserPostIn(BaseModel, CreateProperties, UserValidators):
-    """API payload model for POST /users."""
+class Role(BaseModel):
+    """Model for role that can be assigned to a user."""
 
-    first_name: str | None = Field(default=None)
-    last_name: str | None = Field(default=None)
-    email_address: EmailStr
-    password: str = Field(description="Plain user password")
-    role: str | None = Field(default=None, description="User role on platform")
+    role: str
+    scope: str
 
 
-class UserPatchIn(BaseModel, UpdateProperties, UserValidators):
-    """API payload model for PATCH /users/:id."""
+class UserGetOut(BaseModel):
+    """API response model for GET /users."""
 
-    first_name: str | None = None
-    last_name: str | None = None
-    email_address: EmailStr | None = None
-    role: str | None = Field(default=None, description="User role on platform")
-    password: str | None = None
+    id: str
+    email: EmailStr
+    roles: str | None = Field(default=None, description="User role on platform")
 
 
-class UserPostLoginIn(BaseModel):
-    """API payload model for POST /users/login."""
+class UserPostIn(BaseModel):
+    """API payload model for inviting a new user to the platform via /users."""
 
-    email_address: EmailStr
-    password: str
-
-
-class UserPostInviteIn(BaseModel):
-    """API payload model for inviting a new user to the platform via /users/invite-user."""
-
-    email_address: EmailStr
+    email: EmailStr
 
     class Role(BaseModel):
         """Model for role that can be assigned to a user."""
@@ -52,7 +40,14 @@ class UserPostInviteIn(BaseModel):
         role: str
         scope: str
 
-    roles: list[Role] | None = None
+    roles: list[Role] | None = Field(default=None, description="User roles on platform")
+
+
+class UserPatchIn(BaseModel, UpdateProperties, UserValidators):
+    """API payload model for PATCH /users/:id."""
+
+    email_address: EmailStr | None = None
+    role: str | None = Field(default=None, description="User role on platform")
 
 
 class UserBase(SQLModel):
@@ -65,10 +60,6 @@ class UserBase(SQLModel):
     def validate_role(cls, value):
         if value not in ROLES:
             raise ValueError("Invalid role")
-
-
-class UserCreate(UserBase, CreateProperties):
-    password: str
 
 
 class UserUpdate(UserBase, UpdateProperties):

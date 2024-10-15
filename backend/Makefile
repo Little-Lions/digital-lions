@@ -25,12 +25,12 @@ test:
 testpdb:
 	poetry run python -m pytest -vvv --pdb
 
-lint: 
+lint: format
 	poetry run ruff check app
 
-format: lint
+format:
+	poetry run isort app
 	poetry run black app
-	poetry run ruff format app
 
 # Railway database service vars
 TCP_PROXY=monorail.proxy.rlwy.net:19362

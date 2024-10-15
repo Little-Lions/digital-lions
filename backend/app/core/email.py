@@ -18,7 +18,9 @@ class EmailService:
         self.register_template = os.path.join(self.template_dir, "register.html")
         self.register_subject = "Digital Lions Invite"
 
-        self.reset_password_template = os.path.join(self.template_dir, "reset_password.html")
+        self.reset_password_template = os.path.join(
+            self.template_dir, "reset_password.html"
+        )
         self.reset_password_subject = "Digital Lions Password Reset"
 
         self.sender = "Digital Lions <digitallions@annelohmeijer.com>"
@@ -28,14 +30,20 @@ class EmailService:
         template = self._get_template(self.reset_password_template).replace(
             "{{ reset_link }}", reset_link
         )
-        params = self._get_send_params(email_address, self.reset_password_subject, template)
+        params = self._get_send_params(
+            email_address, self.reset_password_subject, template
+        )
         email = resend.Emails.send(params)
         email_id = email["id"]
-        logger.info(f"Password reset email sent to {email_address} with Resend id: {email_id}")
+        logger.info(
+            f"Password reset email sent to {email_address} with Resend id: {email_id}"
+        )
 
     def send_register_link(self, email_address: str, sender: str, token: str) -> None:
         """Send register email to user."""
-        register_link = "https://staging.digitallions.annelohmeijer.com/register?token=" + token
+        register_link = (
+            "https://staging.digitallions.annelohmeijer.com/register?token=" + token
+        )
         template = (
             self._get_template(self.register_template)
             .replace("{{ register_link }}", register_link)

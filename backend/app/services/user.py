@@ -1,4 +1,5 @@
 import logging
+import uuid
 
 from core import exceptions
 from core.settings import get_settings
@@ -34,17 +35,33 @@ class UserService(BaseService, AbstractService):
 
         self._cols = repositories.Columns
 
-    def create(self, obj: user.UserPostIn):
-        """Create a new user."""
+    def create(self, obj: user.UserPostIn) -> str:
+        """Invite new user to the system, by first creating,
+        and then triggering a password reset.
+
+        Args:
+            obj: user.UserPostIn: User data to create, containing email and roles.
+
+        Returns:
+            str: Auth0 user ID without the 'Auth0|' prefix.
+        """
         try:
-            import uuid
-            password = uuid.uuid4()
-            user = self.auth0.create_user({"email": obj.email, "connection": self.AUTH0_USER_CONNECTION, "password": str(password)})
-            logger.info(
-                f"User with email {obj.email} created"
+            tmp_password = uuid.uuid4()
+            user = self.auth0.create_user(
+                {
+                    "email": obj.email,
+                    "connection": self.AUTH0_USER_CONNECTION,
+                    "password": str(tmp_password),
+                    "verify_email": False,
+                }
             )
+            user_id = user["user_id"]
+            logger.info(f"User with email {obj.email} created. ID {user_id}")
+            return user_id
         except exceptions.ItemAlreadyExistsException:
-            raise exceptions.UserEmailExistsError(f"User with email {obj.email} already exists.")
+            raise exceptions.UserEmailExistsError(
+                f"User with email {obj.email} already exists."
+            )
 
     def get_all(self) -> list[user.UserGetOut] | None:
         """Get all users from the table."""
@@ -52,7 +69,7 @@ class UserService(BaseService, AbstractService):
         return [user.UserGetOut(id=u["user_id"], email=u["email"]) for u in users]
 
     def get(self, user_id: str) -> user.UserGetOut:
-        """Get a user from Auth0 by ID. 
+        """Get a user from Auth0 by ID.
         In Auth0 user ID is of format Auth0|<user_id>.
 
         Args:
@@ -65,7 +82,9 @@ class UserService(BaseService, AbstractService):
             logger.error(msg)
             raise exceptions.UserNotFoundException(msg)
 
-    def get_user_by_email(self, email_address: str) -> user.UserGetOut | exceptions.UserNotFoundError:
+    def get_user_by_email(
+        self, email_address: str
+    ) -> user.UserGetOut | exceptions.UserNotFoundException:
         """Get a User from the table by email address."""
         user = self._get_user_by_email(email_address)
         if not user:
@@ -99,7 +118,6 @@ class UserService(BaseService, AbstractService):
 
         self.auth0.delete_user(user_id)
         logger.info(f"User with ID {user_id} deleted.")
-
 
     def _validate_user_exists(self, user_id: int) -> user.UserGetOut:
         """Check if user exists in the database."""

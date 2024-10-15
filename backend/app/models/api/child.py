@@ -9,7 +9,9 @@ class ChildValidators:
     def validate_gender(cls, v) -> str:
         """Validate that the gender is either male, female or null."""
         if v is not None and v not in ["male", "female"]:
-            raise ValueError(f"Invalid gender, should be male, female or null. Got: {v}")
+            raise ValueError(
+                f"Invalid gender, should be male, female or null. Got: {v}"
+            )
         return v
 
     @field_validator("age")
@@ -69,7 +71,9 @@ class ChildGetByIdOut(BaseModel, MetadataColumns):
         default=None,
         description="Age in years at the time of registration",
     )
-    gender: str | None = Field(default=None, description="Gender of child. Either male or female.")
+    gender: str | None = Field(
+        default=None, description="Gender of child. Either male or female."
+    )
     team_id: int
 
 

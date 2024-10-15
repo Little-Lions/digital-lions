@@ -83,7 +83,9 @@ class TeamService(AbstractService, BaseService):
             [child.id for child in self._children.where([(self.cols.team_id, team_id)])]
         )
 
-        payload_child_ids_not_in_team = [i for i in payload_child_ids if i not in team_child_ids]
+        payload_child_ids_not_in_team = [
+            i for i in payload_child_ids if i not in team_child_ids
+        ]
         if payload_child_ids_not_in_team:
             error_msg = (
                 "Payload attendance field contains children ID's that "
@@ -93,7 +95,9 @@ class TeamService(AbstractService, BaseService):
             raise exceptions.ChildNotInTeam(error_msg)
 
         # validate that all children from the team are in the payload
-        team_child_ids_not_in_payload = [i for i in team_child_ids if i not in payload_child_ids]
+        team_child_ids_not_in_payload = [
+            i for i in team_child_ids if i not in payload_child_ids
+        ]
         if team_child_ids_not_in_payload:
             error_msg = (
                 "Attendance payload incomplete. Missing child ID's from "
@@ -173,7 +177,9 @@ class TeamService(AbstractService, BaseService):
                 program={
                     "progress": {
                         "current": (
-                            teams_progresses[team.id] if team.id in teams_progresses else 0
+                            teams_progresses[team.id]
+                            if team.id in teams_progresses
+                            else 0
                         )
                     }
                 },
@@ -188,7 +194,9 @@ class TeamService(AbstractService, BaseService):
             object_id (int): Team ID to get Team for.
         """
         team = self._validate_team_exists(object_id)
-        teams_progresses = self._workshops.get_last_workshop_per_team(team_ids=[team.id])
+        teams_progresses = self._workshops.get_last_workshop_per_team(
+            team_ids=[team.id]
+        )
         # if the team has no workshops yet, its ID will not be in the dict
         team_progress = teams_progresses[team.id] if team.id in teams_progresses else 0
 
@@ -309,8 +317,12 @@ class TeamService(AbstractService, BaseService):
         attendance = self._attendances.where([("workshop_id", workshop_id)])
 
         total = len(attendance)
-        present = len([x for x in attendance if x.attendance == Attendance.present.value])
-        cancelled = len([x for x in attendance if x.attendance == Attendance.cancelled.value])
+        present = len(
+            [x for x in attendance if x.attendance == Attendance.present.value]
+        )
+        cancelled = len(
+            [x for x in attendance if x.attendance == Attendance.cancelled.value]
+        )
         absent = len([x for x in attendance if x.attendance == Attendance.absent.value])
 
         return {

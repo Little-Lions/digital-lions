@@ -16,7 +16,9 @@ from models.api.team import (
 
 logger = logging.getLogger()
 
-router = APIRouter(prefix="/teams", dependencies=[APIKeyDependency, BearerTokenDependency])
+router = APIRouter(
+    prefix="/teams", dependencies=[APIKeyDependency, BearerTokenDependency]
+)
 
 
 @router.post(
@@ -92,7 +94,9 @@ async def get_team(team_service: TeamServiceDependency, team_id: int):
         },
     },
 )
-async def delete_team(team_service: TeamServiceDependency, team_id: int, cascade: bool = False):
+async def delete_team(
+    team_service: TeamServiceDependency, team_id: int, cascade: bool = False
+):
     """Delete a team. This will delete all children if cascade is set to True.
     If you want to deactivate a team use PATCH /teams/{team_id} instead."""
     try:

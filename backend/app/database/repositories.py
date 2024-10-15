@@ -110,7 +110,9 @@ class BaseRepository(Generic[Model]):
             list[Model]: A list of objects that meet the filter.
         """
         return (
-            self._session.query(self._model).filter(getattr(self._model, attr).in_(values)).all()
+            self._session.query(self._model)
+            .filter(getattr(self._model, attr).in_(values))
+            .all()
         )
 
     def query(self, query: str) -> list[Model]:
@@ -182,7 +184,9 @@ class WorkshopRepository(BaseRepository[schema.Workshop]):
             dict: Dictionary with team ID as key and highest workshop number as value.
         """
         results = (
-            self._session.query(self._model.team_id, func.max(self._model.workshop_number))
+            self._session.query(
+                self._model.team_id, func.max(self._model.workshop_number)
+            )
             .filter(self._model.team_id.in_(team_ids))
             .group_by(self._model.team_id)
             .all()

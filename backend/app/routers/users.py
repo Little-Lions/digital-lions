@@ -77,5 +77,3 @@ async def update_user(
         return user_service.update(user_id=user_id, user=user)
     except exceptions.UserNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-
-

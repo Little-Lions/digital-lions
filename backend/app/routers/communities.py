@@ -14,7 +14,9 @@ from models.api.community import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/communities", dependencies=[APIKeyDependency, BearerTokenDependency])
+router = APIRouter(
+    prefix="/communities", dependencies=[APIKeyDependency, BearerTokenDependency]
+)
 
 
 @router.get(
@@ -50,7 +52,9 @@ async def get_communities(service: CommunityServiceDependency):
     status_code=status.HTTP_201_CREATED,
     response_model=RecordCreated,
 )
-async def post_community(community: CommunityPostIn, service: CommunityServiceDependency):
+async def post_community(
+    community: CommunityPostIn, service: CommunityServiceDependency
+):
     """Add a community."""
     try:
         return service.create(community)

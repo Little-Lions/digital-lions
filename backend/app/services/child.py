@@ -45,7 +45,8 @@ class ChildService(BaseService):
             # if cascade is False, raise an exception
             if not cascade:
                 error_msg = (
-                    f"Child with ID {object_id} has attendance " "records and cascade is False"
+                    f"Child with ID {object_id} has attendance "
+                    "records and cascade is False"
                 )
                 logger.error(error_msg)
                 raise exceptions.ChildHasAttendanceException(error_msg)
@@ -72,7 +73,9 @@ class ChildService(BaseService):
         try:
             return self._children.read(object_id=object_id)
         except exceptions.ItemNotFoundException:
-            raise exceptions.ChildNotFoundException(f"Child with ID {object_id} not found")
+            raise exceptions.ChildNotFoundException(
+                f"Child with ID {object_id} not found"
+            )
 
     def update(self, object_id: int, obj: ChildPatchIn):
         """Update a child.

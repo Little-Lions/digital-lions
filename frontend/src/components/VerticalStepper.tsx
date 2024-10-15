@@ -1,3 +1,5 @@
+
+'use client'
 import React, { useEffect, useRef, useState } from "react";
 import CustomButton from "@/components/CustomButton";
 // import Badge from '@/components/Badge';
@@ -132,7 +134,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         const isOpen = index === openIndex && isCurrent;
 
         return (
-          <div key={index} className="relative pl-4 pb-2">
+          <div key={index} className="relative pb-2 pl-7">
             <div
               onClick={
                 isCurrent ? () => handleAccordionToggle(index) : undefined
@@ -146,7 +148,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
             >
               {/* Draw circle for each step */}
               <span
-                className={`absolute -left-2.5 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
+                className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
                   isCurrent
                     ? "bg-blue-500 border-blue-500"
                     : isPrevious && animatedSteps.includes(index)
@@ -181,7 +183,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               {/* Draw line between steps */}
               {index < workshops.length - 1 && (
                 <span
-                  className={`absolute left-[-1px] top-[2.6rem] bottom-[-25px] w-[2px] ${
+                  className={`absolute left-[9px] top-[2.6rem] bottom-[-25px] w-[2px] ${
                     index < checked
                       ? "bg-green-500"
                       : index === checked

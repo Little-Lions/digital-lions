@@ -6,6 +6,8 @@ interface ApiResponse {
   last_name: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const createChild = async ({
   teamId,
   age ,
@@ -21,7 +23,7 @@ const createChild = async ({
 }): Promise<ApiResponse> => {
   try {
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/children`,
+      `${API_URL}/children`,
       {
         method: "POST",
         headers: {

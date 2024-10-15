@@ -5,13 +5,15 @@ interface ApiInput {
   cascade: boolean;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const deleteTeam = async ({
   teamId,
   cascade,
 }: ApiInput): Promise<TeamWithChildren> => {
   try {
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/teams/${teamId}?cascade=${cascade}
+      `${API_URL}/teams/${teamId}?cascade=${cascade}
 `,
       {
         method: "DELETE",

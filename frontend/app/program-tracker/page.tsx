@@ -1,7 +1,8 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import getCommunities from "@/api/services/communities/getCommunities";
 import LinkCard from "@/components/LinkCard";
-import Layout from "@/components/Layout";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import Badge from "@/components/Badge";
 interface Community {
@@ -10,17 +11,12 @@ interface Community {
 }
 
 const ProgramTrackerCommunityPage: React.FC = () => {
-  const breadcrumbs = [{ label: "Program tracker", path: "/program-tracker" }];
-
   const [communities, setCommunities] = useState<Community[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchCommunities = async () => {
     setIsLoading(true);
     try {
-      // Simulate a delay in fetching data
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
       const communitiesData = await getCommunities();
       setCommunities(communitiesData);
     } catch (error) {
@@ -35,7 +31,7 @@ const ProgramTrackerCommunityPage: React.FC = () => {
   }, []);
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <>
       {isLoading ? (
         <>
           {Array.from({ length: 8 }, (_, i) => (
@@ -44,6 +40,7 @@ const ProgramTrackerCommunityPage: React.FC = () => {
         </>
       ) : (
         <>
+          <h1>Communities</h1>
           {communities.map((community) => (
             <LinkCard
               key={community.id}
@@ -52,15 +49,17 @@ const ProgramTrackerCommunityPage: React.FC = () => {
               state={{ communityName: community.name }}
               className="mb-2"
             >
-              <div className="text-sm text-right ">
-                <Badge className="mb-2" variant="secondary">3 active teams</Badge>
-                <Badge variant="success">10 completed teams</Badge>
-              </div>
+                <div className="flex flex-col">
+                  <Badge className="mb-2" variant="secondary">
+                    3 active
+                  </Badge>
+                  <Badge variant="success">10 completed</Badge>
+                </div>
             </LinkCard>
           ))}
         </>
       )}
-    </Layout>
+    </>
   );
 };
 

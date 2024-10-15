@@ -1,10 +1,11 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import TextInput from "@/components/TextInput";
 import CustomButton from "@/components/CustomButton";
 import getCommunities from "@/api/services/communities/getCommunities";
 import createCommunity from "@/api/services/communities/createCommunity";
 import LinkCard from "@/components/LinkCard";
-import Layout from "@/components/Layout";
 import Modal from "@/components/Modal";
 import SkeletonLoader from "@/components/SkeletonLoader";
 interface Community {
@@ -13,8 +14,6 @@ interface Community {
 }
 
 const CommunityPage: React.FC = () => {
-  const breadcrumbs = [{ label: "Communities", path: "/communities" }];
-
   const [communityName, setCommunityName] = useState("");
   const [communities, setCommunities] = useState<Community[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,9 +24,6 @@ const CommunityPage: React.FC = () => {
   const fetchCommunities = async () => {
     setIsLoading(true);
     try {
-      // Simulate a delay in fetching data
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
       const communitiesData = await getCommunities();
       setCommunities(communitiesData);
     } catch (error) {
@@ -75,7 +71,7 @@ const CommunityPage: React.FC = () => {
   };
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <>
       {isLoading ? (
         <>
           <SkeletonLoader width="142px" type="button" />
@@ -129,7 +125,7 @@ const CommunityPage: React.FC = () => {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 };
 

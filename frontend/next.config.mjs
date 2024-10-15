@@ -1,12 +1,9 @@
-// next.config.mjs
 export default {
+  experimental: {
+    appDir: true, // This enables the App Router in Next.js 13+
+  },
+
   async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/communities",
-        permanent: true, // Permanent redirect (HTTP 301)
-      },
-    ];
+    return [];
   },
 };

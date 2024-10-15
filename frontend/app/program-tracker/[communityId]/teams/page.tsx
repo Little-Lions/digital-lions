@@ -1,6 +1,7 @@
+'use client'
+
 import React, { useState, useEffect, useCallback } from "react";
 
-import Layout from "@/components/Layout";
 import LinkCard from "@/components/LinkCard";
 import CustomButton from "@/components/CustomButton";
 import SkeletonLoader from "@/components/SkeletonLoader";
@@ -12,12 +13,14 @@ import getTeamsOfCommunity from "@/api/services/teams/getTeamsOfCommunity";
 
 import { TeamInCommunity } from "@/types/teamInCommunity.interface";
 
-import { useRouter } from "next/router";
+import { useRouter, useParams } from "next/navigation";
 import { Team } from "@/types/team.interface";
 
 const ProgramTrackerTeamsPage: React.FC = () => {
   const router = useRouter();
-  const { communityId } = router.query;
+  // const { communityId } = useParams();
+  const params = useParams();
+  const communityId = params?.communityId as string;
   const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [communityName, setCommunityName] = useState<string | null>(null);
@@ -31,15 +34,10 @@ const ProgramTrackerTeamsPage: React.FC = () => {
     }
   }, []);
 
-  const breadcrumbs = [
-    { label: "Program tracker", path: "/program-tracker" },
-    { label: `${communityName}`, path: `/program-tracker/${communityId}/teams` },
-  ];
 
   const fetchTeams = useCallback(async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
       const fetchedTeams = await getTeamsOfCommunity(Number(communityId));
       setTeams(fetchedTeams);
       setHasLoadedInitially(true);
@@ -55,7 +53,7 @@ const ProgramTrackerTeamsPage: React.FC = () => {
   }, [fetchTeams]);
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <>
       {isLoading && !hasLoadedInitially ? (
         <>
           <SkeletonLoader width="142px" type="button" />
@@ -92,7 +90,6 @@ const ProgramTrackerTeamsPage: React.FC = () => {
           ) : (
             <EmptyState
               title="No teams available"
-              text="The button below will take you to the team management page where you can add a new team."
               pictogram={<UsersIcon />}
               actionButton={
                 <CustomButton
@@ -106,7 +103,7 @@ const ProgramTrackerTeamsPage: React.FC = () => {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 };
 

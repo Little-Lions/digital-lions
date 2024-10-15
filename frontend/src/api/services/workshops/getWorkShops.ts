@@ -6,10 +6,12 @@ interface ApiResponse {
   team_id: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getWorkshops = async (): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/workshops`,
+      `${API_URL}/workshops`,
       {
         method: "GET",
         headers: {

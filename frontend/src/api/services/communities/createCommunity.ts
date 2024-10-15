@@ -3,9 +3,11 @@ interface ApiResponse {
   id: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getCommunities = async (communityName: string): Promise<ApiResponse> => {
   try {
-    const response = await fetch('https://backend-staging-ffae.up.railway.app/api/v1/communities', {
+    const response = await fetch(`${API_URL}/communities`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

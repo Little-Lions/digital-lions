@@ -10,7 +10,8 @@ const Loader: React.FC<LoaderProps> = ({ loadingText = "Loading..." }) => {
       className="fixed top-0 left-0 z-50 w-screen h-screen flex items-center justify-center"
       style={{ background: "rgba(0, 0, 0, 0.3)" }}
     >
-      <div className="bg-white border py-4 px-5 rounded-lg w-48 flex flex-col items-center animate-fadeIn">
+      {/* <div className="bg-white border py-4 px-5 rounded-lg w-48 flex flex-col items-center"> */}
+      <div className="bg-white border py-4 px-5 rounded-lg w-48 flex flex-col items-center">
         <svg
           aria-hidden="true"
           className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"

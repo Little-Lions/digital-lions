@@ -1,14 +1,15 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import VerticalStepper from "@/components/VerticalStepper";
 import getTeamById from "@/api/services/teams/getTeamById";
 import addWorkshopToTeam from "@/api/services/workshops/addWorkshopToTeam";
 import getWorkshopsByTeam from "@/api/services/workshops/getWorkshopsByTeam";
-import Layout from "@/components/Layout";
 import { TeamWithChildren } from "@/types/teamWithChildren.interface";
 import { WorkshopInfo } from "@/types/workshopInfo.interface";
 import SkeletonLoader from "@/components/SkeletonLoader";
 
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 
 interface AttendanceRecord {
   attendance: string;
@@ -22,30 +23,18 @@ interface Attendance {
 }
 
 const ProgramTrackerAttendancePage: React.FC = () => {
-  const router = useRouter();
-  const { communityId, teamId } = router.query;
+  const params = useParams();
+  const teamId = params?.teamId as string;
+
   const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
     null
   );
   const [workshopDetails, setWorkshopDetails] = useState<WorkshopInfo[]>([]);
   const [attendance, setAttendance] = useState<Record<number, string>>({});
-  const [communityName, setCommunityName] = useState<string | null>(null);
-  const [teamName, setTeamName] = useState<string | null>(null);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
   const [isSavingAttendance, setIsSavingAttendance] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  const breadcrumbs = [
-    { label: "Program tracker", path: "/program-tracker" },
-    {
-      label: `${communityName}`,
-      path: `/program-tracker/${communityId}/teams`,
-    },
-    {
-      label: `${teamName || "Unknown Team"}`,
-      path: `/program-tracker/${communityId}/teams/${teamId}`,
-    },
-  ];
 
   // Fetch team details when teamId changes
   useEffect(() => {
@@ -59,7 +48,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
           }
           const teamDetails = await getTeamById(numericTeamId);
           setSelectedTeam(teamDetails); // Set the fetched team as selectedTeam
-          setTeamName(teamDetails.name);
         } catch (error) {
           console.error("Failed to fetch team details:", error);
         } finally {
@@ -71,15 +59,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     }
   }, [teamId]);
 
-  useEffect(() => {
-    // Retrieve and parse state from localStorage
-    const storedState = localStorage.getItem("linkCardState");
-    if (storedState) {
-      const { communityName, teamName } = JSON.parse(storedState);
-      setCommunityName(communityName);
-      setTeamName(teamName);
-    }
-  }, []);
 
   const handleAttendanceChange = (childId: number, status: string) => {
     setAttendance((prev) => ({
@@ -154,7 +133,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const currentWorkshop = selectedTeam?.program.progress.current ?? 0;
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
       <>
         {isLoadingTeam ? (
           <div className=" w-full mx-auto ">
@@ -183,7 +161,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
           )
         )}
       </>
-    </Layout>
   );
 };
 

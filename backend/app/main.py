@@ -3,6 +3,7 @@ import logging.config
 from contextlib import asynccontextmanager
 from typing import Any
 
+import yaml
 from core.settings import get_settings
 from database.session import init_db
 from fastapi import FastAPI, Request, status
@@ -16,14 +17,19 @@ logger = logging.getLogger(__name__)
 logger.info("Logging configuration: %s", logging_conf)
 
 
+def get_config(path: str) -> dict:
+    """Get configuration from a yaml file."""
+    with open(path) as file:
+        return yaml.safe_load(file)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event handler for FastAPI."""
 
     logger.info("Starting db client...")
     init_db()
-    # logger.info("Running migrations...")
-    # run_migrations()
+
     yield
 
 

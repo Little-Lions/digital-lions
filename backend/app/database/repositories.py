@@ -147,7 +147,7 @@ class ChildRepository(BaseRepository[schema.Child]):
 
 
 class CommunityRepository(BaseRepository[schema.Community]):
-    """Repository to interact with communities table."""
+    """Repository to interact with Communities table."""
 
     _model = schema.Community
 
@@ -159,7 +159,7 @@ class ProgramRepository(BaseRepository[schema.Program]):
 
 
 class TeamRepository(BaseRepository[schema.Team]):
-    """Repository to interact with Community table."""
+    """Repository to interact with Team table."""
 
     _model = schema.Team
 

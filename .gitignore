@@ -51,4 +51,4 @@ node_modules
 *.sw?
 
 *.tsbuildinfo
-*.json
+sandbox/

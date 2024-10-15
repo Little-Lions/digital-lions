@@ -2,7 +2,7 @@ from models.generic import CreateProperties, UpdateProperties
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlmodel import AutoString, Field, SQLModel
 
-ROLES = ["admin", "partner", "community_owner", "coach"]
+ROLES = ["admin", "partner", "community_manager", "coach"]
 
 
 class UserValidators:
@@ -17,8 +17,8 @@ class UserValidators:
 class UserPostIn(BaseModel, CreateProperties, UserValidators):
     """API payload model for POST /users."""
 
-    first_name: str
-    last_name: str = Field(default=None)
+    first_name: str | None = Field(default=None)
+    last_name: str | None = Field(default=None)
     email_address: EmailStr
     password: str = Field(description="Plain user password")
     role: str | None = Field(default=None, description="User role on platform")
@@ -39,6 +39,20 @@ class UserPostLoginIn(BaseModel):
 
     email_address: EmailStr
     password: str
+
+
+class UserPostInviteIn(BaseModel):
+    """API payload model for inviting a new user to the platform via /users/invite-user."""
+
+    email_address: EmailStr
+
+    class Role(BaseModel):
+        """Model for role that can be assigned to a user."""
+
+        role: str
+        scope: str
+
+    roles: list[Role] | None = None
 
 
 class UserBase(SQLModel):
@@ -67,8 +81,8 @@ class UserUpdate(UserBase, UpdateProperties):
 
 class UserGetByIdOut(BaseModel):
     id: int
-    first_name: str
-    last_name: str = Field(default=None)
+    first_name: str | None = Field(default=None)
+    last_name: str | None = Field(default=None)
     email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
     role: str | None = Field(default=None, description="User role on platform")
 

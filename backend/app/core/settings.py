@@ -19,11 +19,16 @@ class Settings(BaseSettings):
 
     # security
     API_KEY: str | None = None
+    OAUTH_DOMAIN: str | None = None
+    OAUTH_AUDIENCE: str | None = None
 
     # networking
     ALLOWED_ORIGINS: str
     ALLOWED_METHODS: str = "GET, POST, PATCH, PUT, DELETE, OPTIONS"
     ALLOWED_HEADERS: str = "Content-Type, Authorization"
+
+    # emails
+    RESEND_API_KEY: str | None = None
 
     def model_post_init(self, __context) -> None:
         """Post init hook."""
@@ -36,6 +41,15 @@ class Settings(BaseSettings):
         if self.FEATURE_API_KEY and not self.API_KEY:
             raise ValueError("FEATURE_API_KEY is True but API_KEY is not set")
         return self
+
+    @model_validator(mode="after")
+    def validate_oauth_settings(self) -> Any:
+        """Validate the OAuth settings."""
+        if self.FEATURE_OAUTH and not self.OAUTH_DOMAIN:
+            raise ValueError("FEATURE_OAUTH is True but OAUTH_DOMAIN is not set")
+        if self.FEATURE_OAUTH and not self.OAUTH_AUDIENCE:
+            raise ValueError("FEATURE_OAUTH is True but AUTH0_AUDIENCE is not set")
+        return
 
 
 @lru_cache

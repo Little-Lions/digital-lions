@@ -107,14 +107,18 @@ class User(SQLModel, MetadataColumns, table=True):
     """User model in database."""
 
     __tablename__ = "users"
-    first_name: str = Field()
-    last_name: str = Field(default=None)
+    first_name: str | None = Field(default=None)
+    last_name: str | None = Field(default=None)
     email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
     role: str | None = Field(default=None, description="User role on platform")
 
     id: int | None = Field(default=None, primary_key=True)
     hashed_password: bytes = Field(description="Hashed password in bytes")
     salt: bytes = Field(description="Random byte string with which the password is encrypted")
+    is_registered: bool = Field(
+        default=False,
+        description="Flag to indicate if the user has completed registration",
+    )
 
 
 class Program(SQLModel, table=False):

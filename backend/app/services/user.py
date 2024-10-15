@@ -45,6 +45,15 @@ class UserService(BaseService, AbstractService):
             logger.error(msg)
             raise exceptions.UserNotFoundException(msg)
 
+    def get_user_by_email(self, email_address: str) -> User | exceptions.UserNotFoundException:
+        """Get a User from the table by email address."""
+        user = self._get_user_by_email(email_address)
+        if not user:
+            msg = f"User with email {email_address} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundException(msg)
+        return user
+
     def update(self, user_id: int, user: UserUpdate) -> UserGetByIdOut:
         """Update a user."""
 
@@ -55,10 +64,10 @@ class UserService(BaseService, AbstractService):
         self.commit()
         return user
 
-    def delete(self, user_id: int):
+    def delete(self, user_id: int) -> Message:
         """Delete a user by id."""
         try:
-            self._user_repository.delete_user(user_id)
+            self.users.delete(user_id)
             self.commit()
             return Message(detail=f"User with ID {user_id} deleted.")
         except exceptions.ItemNotFoundException:
@@ -76,13 +85,40 @@ class UserService(BaseService, AbstractService):
 
         # todo get jwt
         jwt = None
+
         return jwt
 
-    def forgot(self, email_address: str) -> Message:
-        """Send forgot password email to user."""
-        if not self.users.where([("email_address", email_address)]):
+    def reset_password(self, email_address: str) -> Message:
+        """Send reset password email to user."""
+        if not self._get_user_by_email(email_address):
             raise exceptions.UserNotFoundException(f"User with email {email_address} not found.")
-        pass
+        token = "1234567890"
+        reset_link = "https://staging.digitallions.annelohmeijer.com/reset-password?token=" + token
+
+        self.email_service.send_reset_password_link(
+            email_address=email_address, reset_link=reset_link
+        )
+        return Message(detail="Email sent to reset password.")
+
+    def invite_user(self, user: UserPostIn) -> Message:
+        """Invite a user to join the app."""
+        user_in_db = self._get_user_by_email(user.email_address)
+        if user_in_db:
+            if user_in_db.is_registered:
+                msg = f"User with email {user.email_address} already registered."
+                logger.error(msg)
+                raise exceptions.UserAlreadyRegisteredException(msg)
+
+        # add user to database with dummy password
+
+        # create JWT wiht dummy password
+        token = "1234567890"
+        sender = "Stijn de Leeuw"
+
+        self.email_service.send_register_link(
+            email_address=user.email_address, sender=sender, token=token
+        )
+        return Message(detail="Email sent to invite new user.")
 
     def _hash_password(self, password: str, salt: bytes = None) -> [bytes, bytes]:
         """Hash password. If salt is not provided (i.e. during user creation),
@@ -108,9 +144,9 @@ class UserService(BaseService, AbstractService):
         """Create a JWT token for the user."""
         pass
 
-    def _get_user_by_email(self, email_address: str) -> User | exceptions.UserNotFoundException:
+    def _get_user_by_email(self, email_address: str) -> User | None:
         """Get a user by email address."""
-        try:
-            return self.users.where([("email_address", email_address)]).first()
-        except exceptions.ItemNotFoundException:
-            raise exceptions.UserNotFoundException(f"User with email {email_address} not found.")
+        users = self.users.where([("email_address", email_address)])
+        if users:
+            return users[0]
+        return None

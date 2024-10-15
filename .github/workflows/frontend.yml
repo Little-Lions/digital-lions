@@ -1,0 +1,26 @@
+name: Deploy Frontend
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+
+jobs:
+  deploy_stg:
+    name: Deploy Frontend to Railway
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway
+        run: npm i -g @railway/cli
+
+      - name: Deploy Frontend
+        run: railway up --service frontend-01-stg --environment staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+

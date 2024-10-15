@@ -8,6 +8,13 @@ backend:
 frontend:
 	docker compose up --build frontend
 
+# deploy to railway dev
+frontend.deploy:
+	railway up --service frontend-01-dev --environment dev
+
+backend.deploy:
+	railway up --service backend-01-dev --environment dev
+
 db: 
 	docker compose up --build db
 
@@ -28,3 +35,6 @@ db.wipe:
 
 db.ip: 
 	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres
+
+key: 
+	openssl rand -hex 32

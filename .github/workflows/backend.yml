@@ -1,21 +1,24 @@
-name: Backend CI
+name: Deploy Backend
 
 on:
+  workflow_dispatch:
   push:
+    branches:
+      - main
+    paths:
+      - backend/**
 
 jobs:
-  unittest:
+  test:
+    name: Run unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set Python version
+      - name: Set versions
         working-directory: backend
         run: |
           PYTHON_VERSION=$(cat .python-version)
           echo "PYTHON_VERSION=$PYTHON_VERSION" >> $GITHUB_ENV
-      - name: Set Poetry version
-        working-directory: backend
-        run: |
           POETRY_VERSION=$(cat .poetry-version)
           echo "POETRY_VERSION=$POETRY_VERSION" >> $GITHUB_ENV
       - name: Set up Python
@@ -33,4 +36,20 @@ jobs:
         working-directory: backend
         run: |
           poetry run python -m pytest tests -vvv --cov=app 
+
+  deploy_stg:
+    name: Deploy Backend to Railway
+    environment: staging
+    needs: [test] 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway
+        run: npm i -g @railway/cli
+
+      - name: Deploy Backend
+        run: railway up --service backend-01-stg --environment staging
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 

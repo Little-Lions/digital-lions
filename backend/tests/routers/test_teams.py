@@ -112,8 +112,7 @@ def test_delete_team_with_children_cascade(client):
 @pytest.fixture(name="client_with_team")
 def client_with_community_and_team(client):
     # arrange two communities
-    teams = ["Team_1", "Team_2"
-    ]
+    teams = ["Team_1", "Team_2"]
     children = [
         {"first_name": "Child 1", "last_name": "Last name", "age": 10},
         {"first_name": "Child 2", "last_name": "Last name", "age": 12},
@@ -125,9 +124,11 @@ def client_with_community_and_team(client):
     )
     # add teams
     for team in teams:
-        id_ = client.post(
-            "/teams", json={"community_id": 1, "name": team}
-        ).json().get("id")
+        id_ = (
+            client.post("/teams", json={"community_id": 1, "name": team})
+            .json()
+            .get("id")
+        )
         # add children to team
         for child in children:
             client.post("/children", json={**child, "team_id": id_})

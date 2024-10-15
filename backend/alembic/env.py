@@ -6,8 +6,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from app.database import schema
-from app.settings import get_settings
+from core.settings import get_settings
+from database import schema
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -15,9 +15,7 @@ config = context.config
 section = config.config_ini_section
 
 settings = get_settings()
-POSTGRES_URL = os.environ.get("POSTGRES_DATABASE_URL_PROD") or os.environ.get(
-    "POSTGRES_DATABASE_URL"
-)
+POSTGRES_URL = os.environ.get("POSTGRES_DATABASE_URL")
 config.set_main_option(
     "sqlalchemy.url",
     POSTGRES_URL,

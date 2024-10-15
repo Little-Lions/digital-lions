@@ -1,23 +1,23 @@
 FROM --platform=linux/amd64 python:3.11.5-slim
 
-ARG POETRY_VERSION=1.6.1
+ARG POETRY_VERSION=1.8.2
 
-WORKDIR /app
+WORKDIR /home
 
-COPY pyproject.toml poetry.lock /app/
+COPY pyproject.toml poetry.lock /home/
 
 RUN pip install poetry==$POETRY_VERSION
 RUN poetry config virtualenvs.create false \
-    && poetry install --without test --no-root --no-interaction
+    && poetry install --without dev --no-root --no-interaction
 
-COPY app ./
+COPY . /home/
 
-EXPOSE 8000
+EXPOSE $PORT
 
 HEALTHCHECK --interval=30s --timeout=30s \
-    CMD curl -f http://localhost:8000/health/ || exit 1
+    CMD curl -f http://localhost:${PORT}/health/ || exit 1
 
 RUN groupadd -r api && useradd --no-log-init -r -g api api
 USER api
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/bin/sh", "/home/run.sh"]

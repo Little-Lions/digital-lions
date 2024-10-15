@@ -1,6 +1,7 @@
 # :earth_africa: Digital Lions 
 
-![Backend CI](https://github.com/guyonmatteau/digital-lions/actions/workflows/ci.yml/badge.svg)
+![Frontend Deployment](https://github.com/Little-Lions/digital-lions/actions/workflows/backend.yml/badge.svg)
+![Backend Deployment](https://github.com/Little-Lions/digital-lions/actions/workflows/frontend.yml/badge.svg)
 
 ## Table of Contents
 - [About](#-about)

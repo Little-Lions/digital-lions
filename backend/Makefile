@@ -2,14 +2,19 @@ include ../.env
 export
 .PHONY: shell build run app tests lint format 
 
+SERVICE=backend
+
 shell: 
 	poetry shell
 
 build:
-	docker compose build backend
+	docker compose build ${SERVICE}
 
 run:
-	docker compose up backend
+	docker compose up ${SERVICE}
+
+deploy:
+	cd ..; railway up --service ${SERVICE}-01-dev --detach --environment dev
 
 app: shell
 	cd app; uvicorn main:app --host 0.0.0.0 --port 8000 --reload
@@ -24,6 +29,7 @@ lint:
 	poetry run ruff check app
 
 format: lint
+	poetry run black app
 	poetry run ruff format app
 
 # Railway database service vars

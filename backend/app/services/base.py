@@ -2,15 +2,13 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
+from core.email import EmailService
+from core.settings import get_settings
 from database import repositories
 from database.session import SessionDependency
 from sqlmodel import SQLModel
 
 Model = TypeVar("Model", bound=SQLModel)
-ModelCreate = TypeVar("ModelCreate", bound=SQLModel)
-ModelUpdate = TypeVar("ModelUpdate", bound=SQLModel)
-ModelOut = TypeVar("ModelOut", bound=SQLModel)
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +29,7 @@ class AbstractService(ABC):
         pass
 
     @abstractmethod
-    def create(self, obj: ModelCreate):
+    def create(self, obj: Model):
         """Create a new object on the repository that is
         represented by the service."""
         pass
@@ -67,6 +65,8 @@ class BaseService:
         self._teams = repositories.TeamRepository(session=self._session)
         self._workshops = repositories.WorkshopRepository(session=self._session)
         self.users = repositories.UserRepository(session=self._session)
+        self.settings = get_settings()
+        self.email_service = EmailService(settings=self.settings)
 
         self._cols = repositories.Columns
 

@@ -14,7 +14,7 @@ run:
 	docker compose up ${SERVICE}
 
 deploy:
-	cd ..; railway up --service ${SERVICE}-dev --detach --environment dev
+	cd ..; railway up --service ${SERVICE}-01-dev --detach --environment dev
 
 app: shell
 	cd app; uvicorn main:app --host 0.0.0.0 --port 8000 --reload

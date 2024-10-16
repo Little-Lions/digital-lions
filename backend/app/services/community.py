@@ -23,6 +23,7 @@ class CommunityService(AbstractService, BaseService):
             )
         community = self._communities.create(obj)
         self.commit()
+        logger.info(f"Community created with name: {obj.name}, ID: {community.id}.")
         return community
 
     def get_all(self):
@@ -52,7 +53,8 @@ class CommunityService(AbstractService, BaseService):
 
         self._communities.delete(object_id=object_id)
         self.commit()
-        return Message(detail=f"Community with ID {object_id} deleted.")
+        msg = f"Community with ID {object_id} deleted."
+        return Message(detail=msg)
 
     def _validate_community_exists(self, community_id: int) -> None:
         """Validate that community exists."""

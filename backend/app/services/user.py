@@ -7,7 +7,7 @@ from models.api import Message, RecordCreated
 from models.api.user import UserGetByIdOut, UserPostIn, UserSessionOut, UserUpdate
 from services.base import AbstractService, BaseService
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class UserService(BaseService, AbstractService):
@@ -45,7 +45,9 @@ class UserService(BaseService, AbstractService):
             logger.error(msg)
             raise exceptions.UserNotFoundException(msg)
 
-    def get_user_by_email(self, email_address: str) -> User | exceptions.UserNotFoundException:
+    def get_user_by_email(
+        self, email_address: str
+    ) -> User | exceptions.UserNotFoundException:
         """Get a User from the table by email address."""
         user = self._get_user_by_email(email_address)
         if not user:
@@ -91,9 +93,14 @@ class UserService(BaseService, AbstractService):
     def reset_password(self, email_address: str) -> Message:
         """Send reset password email to user."""
         if not self._get_user_by_email(email_address):
-            raise exceptions.UserNotFoundException(f"User with email {email_address} not found.")
+            raise exceptions.UserNotFoundException(
+                f"User with email {email_address} not found."
+            )
         token = "1234567890"
-        reset_link = "https://staging.digitallions.annelohmeijer.com/reset-password?token=" + token
+        reset_link = (
+            "https://staging.digitallions.annelohmeijer.com/reset-password?token="
+            + token
+        )
 
         self.email_service.send_reset_password_link(
             email_address=email_address, reset_link=reset_link

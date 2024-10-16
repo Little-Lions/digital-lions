@@ -101,7 +101,9 @@ async def reset_password(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
-@router.post("/invite-user", response_model=Message, summary="Invite new user to platform.")
+@router.post(
+    "/invite-user", response_model=Message, summary="Invite new user to platform."
+)
 async def invite_user(user: UserPostInviteIn, user_service: UserServiceDependency):
     try:
         return user_service.invite_user(user=user)

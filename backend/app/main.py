@@ -45,7 +45,9 @@ async def catch_any_exception(request: Request, call_next: Any) -> Any:
 
 settings = get_settings()
 
-app = FastAPI(title="Digital Lion's API", version="0.1.0", root_path="/api/v1", lifespan=lifespan)
+app = FastAPI(
+    title="Digital Lion's API", version="0.1.0", root_path="/api/v1", lifespan=lifespan
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,

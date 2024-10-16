@@ -46,7 +46,9 @@ class APIKeyHandler(APIKeyHeader):
         """Verify the API key."""
         if key != self.settings.API_KEY:
             logger.error("Invalid API key")
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API key")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API key"
+            )
         return True
 
 
@@ -101,7 +103,9 @@ class BearerTokenHandler(HTTPBearer):
                 pub_key_url=self.PUBLIC_KEY_URL.format(settings.OAUTH_DOMAIN),
             )
             if pub_key is None:
-                raise HTTPException(status_code=403, detail="Could not get public key for token")
+                raise HTTPException(
+                    status_code=403, detail="Could not get public key for token"
+                )
 
             self.jwt_token_decoded = self._verify_jwt(
                 token=credentials.credentials,
@@ -121,7 +125,9 @@ class BearerTokenHandler(HTTPBearer):
             detail="Invalid authorization code.",
         )
 
-    def _verify_jwt(self, token: str, pub_key: str, algorithm: str, audience: str) -> Any | None:
+    def _verify_jwt(
+        self, token: str, pub_key: str, algorithm: str, audience: str
+    ) -> Any | None:
         """Verify JWT token with public key and audience. Returns verified token content."""
         try:
             return jwt.decode(

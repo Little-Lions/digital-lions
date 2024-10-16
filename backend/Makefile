@@ -16,8 +16,8 @@ run:
 deploy:
 	make -C .. backend.deploy
 
-app: shell
-	cd app; uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+app:
+	cd app; poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 test:
 	poetry run python -m pytest tests --disable-warnings -vvv --cov=app --cov-report=term-missing tests
@@ -28,9 +28,8 @@ testpdb:
 lint: 
 	poetry run ruff check app
 
-format: lint
+format: 
 	poetry run black app
-	poetry run ruff format app
 
 # Railway database service vars
 TCP_PROXY=monorail.proxy.rlwy.net:19362

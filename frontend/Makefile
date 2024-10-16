@@ -1,4 +1,7 @@
-.PHONY: deploy
+.PHONY: deploy serve
 
 deploy:
-	cd ..; railway up --service frontend-01-dev --environment dev
+	$(MAKE) -C .. frontend.deploy
+
+serve:
+	npm run dev

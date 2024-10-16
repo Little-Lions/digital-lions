@@ -10,10 +10,10 @@ frontend:
 
 # deploy to railway dev
 frontend.deploy:
-	railway up --service frontend-01-dev --environment dev
+	railway up --service frontend-01-dev --detach --environment dev
 
 backend.deploy:
-	railway up --service backend-01-dev --environment dev
+	railway up --service backend-01-dev --detach --environment dev
 
 db: 
 	docker compose up --build db

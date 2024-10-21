@@ -1,10 +1,13 @@
+"use client";
+
+import React from "react";
 import Card from "@/components/Card";
 import PieChart from "@/components/PieChart";
 import List from "@/components/List";
 
 const Home: React.FC = () => {
   return (
-    <> 
+    <>
       <Card className="mb-2">
         <h1 className="text-2xl font-semibold">Little Lions Impact</h1>
         <List
@@ -16,11 +19,11 @@ const Home: React.FC = () => {
         />
       </Card>
       <Card>
-        <div className="flex items-center justify-center ">
+        <div className="flex items-center justify-center">
           <PieChart />
         </div>
       </Card>
-      </>
+    </>
   );
 };
 

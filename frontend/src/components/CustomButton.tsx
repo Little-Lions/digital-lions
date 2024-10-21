@@ -8,6 +8,7 @@ interface CustomButtonProps {
   className?: string;
   isBusy?: boolean;
   isDisabled?: boolean;
+  isFullWidth?: boolean;
   variant?:
     | "primary"
     | "secondary"
@@ -24,6 +25,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   className,
   isBusy,
   isDisabled,
+  isFullWidth,
   variant = "primary",
 }) => {
   const [loading, setLoading] = useState(false);
@@ -80,7 +82,11 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   return (
     <button
       type="button"
-      className={`${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={
+        `${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} 
+        ${isFullWidth ? "w-full sm:w-auto" : ""}
+        ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
+      `}
       onClick={handleClick}
       disabled={isBusy || isDisabled}
       style={{ minWidth: "8rem", minHeight: "2.5rem" }}

@@ -1,4 +1,4 @@
-"use client"; // Make sure this is a client component
+"use client";
 
 import React, { ReactNode, useRef } from "react";
 import Navigation from "@/components/Navigation";
@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import "@/styles/globals.css";
 import "tailwindcss/tailwind.css";
 import "@radix-ui/themes/styles.css";
+import { UserProvider } from '@auth0/nextjs-auth0/client';
 
 import { animate } from "framer-motion/dom";
 import { TransitionRouter } from "next-transition-router";
@@ -25,6 +26,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         />
       </head>
       <body className="flex flex-col min-h-screen bg-background text-background-text">
+      <UserProvider>
+
         <Navigation />
         <main className="flex-1">
           <div className="container mx-auto px-4 md:px-4 py-4 flex-1">
@@ -54,6 +57,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </main>
         <Footer />
+      </UserProvider>
+
       </body>
     </html>
   );

@@ -134,6 +134,7 @@ const TeamsPage: React.FC = () => {
             <>
               <CustomButton
                 label="Add team"
+                isFullWidth
                 onClick={handleOpenTeamModal}
                 variant="primary"
                 className="hover:bg-card-dark hover:text-white mb-4"

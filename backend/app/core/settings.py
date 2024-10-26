@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # networking
     ALLOWED_ORIGINS: str
-    ALLOWED_METHODS: str = "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+    ALLOWED_METHODS: str = "*"
     ALLOWED_HEADERS: str = "Content-Type, Authorization"
 
     # emails

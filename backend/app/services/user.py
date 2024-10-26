@@ -9,7 +9,7 @@ from database.session import SessionDependency
 from models.api import user
 from services.base import AbstractService, BaseService
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class UserService(BaseService, AbstractService):

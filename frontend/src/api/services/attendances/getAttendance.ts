@@ -22,10 +22,12 @@ interface ApiResponse {
   workshop: Workshop;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getAttendance = async (childId: number, communityId: number): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/attendance?child_id=${childId}&community_id=${communityId}`,
+      `${API_URL}/attendance?child_id=${childId}&community_id=${communityId}`,
       {
         method: "GET",
         headers: {

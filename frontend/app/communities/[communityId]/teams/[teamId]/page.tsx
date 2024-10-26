@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from "react";
 import Accordion from "@/components/Accordion";
 import getTeams from "@/api/services/teams/getTeams";
@@ -7,7 +9,6 @@ import createChild from "@/api/services/children/createChild";
 import updateChild from "@/api/services/children/updateChild";
 import deleteChild from "@/api/services/children/deleteChild";
 
-import Layout from "@/components/Layout";
 import SelectInput from "@/components/SelectInput";
 import CustomButton from "@/components/CustomButton";
 import Modal from "@/components/Modal";
@@ -22,7 +23,7 @@ import { UserIcon } from "@heroicons/react/24/solid";
 
 import { TeamWithChildren } from "@/types/teamWithChildren.interface";
 
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 
 interface Team {
   name: string;
@@ -31,7 +32,13 @@ interface Team {
 
 const TeamsDetailPage: React.FC = () => {
   const router = useRouter();
-  const { communityId, teamId } = router.query;
+  // const { communityId, teamId } = useParams()
+  // const { communityId } = useParams();
+
+  const params = useParams();
+  const communityId = params?.communityId as string;
+  const teamId = params?.teamId as string;
+
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
@@ -68,31 +75,12 @@ const TeamsDetailPage: React.FC = () => {
     }
   }, []);
 
-  const showBreadcrumbs = router.query.source !== "menu";
-
-  const breadcrumbs = showBreadcrumbs
-    ? [
-        { label: "Communities", path: "/communities" },
-        {
-          label: `${communityName || "Unknown Community"}`,
-          path: `/communities/${communityId}/teams`,
-        },
-        {
-          label: `${teamName || "Unknown Team"}`,
-          path: `/communities/${communityId}/teams/${teamId}`,
-        },
-      ]
-    : null;
-
   // Fetch all teams on component mount
   useEffect(() => {
     const fetchTeams = async () => {
       setIsLoading(true);
       try {
-        // Simulate a delay in fetching data
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const fetchedTeams = await getTeams('active');
+        const fetchedTeams = await getTeams("active");
         setTeams(fetchedTeams);
       } catch (error) {
         console.error("Failed to fetch teams:", error);
@@ -207,7 +195,7 @@ const TeamsDetailPage: React.FC = () => {
         setIsLoadingChild(true);
         try {
           await updateChild(updatedChild);
-          const updatedTeam = await getTeamById(selectedTeam?.id!);
+          const updatedTeam = await getTeamById(selectedTeam?.id as number);
           setSelectedTeam(updatedTeam);
           closeModal();
         } catch (error) {
@@ -260,7 +248,7 @@ const TeamsDetailPage: React.FC = () => {
     setIsDeletingChild(true);
     try {
       await deleteChild(childId as number, false);
-      const updatedTeam = await getTeamById(selectedTeam?.id!);
+      const updatedTeam = await getTeamById(selectedTeam?.id as number);
       setSelectedTeam(updatedTeam);
       setDeleteChildModalVisible(false);
     } catch (error) {
@@ -271,7 +259,7 @@ const TeamsDetailPage: React.FC = () => {
   };
 
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <>
       {isLoading ? (
         <>
           <SkeletonLoader type="input" />
@@ -284,7 +272,7 @@ const TeamsDetailPage: React.FC = () => {
         <>
           {isLoadingTeam && <Loader loadingText={"Loading team details"} />}
           <SelectInput
-            className="mb-5"
+            className="mb-4"
             label={"Select team"}
             value={selectedTeam?.id || ""}
             onChange={handleTeamChange}
@@ -308,7 +296,7 @@ const TeamsDetailPage: React.FC = () => {
             <EmptyState
               title="This team has no childs"
               text="Add a child to the team to get started"
-              pictogram={<UserIcon/>}
+              pictogram={<UserIcon />}
               actionButton={
                 <CustomButton
                   label="Add child"
@@ -418,7 +406,7 @@ const TeamsDetailPage: React.FC = () => {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 };
 

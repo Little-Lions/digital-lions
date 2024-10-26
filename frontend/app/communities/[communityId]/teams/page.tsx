@@ -1,6 +1,7 @@
+'use client'
+
 import React, { useState, useEffect, useCallback } from "react";
 
-import Layout from "@/components/Layout";
 import LinkCard from "@/components/LinkCard";
 import TextInput from "@/components/TextInput";
 import CustomButton from "@/components/CustomButton";
@@ -16,12 +17,12 @@ import getTeamsOfCommunity from "@/api/services/teams/getTeamsOfCommunity";
 
 import { TeamInCommunity } from "@/types/teamInCommunity.interface";
 
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 import { Team } from "@/types/team.interface";
 
 const TeamsPage: React.FC = () => {
-  const router = useRouter();
-  const { communityId } = router.query;
+  const params = useParams();
+  const communityId = params?.communityId as string;
   const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([]);
   const [filteredTeams, setFilteredTeams] = useState<
     TeamInCommunity[] | Team[]
@@ -43,15 +44,9 @@ const TeamsPage: React.FC = () => {
     }
   }, []);
 
-  const breadcrumbs = [
-    { label: "Communities", path: "/communities" },
-    { label: `${communityName}`, path: `/communities/${communityId}/teams` },
-  ];
-
   const fetchTeams = useCallback(async () => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
       const fetchedTeams = await getTeamsOfCommunity(Number(communityId));
       setTeams(fetchedTeams);
       if (isActive) {
@@ -87,11 +82,6 @@ const TeamsPage: React.FC = () => {
     setTeamName(value);
   };
 
-  interface SimpleTeam {
-    name: string;
-    community_id: number;
-  }
-
   const handleAddTeam = async () => {
     if (teamName.trim() === "") return;
     setIsAddingTeam(true);
@@ -126,7 +116,7 @@ const TeamsPage: React.FC = () => {
     }
   };
   return (
-    <Layout breadcrumbs={breadcrumbs}>
+    <>
       {isLoading && !hasLoadedInitially ? (
         <>
           <SkeletonLoader width="142px" type="button" />
@@ -154,7 +144,7 @@ const TeamsPage: React.FC = () => {
                 </h1>
                 <ToggleSwitch onChange={handleToggleChange} />
               </div>
-              {teams.map((team) => (
+              {filteredTeams.map((team) => (
                 <LinkCard
                   key={team.id}
                   title={team.name}
@@ -209,7 +199,7 @@ const TeamsPage: React.FC = () => {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 };
 

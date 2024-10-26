@@ -1,6 +1,6 @@
 import React from "react";
 import CustomButton from "./CustomButton";
-
+import ReactDOM from "react-dom";
 interface ModalProps {
   children: React.ReactNode;
   onClose?: () => void;
@@ -23,7 +23,7 @@ const Modal: React.FC<ModalProps> = ({
   isDisabledButton = false,
 }) => {
   
-  return (
+  const modalContent = (
     <div
       id="default-modal"
       tabIndex={-1}
@@ -79,6 +79,8 @@ const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default Modal;

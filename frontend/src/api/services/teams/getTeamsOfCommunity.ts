@@ -1,8 +1,10 @@
 import { TeamInCommunity } from "@/types/teamInCommunity.interface"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getTeamsOfCommunity = async (communityId: number): Promise<TeamInCommunity[]> => {
 try {
-  const response = await fetch(`https://backend-staging-ffae.up.railway.app/api/v1/teams?community_id=${communityId}`, {
+  const response = await fetch(`${API_URL}/teams?community_id=${communityId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'

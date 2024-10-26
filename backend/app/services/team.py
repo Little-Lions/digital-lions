@@ -36,9 +36,8 @@ class TeamService(AbstractService, BaseService):
             raise exceptions.CommunityNotFoundException(msg)
 
         new_team = self._teams.create(team)
-        logger.info(f"Team with ID {new_team.id} created.")
-
         self.commit()
+        logger.info(f"Team with ID {new_team.id} created.")
         return new_team
 
     def create_workshop(self, team_id: int, workshop: TeamPostWorkshopIn) -> dict:

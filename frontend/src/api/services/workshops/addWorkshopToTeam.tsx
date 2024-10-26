@@ -1,5 +1,7 @@
 import { Workshop } from "@/types/workshop.interface";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 interface AttendanceRecord {
     attendance: string;
     child_id: number;
@@ -14,7 +16,7 @@ interface AttendanceRecord {
   const addWorkshopToTeam = async (teamId: number, data: ApiBody): Promise<Workshop[]> => {
     try {
       const response = await fetch(
-        `https://backend-staging-ffae.up.railway.app/api/v1/teams/${teamId}/workshops`,
+        `${API_URL}/teams/${teamId}/workshops`,
         {
           method: "POST",
           headers: {

@@ -6,6 +6,8 @@ interface ApiBody {
   last_name: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const updateChildById = async ({
   childId,
   isActive,
@@ -31,7 +33,7 @@ const updateChildById = async ({
     };
 
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/children/${childId}`,
+      `${API_URL}/children/${childId}`,
       {
         method: "PATCH",
         headers: {

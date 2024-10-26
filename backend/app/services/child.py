@@ -18,6 +18,7 @@ class ChildService(BaseService):
 
         child = self._children.create(child)
         self.commit()
+        logger.info(f"Child created in team {child.team_id} with ID {child.id}")
         return child
 
     def _validate_child_unique(self, child: ChildPostIn | ChildPatchIn):
@@ -56,11 +57,11 @@ class ChildService(BaseService):
             self._attendances.delete_bulk(attr="child_id", value=object_id)
 
         # if child has no attendance records, delete the child
-        logger.info(f"Deleting child with ID {object_id}")
         self._children.delete(object_id=object_id)
         self.commit()
+        logger.info(f"Deleted child with ID {object_id}")
 
-    def get_all(self):
+    def get_all(self) -> list:
         """Get all objects from the table."""
         return self._children.read_all()
 
@@ -86,6 +87,7 @@ class ChildService(BaseService):
         """
         child = self._children.update(object_id=object_id, obj=obj)
         self.commit()
+        logger.info(f"Updated child with ID {object_id}: {obj}")
         return child
 
     def _validate_team_exists(self, team_id: int):

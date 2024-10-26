@@ -1,3 +1,4 @@
+'use client'
 import React, { useState } from "react";
 
 interface AccordionProps {
@@ -13,7 +14,6 @@ const Accordion: React.FC<AccordionProps> = ({
   description,
   children,
   className,
-  disabled
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 

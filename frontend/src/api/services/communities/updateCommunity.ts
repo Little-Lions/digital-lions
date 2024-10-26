@@ -3,13 +3,15 @@ interface ApiInput {
   name: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getCommunities = async (
   communityId: string,
   input: ApiInput
 ): Promise<void> => {
   try {
     const response = await fetch(
-      `https://backend-staging-ffae.up.railway.app/api/v1/communities/${communityId}`,
+      `${API_URL}/communities/${communityId}`,
       {
         method: "PATCH",
         headers: {

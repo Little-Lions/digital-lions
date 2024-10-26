@@ -14,10 +14,10 @@ run:
 	docker compose up ${SERVICE}
 
 deploy:
-	cd ..; railway up --service ${SERVICE}-dev --detach --environment dev
+	make -C .. backend.deploy
 
-app: shell
-	cd app; uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+app:
+	cd app; poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 test:
 	poetry run python -m pytest tests --disable-warnings -vvv --cov=app --cov-report=term-missing tests

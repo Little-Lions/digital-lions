@@ -1,8 +1,9 @@
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getChildrenById = async (childId: number, cascade: boolean): Promise<void> => {
 try {
-  await fetch(`https://backend-staging-ffae.up.railway.app/api/v1/children/${childId}?cascade=${cascade}`, {
+  await fetch(`${API_URL}/children/${childId}?cascade=${cascade}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json'

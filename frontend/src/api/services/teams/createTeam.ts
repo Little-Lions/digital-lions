@@ -7,6 +7,8 @@ export interface BodyInput {
   community_id: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const createTeam = async ({
   name,
   communityId,
@@ -16,7 +18,7 @@ const createTeam = async ({
 }): Promise<ApiResponse> => {
   try {
     const response = await fetch(
-      "https://backend-staging-ffae.up.railway.app/api/v1/teams",
+      `${API_URL}/teams`,
       {
         method: "POST",
         headers: {

@@ -37,7 +37,7 @@ interface ButtonSkeletonLoaderProps extends BaseSkeletonLoaderProps {
 interface CardSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   type: "card";
   width?: never;
-  height?: never;
+  height?: string;
   totalItems?: never;
   index?: never;
 }

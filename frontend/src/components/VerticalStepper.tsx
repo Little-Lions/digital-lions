@@ -1,3 +1,5 @@
+
+'use client'
 import React, { useEffect, useRef, useState } from "react";
 import CustomButton from "@/components/CustomButton";
 // import Badge from '@/components/Badge';
@@ -5,6 +7,7 @@ import { TeamWithChildren } from "@/types/teamWithChildren.interface";
 import { WorkshopInfo } from "@/types/workshopInfo.interface";
 import { AttendanceRecord } from "@/types/workshopAttendance.interface";
 import { AttendanceStatus } from "@/types/attendanceStatus.enum";
+import { Child } from "@/types/child.interface";
 
 interface VerticalStepperProps {
   workshops: string[];
@@ -13,7 +16,7 @@ interface VerticalStepperProps {
   onSaveAttendance: () => void;
   teamDetails: TeamWithChildren;
   workshopDetails: WorkshopInfo[];
-  childs: any;
+  childs: Child[];
   animationDuration?: number;
   isSavingAttendance: boolean;
   isSaved: boolean;
@@ -28,7 +31,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   childs,
   animationDuration = 1,
   isSavingAttendance,
-  teamDetails,
   isSaved,
 }) => {
   const [checked, setChecked] = useState(0);
@@ -98,7 +100,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   useEffect(() => {
     if (workshopDetails.length > 0) {
       const newAttendanceData: AttendanceRecord[] = childs.map(
-        (child: any) => ({
+        (child: Child) => ({
           child_id: child.id,
           attendance: "",
         })
@@ -129,11 +131,10 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         const isCurrent =
           index === currentWorkshop && checked === currentWorkshop;
         const isPrevious = index < currentWorkshop;
-        const isNext = index > currentWorkshop;
         const isOpen = index === openIndex && isCurrent;
 
         return (
-          <div key={index} className="relative pl-4 pb-2">
+          <div key={index} className="relative pb-2 pl-7">
             <div
               onClick={
                 isCurrent ? () => handleAccordionToggle(index) : undefined
@@ -147,7 +148,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
             >
               {/* Draw circle for each step */}
               <span
-                className={`absolute -left-2.5 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
+                className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
                   isCurrent
                     ? "bg-blue-500 border-blue-500"
                     : isPrevious && animatedSteps.includes(index)
@@ -182,7 +183,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               {/* Draw line between steps */}
               {index < workshops.length - 1 && (
                 <span
-                  className={`absolute left-[-1px] top-[2.6rem] bottom-[-25px] w-[2px] ${
+                  className={`absolute left-[9px] top-[2.6rem] bottom-[-25px] w-[2px] ${
                     index < checked
                       ? "bg-green-500"
                       : index === checked
@@ -229,7 +230,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                       No children in current workshop
                     </h3>
                   ) : (
-                    childs.map((entry: any) => {
+                    childs.map((entry: Child) => {
                       const { id, first_name, last_name } = entry;
                       const attendanceEntry = attendanceData.find(
                         (e) => e.child_id === id

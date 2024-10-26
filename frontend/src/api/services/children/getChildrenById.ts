@@ -8,9 +8,11 @@ interface ApiResponse {
   id: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const getChildrenById = async (childId: number): Promise<ApiResponse> => {
 try {
-  const response = await fetch(`https://backend-staging-ffae.up.railway.app/api/v1/children/${childId}`, {
+  const response = await fetch(`${API_URL}/children/${childId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'

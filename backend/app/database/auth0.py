@@ -49,6 +49,8 @@ class Auth0Repository:
                         raise exceptions.ItemAlreadyExistsException(str(exc))
                     case status.HTTP_404_NOT_FOUND:
                         raise exceptions.ItemNotFoundException(str(exc))
+                    case status.HTTP_403_FORBIDDEN:
+                        raise exceptions.ForbiddenException(str(exc))
                     case _:
                         raise exc
 
@@ -59,7 +61,7 @@ class Auth0Repository:
         """
         Delete a user from the authorization server.
         """
-        return self.auth0.users.delete(user_id)
+        return self.auth0.users.delete()
 
     @_convert_auth0_error
     def get_user(self, user_id: str) -> dict:

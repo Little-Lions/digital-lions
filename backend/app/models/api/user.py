@@ -1,8 +1,24 @@
+from typing import Any
+
 from models.generic import UpdateProperties
-from pydantic import BaseModel, EmailStr, field_validator
-from sqlmodel import AutoString, Field, SQLModel
+from pydantic import BaseModel, EmailStr, Field, field_validator
+from datetime import datetime
 
 ROLES = ["admin", "partner", "community_manager", "coach"]
+
+
+class UserIDHandler:
+
+    def model_post_init(self, __context: Any) -> None:
+        """
+        Handle the user ID prefix for the authorization server. That is,
+        if the user ID does not have the Auth0 prefix ('auth0|'), add it.
+        If the user ID has the Auth0 prefix, remove it.
+
+        """
+        if self.user_id.startswith("auth0"):
+            self.user_id = self.user_id.split("|")[1]
+
 
 
 class UserValidators:
@@ -21,12 +37,35 @@ class Role(BaseModel):
     scope: str
 
 
-class UserGetOut(BaseModel):
+# note that BaseModel should come after the validators
+class UserGetOut(UserIDHandler, BaseModel):
     """API response model for GET /users."""
 
-    id: str
+    user_id: str
+    nickname: str | None = Field(default=None)
     email: EmailStr
-    roles: str | None = Field(default=None, description="User role on platform")
+    roles: list[Role] | None = Field(default=None, description="User roles on platform")
+
+    # login information
+    email_verified: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserGetByIdOut(UserIDHandler, BaseModel):
+    """API repsonse model for GET /users/:id."""
+
+    user_id: str
+    nickname: str | None = Field(default=None)
+    email: EmailStr
+    roles: list[str] | None = Field(default=None, description="User roles on platform")
+
+    # login information
+    email_verified: bool
+    created_at: datetime
+    updated_at: datetime
+    last_login: datetime
+    logins_count: int
 
 
 class UserPostIn(BaseModel):
@@ -50,42 +89,37 @@ class UserPatchIn(BaseModel, UpdateProperties, UserValidators):
     role: str | None = Field(default=None, description="User role on platform")
 
 
-class UserBase(SQLModel):
-    first_name: str
-    last_name: str = Field(default=None)
-    email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
-    role: str | None = Field(default=None, description="User role on platform")
+#
+# class UserBase(BaseModel):
+#     first_name: str
+#     last_name: str = Field(default=None)
+#     email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
+#     role: str | None = Field(default=None, description="User role on platform")
+#
+#     @field_validator("role")
+#     def validate_role(cls, value):
+#         if value not in ROLES:
+#             raise ValueError("Invalid role")
+#
+#
+# class UserUpdate(UserBase, UpdateProperties):
+#     first_name: str | None = None
+#     last_name: str | None = None
+#     email_address: EmailStr | None = None
+#     role: str | None = None
+#     password: str | None = None
+#
+#
 
-    @field_validator("role")
-    def validate_role(cls, value):
-        if value not in ROLES:
-            raise ValueError("Invalid role")
-
-
-class UserUpdate(UserBase, UpdateProperties):
-    first_name: str | None = None
-    last_name: str | None = None
-    email_address: EmailStr | None = None
-    role: str | None = None
-    password: str | None = None
-
-
-class UserGetByIdOut(BaseModel):
-    id: int
-    first_name: str | None = Field(default=None)
-    last_name: str | None = Field(default=None)
-    email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
-    role: str | None = Field(default=None, description="User role on platform")
-
-
-class UserSessionOut(BaseModel):
-    id: int
-    first_name: str
-    last_name: str = Field(default=None)
-    email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
-    role: str | None = Field(default=None, description="User role on platform")
-    token: str
-    expires_at: int
-    created_at: int
-    last_updated_at: int
-    is_active: bool
+#
+# class UserSessionOut(BaseModel):
+#     id: int
+#     first_name: str
+#     last_name: str = Field(default=None)
+#     email_address: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
+#     role: str | None = Field(default=None, description="User role on platform")
+#     token: str
+#     expires_at: int
+#     created_at: int
+#     last_updated_at: int
+#     is_active: bool

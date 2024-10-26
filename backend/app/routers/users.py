@@ -24,6 +24,17 @@ router = APIRouter(
 async def get_users(user_service: UserServiceDependency):
     return user_service.get_all()
 
+@router.get(
+    "/{user_id}",
+    response_model=user.UserGetByIdOut,
+    status_code=status.HTTP_200_OK,
+    summary="Get a user by ID",
+)
+async def read_user(user_id: str, user_service: UserServiceDependency):
+    try:
+        return user_service.get(user_id=user_id)
+    except exceptions.UserNotFoundException as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 @router.post(
     "",
@@ -50,30 +61,4 @@ async def delete_user(user_id: str, user_service: UserServiceDependency):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
-@router.get(
-    "/{user_id}",
-    response_model=user.UserGetByIdOut,
-    status_code=status.HTTP_200_OK,
-    summary="Get a user by ID",
-)
-async def read_user(user_id: int, user_service: UserServiceDependency):
-    try:
-        return user_service.get(user_id=user_id)
-    except exceptions.UserNotFoundException as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
-
-@router.patch(
-    "/{user_id}",
-    response_model=user.UserGetByIdOut,
-    summary="Update a user by ID",
-)
-async def update_user(
-    user_id: int,
-    user: user.UserPatchIn,
-    user_service: UserServiceDependency,
-):
-    try:
-        return user_service.update(user_id=user_id, user=user)
-    except exceptions.UserNotFoundException as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

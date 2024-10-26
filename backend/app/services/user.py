@@ -66,7 +66,20 @@ class UserService(BaseService, AbstractService):
     def get_all(self) -> list[user.UserGetOut] | None:
         """Get all users from the table."""
         users = self.auth0.list_users()["users"]
-        return [user.UserGetOut(id=u["user_id"], email=u["email"]) for u in users]
+        return [user.UserGetOut(**u) for u in users]
+
+    def _handle_id_prefix(self, str) -> str:
+        """Handle the user ID prefix for the authorization server.
+        That is, if the user ID does not have the Auth0 prefix ('auth0|'), add it.
+        If the user ID has the Auth0 prefix, remove it.
+        Args:
+            str: User ID without the 'Auth0|' prefix.
+        Returns:
+            str: User ID with the 'Auth0|' prefix.
+        """
+        if str.startswith("auth0"):
+            return str.split("|")[1]
+        return f"auth0|{str}"
 
     def get(self, user_id: str) -> user.UserGetOut:
         """Get a user from Auth0 by ID.
@@ -75,8 +88,9 @@ class UserService(BaseService, AbstractService):
         Args:
             user_id: Auth0 user ID without the prefix.
         """
+ 
         try:
-            return self.users.read(object_id=user_id)
+            return self.auth0.get_user(user_id=self._handle_id_prefix(user_id))
         except exceptions.ItemNotFoundException:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
@@ -93,15 +107,9 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserNotFoundException(msg)
         return user
 
-    def update(self, user_id: int, user: user.UserUpdate) -> user.UserGetByIdOut:
+    def update(self) -> None:
         """Update a user."""
-
-        self._validate_user_exists(user_id)
-
-        # TODO do some validations
-        user = self.users.update(object_id=user_id, obj=user)
-        self.commit()
-        return user
+        pass
 
     def delete(self, user_id: str) -> None:
         """Delete a user by ID.
@@ -110,7 +118,7 @@ class UserService(BaseService, AbstractService):
             user_id: str: Auth0 user ID without the 'Auth0|' prefix.
         """
         try:
-            self.auth0.get_user(user_id=user_id)
+            self.auth0.get_user(user_id=self._handle_id_prefix(user_id))
         except exceptions.ItemNotFoundException:
             error_msg = f"User with ID {user_id} not found."
             logger.error(error_msg)

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Accordion from "@/components/Accordion";
@@ -38,7 +38,6 @@ const TeamsDetailPage: React.FC = () => {
   const params = useParams();
   const communityId = params?.communityId as string;
   const teamId = params?.teamId as string;
-
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
@@ -290,6 +289,7 @@ const TeamsDetailPage: React.FC = () => {
               label="Add child"
               onClick={handleAddChild}
               variant={"primary"}
+              isFullWidth={true}
               className="hover:bg-card-dark hover:text-white mb-4"
             />
           ) : (
@@ -316,28 +316,30 @@ const TeamsDetailPage: React.FC = () => {
                   title={`${child.first_name} ${child.last_name}`}
                   className="mt-2"
                 >
+                  {/* Use div instead of nesting block elements in p */}
                   <div>
                     <p>{`First Name: ${child.first_name}`}</p>
                     <p>{`Last Name: ${child.last_name}`}</p>
-                    <div className="flex items-center justify-end border-t mt-4 border-gray-200 rounded-b dark:border-gray-600">
-                      <CustomButton
-                        className="mt-4"
-                        label="Delete"
-                        variant="error"
-                        onClick={() => openDeleteChildModal(child.id)}
-                      />
-                      <CustomButton
-                        className="mt-4 ml-2"
-                        label="Edit"
-                        variant="secondary"
-                        onClick={() => handleEditChild(child.id)}
-                      />
-                    </div>
+                  </div>
+                  <div className="flex items-center justify-end border-t mt-4 border-gray-200 rounded-b dark:border-gray-600">
+                    <CustomButton
+                      className="mt-4"
+                      label="Delete"
+                      variant="error"
+                      onClick={() => openDeleteChildModal(child.id)}
+                    />
+                    <CustomButton
+                      className="mt-4 ml-2"
+                      label="Edit"
+                      variant="secondary"
+                      onClick={() => handleEditChild(child.id)}
+                    />
                   </div>
                 </Accordion>
               ))}
             </>
           )}
+
           {deleteChildModalVisible && (
             <ConfirmModal
               title="Delete child"

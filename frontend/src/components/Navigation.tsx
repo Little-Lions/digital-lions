@@ -44,14 +44,14 @@ const Navigation: React.FC = () => {
               {user && !isHomePage && <BackButton closeMenu={closeMenu} />}
 
               {/* Show Logo (Always show logo but disable the click when not authenticated) */}
-              <NavLink
+              {isHomePage && <NavLink
                 href="/"
                 className={`text-white font-bold text-xl ${
                   !user && "pointer-events-none"
                 }`}
               >
                 Digital Lions
-              </NavLink>
+              </NavLink> }
 
               {/* Conditionally show login button when user is not authenticated */}
               {!user && (

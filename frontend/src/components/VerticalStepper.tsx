@@ -1,5 +1,4 @@
-
-'use client'
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import CustomButton from "@/components/CustomButton";
 // import Badge from '@/components/Badge';
@@ -33,7 +32,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   isSavingAttendance,
   isSaved,
 }) => {
-  const [checked, setChecked] = useState(0);
+  const [checked, setChecked] = useState(1);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [animatedSteps, setAnimatedSteps] = useState<number[]>([]);
@@ -60,14 +59,17 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
     onAttendanceChange(childId, newAttendance);
   };
 
-  const handleAccordionToggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  // const handleAccordionToggle = (index: number) => {
+  //   setOpenIndex(openIndex === index ? null : index);
+  // };
 
   const itemAnimationDuration = animationDuration / workshops.length;
 
+  const hasAnimated = useRef(false);
+
   useEffect(() => {
-    const createAnimation = () => {
+    const animateToCurrentWorkshop = () => {
+      console.log("Animating to current workshop");
       setChecked(0);
       setAnimatedSteps([]);
       for (let i = 0; i < currentWorkshop; i++) {
@@ -78,7 +80,11 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
       }
     };
 
-    createAnimation();
+    // Run animation only once on initial load
+    if (!hasAnimated.current) {
+      animateToCurrentWorkshop();
+      hasAnimated.current = true;
+    }
   }, [currentWorkshop, itemAnimationDuration]);
 
   useEffect(() => {
@@ -111,19 +117,36 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   useEffect(() => {
     if (isSaved) {
-      if (checked < workshops.length - 1) {
-        setAnimatedSteps((prev) => [...prev, checked + 1]);
-        setChecked((prev) => prev + 1);
+      console.log("isSaved", isSaved);
+      setChecked((prevChecked) => {
+        const nextChecked = prevChecked + 1;
 
-        // Automatically open the next accordion step
-        setOpenIndex(checked + 1);
-        stepRefs.current[checked + 1]?.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
+        // Ensure `nextChecked` does not exceed available workshops
+        if (nextChecked < workshops.length) {
+          setAnimatedSteps((prev) => {
+            // Only add `nextChecked` if it's not already in the array
+            if (!prev.includes(prevChecked)) {
+              return [...prev, prevChecked];
+            }
+            if (!prev.includes(nextChecked)) {
+              return [...prev, nextChecked];
+            }
+            return prev;
+          });
+
+          // Update the open index and scroll to view the next workshop
+          setOpenIndex(nextChecked);
+          stepRefs.current[nextChecked]?.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+
+        // Increment to the next step
+        return nextChecked;
+      });
     }
-  }, [isSaved, checked, workshops.length]);
+  }, [isSaved, workshops.length]);
 
   return (
     <div className="w-full mx-auto">
@@ -132,13 +155,12 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
           index === currentWorkshop && checked === currentWorkshop;
         const isPrevious = index < currentWorkshop;
         const isOpen = index === openIndex && isCurrent;
-
         return (
           <div key={index} className="relative pb-2 pl-7">
             <div
-              onClick={
-                isCurrent ? () => handleAccordionToggle(index) : undefined
-              }
+              // onClick={
+              //   isCurrent ? () => handleAccordionToggle(index) : undefined
+              // }
               className={`bg-card flex items-center justify-between w-full p-5 font-medium text-white dark:bg-gray-900 transition-colors ${
                 isCurrent ? "rounded-t-lg rounded-b-none" : "rounded-lg"
               } ${
@@ -150,10 +172,10 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               <span
                 className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
                   isCurrent
-                    ? "bg-blue-500 border-blue-500"
+                    ? "bg-blue-500 border-blue-500" // Adjusted: Current step with blue border and white background
                     : isPrevious && animatedSteps.includes(index)
-                    ? "bg-green-500 border-green-500"
-                    : "bg-gray-300 border-gray-300"
+                    ? "bg-green-500 border-green-500" // Completed step
+                    : "bg-gray-300 border-gray-300" // Uncompleted step
                 }`}
               >
                 {isPrevious && animatedSteps.includes(index) ? (
@@ -170,6 +192,9 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
+                ) : isCurrent ? (
+                  // Ensure the white dot is shown for the current step
+                  <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
                 ) : (
                   <span
                     className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
@@ -291,6 +316,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                         // disabled when there are no childs or if attendnance is not checked fo all childs
                         isDisabled={
                           childs.length === 0 ||
+                          attendanceData.length === 0 || // If there's no attendance data, disable the button
                           !attendanceData.every(
                             (entry) =>
                               entry.attendance !== "" &&

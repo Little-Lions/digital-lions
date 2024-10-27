@@ -83,3 +83,10 @@ class Auth0Repository:
         Create a new user in the authorization server.
         """
         return self.auth0.users.create(obj)
+
+    @_convert_auth0_error
+    def get_password_change_ticket(self, obj: dict):
+        """
+        Get a password change ticket for a user.
+        """
+        return self.auth0.tickets.create_pswd_change()

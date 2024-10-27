@@ -5,7 +5,8 @@ from core.auth import APIKeyDependency, BearerTokenDependency
 from core.dependencies import UserServiceDependency
 from fastapi import APIRouter, HTTPException, status
 from models.api import user
-from models.api.generic import RecordCreated
+from models.api.generic import Message, RecordCreated
+from pydantic.networks import EmailStr
 
 logger = logging.getLogger()
 
@@ -24,6 +25,7 @@ router = APIRouter(
 async def get_users(user_service: UserServiceDependency):
     return user_service.get_all()
 
+
 @router.get(
     "/{user_id}",
     response_model=user.UserGetByIdOut,
@@ -35,6 +37,7 @@ async def read_user(user_id: str, user_service: UserServiceDependency):
         return user_service.get(user_id=user_id)
     except exceptions.UserNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
 
 @router.post(
     "",
@@ -49,6 +52,24 @@ async def create_user(user: user.UserPostIn, user_service: UserServiceDependency
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
+@router.post(
+    "/reset-password",
+    response_model=Message,
+    status_code=status.HTTP_200_OK,
+    summary="Request password reset for user by email or user ID.",
+)
+async def reset_password(
+    user_service: UserServiceDependency, user_id: str = None, email: EmailStr = None
+):
+    try:
+        return user_service.reset_password(user_id=user_id, email=email)
+    except exceptions.BadRequest as exc:
+        # in case for example user ID and email are both None or both not None
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except exceptions.UserNotFoundException as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
 @router.delete(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -59,6 +80,3 @@ async def delete_user(user_id: str, user_service: UserServiceDependency):
         user_service.delete(user_id=user_id)
     except exceptions.UserNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-
-
-

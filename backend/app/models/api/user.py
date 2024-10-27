@@ -1,8 +1,8 @@
+from datetime import datetime
 from typing import Any
 
 from models.generic import UpdateProperties
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from datetime import datetime
 
 ROLES = ["admin", "partner", "community_manager", "coach"]
 
@@ -18,7 +18,6 @@ class UserIDHandler:
         """
         if self.user_id.startswith("auth0"):
             self.user_id = self.user_id.split("|")[1]
-
 
 
 class UserValidators:

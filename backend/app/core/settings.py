@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     OAUTH_AUDIENCE: str | None = None
     OAUTH_CLIENT_ID: str | None = None
     OAUTH_CLIENT_SECRET: str | None = None
+    OAUTH_CONNECTION_ID: str | None = None
 
     # networking
     ALLOWED_ORIGINS: str

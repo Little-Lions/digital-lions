@@ -25,35 +25,25 @@ class EmailService:
 
         self.sender = "Digital Lions <digitallions@annelohmeijer.com>"
 
-    def send_reset_password_link(self, email_address: str, reset_link: str):
+    def send_reset_password_link(self, email: str, link: str):
         """Reset user pass."""
         template = self._get_template(self.reset_password_template).replace(
-            "{{ reset_link }}", reset_link
+            "{{ reset_link }}", link
         )
-        params = self._get_send_params(
-            email_address, self.reset_password_subject, template
-        )
+        params = self._get_send_params(email, self.reset_password_subject, template)
         email = resend.Emails.send(params)
         email_id = email["id"]
-        logger.info(
-            f"Password reset email sent to {email_address} with Resend id: {email_id}"
-        )
+        logger.info(f"Password reset email sent to {email} with Resend id: {email_id}")
 
-    def send_register_link(self, email_address: str, sender: str, token: str) -> None:
-        """Send register email to user."""
-        register_link = (
-            "https://staging.digitallions.annelohmeijer.com/register?token=" + token
+    def send_invite_link(self, email: str, link: str):
+        """Send invite link (i.e. password reset link) to user."""
+        template = self._get_template(self.register_template).replace(
+            "{{ register_link }}", link
         )
-        template = (
-            self._get_template(self.register_template)
-            .replace("{{ register_link }}", register_link)
-            .replace("{{ sender }}", sender)
-        )
-        params = self._get_send_params(email_address, self.register_subject, template)
-
+        params = self._get_send_params(email, self.register_subject, template)
         email = resend.Emails.send(params)
         email_id = email["id"]
-        logger.info(f"Invite email sent to {email_address} with Resend id: {email_id}")
+        logger.info(f"Invite link sent to {email} with Resend id: {email_id}")
 
     def _get_send_params(self, email_address: str, subject: str, template: str):
         """Get email send params."""

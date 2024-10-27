@@ -63,7 +63,25 @@ async def reset_password(
 ):
     try:
         return user_service.reset_password(user_id=user_id, email=email)
-    except exceptions.BadRequest as exc:
+    except exceptions.BadRequestError as exc:
+        # in case for example user ID and email are both None or both not None
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except exceptions.UserNotFoundException as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.post(
+    "/resend-invite",
+    response_model=Message,
+    status_code=status.HTTP_200_OK,
+    summary="Resend invite link for new user",
+)
+async def resend_invite(
+    user_service: UserServiceDependency, user_id: str = None, email: EmailStr = None
+):
+    try:
+        return user_service.resend_invite(user_id=user_id, email=email)
+    except exceptions.BadRequestError as exc:
         # in case for example user ID and email are both None or both not None
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
     except exceptions.UserNotFoundException as exc:

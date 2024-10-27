@@ -1,6 +1,9 @@
 """Custom exceptions for the app."""
 
 
+class BadRequestError(Exception): ...
+
+
 class ChildAlreadyExistsException(Exception): ...
 
 
@@ -41,6 +44,9 @@ class UserEmailExistsError(Exception): ...
 
 
 class UserNotFoundException(Exception): ...
+
+
+class UserNotFoundError(Exception): ...
 
 
 class UserUnauthorizedException(Exception): ...

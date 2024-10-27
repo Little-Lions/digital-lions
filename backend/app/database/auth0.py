@@ -48,7 +48,7 @@ class Auth0Repository:
                     case status.HTTP_409_CONFLICT:
                         raise exceptions.ItemAlreadyExistsException(str(exc))
                     case status.HTTP_404_NOT_FOUND:
-                        raise exceptions.ItemNotFoundException(str(exc))
+                        raise exceptions.UserNotFoundError(str(exc))
                     case status.HTTP_403_FORBIDDEN:
                         raise exceptions.ForbiddenException(str(exc))
                     case _:
@@ -61,7 +61,7 @@ class Auth0Repository:
         """
         Delete a user from the authorization server.
         """
-        return self.auth0.users.delete()
+        return self.auth0.users.delete(user_id)
 
     @_convert_auth0_error
     def get_user(self, user_id: str) -> dict:
@@ -85,8 +85,24 @@ class Auth0Repository:
         return self.auth0.users.create(obj)
 
     @_convert_auth0_error
-    def get_password_change_ticket(self, obj: dict):
+    def get_password_change_ticket(self, email: str) -> str:
         """
         Get a password change ticket for a user.
         """
-        return self.auth0.tickets.create_pswd_change()
+        body = {"email": email, "connection_id": self.settings.OAUTH_CONNECTION_ID}
+        return self.auth0.tickets.create_pswd_change(body=body)["ticket"]
+
+    @_convert_auth0_error
+    def get_user_by_email(self, email: str) -> dict:
+        """
+        Get the user ID by email.
+        """
+        users = self.auth0.users_by_email.search_users_by_email(email=email)
+        if len(users) == 0:
+            raise exceptions.UserNotFoundException(
+                f"User with email {email} not found."
+            )
+        if len(users) > 1:
+            # this should never happen
+            raise ValueError(f"Multiple users with email {email} found.")
+        return users[0]

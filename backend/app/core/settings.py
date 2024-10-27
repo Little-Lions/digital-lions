@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE_URL: str
 
     # feature flags
-    FEATURE_OAUTH: bool | None = False
+    FEATURE_OAUTH: bool | None = True
     FEATURE_API_KEY: bool | None = True
 
     # security
@@ -27,16 +27,13 @@ class Settings(BaseSettings):
 
     # networking
     ALLOWED_ORIGINS: str
-    ALLOWED_METHODS: str = "*"
-    ALLOWED_HEADERS: str = "Content-Type, Authorization"
 
     # emails
     RESEND_API_KEY: str | None = None
 
     def model_post_init(self, __context) -> None:
         """Post init hook."""
-        self.ALLOWED_METHODS = self.ALLOWED_METHODS.split(",")
-        self.ALLOWED_HEADERS = self.ALLOWED_HEADERS.split(",")
+        self.ALLOWED_ORIGINS = self.ALLOWED_ORIGINS.split(",")
 
     @model_validator(mode="after")
     def validate_api_key_settings(self) -> Any:

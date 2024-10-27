@@ -51,8 +51,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
-    allow_methods=settings.ALLOWED_METHODS,
-    allow_headers=settings.ALLOWED_HEADERS,
+    allow_methods=["*"],
+    allow_headers=["API-Key", "Content-Type", "Authorization"],
 )
 app.include_router(health.router, tags=["health"])
 app.include_router(teams.router, tags=["teams"])

@@ -32,9 +32,22 @@ async def get_users(user_service: UserServiceDependency):
     status_code=status.HTTP_200_OK,
     summary="Get a user by ID",
 )
-async def read_user(user_id: str, user_service: UserServiceDependency):
+async def get_user_by_id(user_id: str, user_service: UserServiceDependency):
     try:
         return user_service.get(user_id=user_id)
+    except exceptions.UserNotFoundException as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.get(
+    "/email/{email}",
+    response_model=user.UserGetByIdOut,
+    status_code=status.HTTP_200_OK,
+    summary="Get a user by email",
+)
+async def get_user_by_email(email: EmailStr, user_service: UserServiceDependency):
+    try:
+        return user_service.get_by_email(email=email)
     except exceptions.UserNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
@@ -64,9 +77,9 @@ async def reset_password(
     try:
         return user_service.reset_password(user_id=user_id, email=email)
     except exceptions.BadRequestError as exc:
-        # in case for example user ID and email are both None or both not None
+        # in case user ID and email are both None or both not None
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    except exceptions.UserNotFoundException as exc:
+    except exceptions.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
@@ -82,7 +95,7 @@ async def resend_invite(
     try:
         return user_service.resend_invite(user_id=user_id, email=email)
     except exceptions.BadRequestError as exc:
-        # in case for example user ID and email are both None or both not None
+        # in case user ID and email are both None or both not None
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
     except exceptions.UserNotFoundException as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
@@ -96,5 +109,17 @@ async def resend_invite(
 async def delete_user(user_id: str, user_service: UserServiceDependency):
     try:
         user_service.delete(user_id=user_id)
-    except exceptions.UserNotFoundException as exc:
+    except exceptions.UserNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+
+
+@router.delete(
+    "/email/{email}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a user by email",
+)
+async def delete_user_by_email(email: EmailStr, user_service: UserServiceDependency):
+    try:
+        user_service.delete_by_email(email=email)
+    except exceptions.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

@@ -62,9 +62,9 @@ class UserGetByIdOut(UserIDHandler, BaseModel):
     # login information
     email_verified: bool
     created_at: datetime
-    updated_at: datetime
-    last_login: datetime
-    logins_count: int
+    updated_at: datetime | None = None
+    last_login: datetime | None = None
+    logins_count: int | None = 0
 
 
 class UserPostIn(BaseModel):

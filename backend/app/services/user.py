@@ -4,7 +4,6 @@ import uuid
 from core import exceptions
 from core.email import EmailService
 from core.settings import get_settings
-from database import repositories
 from database.auth0 import Auth0Repository
 from database.session import SessionDependency
 from models.api import generic, user
@@ -75,7 +74,7 @@ class UserService(BaseService, AbstractService):
         user = (
             self.get_user_by_email(email=email)
             if email
-            else self.auth0.get_user(user_id=self._handle_id_prefix(user_id))
+            else self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
         )
         email = user["email"]
 
@@ -103,7 +102,7 @@ class UserService(BaseService, AbstractService):
         user = (
             self.get_user_by_email(email=email)
             if email
-            else self.auth0.get_user(user_id=self._handle_id_prefix(user_id))
+            else self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
         )
         email = user["email"]
 
@@ -127,19 +126,26 @@ class UserService(BaseService, AbstractService):
         """
 
         try:
-            return self.auth0.get_user(user_id=self._handle_id_prefix(user_id))
+            return self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
         except exceptions.ItemNotFoundException:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
             raise exceptions.UserNotFoundException(msg)
 
-    def get_user_by_email(self, email: str) -> user.UserGetOut | None:
+    def get_by_email(self, email: str) -> user.UserGetOut | None:
         """Get a user by email address."""
-        return self.auth0.get_user_by_email(email=email)
+        try:
+            return self.auth0.get_user_by_email(email=email)
+        except exceptions.UserNotFoundError:
+            msg = f"User with email {email} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundException(msg)
 
-    def get_user_id_by_email(self, email: str) -> str:
+    def get_id_by_email(self, email: str) -> str:
         """Get the user ID by email."""
-        return self.get_user_by_email(email=email)["user_id"]
+        auth0_user_id = self.get_by_email(email=email)["user_id"]
+        # remove auth0 prefix
+        return auth0_user_id.split("|")[1]
 
     def update(self) -> None:
         """Update a user."""
@@ -151,28 +157,48 @@ class UserService(BaseService, AbstractService):
         Args:
             user_id: str: Auth0 user ID without the 'Auth0|' prefix.
         """
-        auth0_user_id = self._handle_id_prefix(user_id)
+        auth0_user_id = self._add_auth0_id_prefix(user_id)
         try:
-            self.auth0.get_user(user_id=auth0_user_id)
-        except exceptions.ItemNotFoundException:
-            error_msg = f"User with ID {user_id} not found."
-            logger.error(error_msg)
-            raise exceptions.UserNotFoundException(error_msg)
+            self.auth0.delete_user(auth0_user_id)
+        except exceptions.UserNotFoundError:
+            msg = f"User with ID {user_id} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundError(msg)
 
-        self.auth0.delete_user(auth0_user_id)
-        logger.info(f"User with ID {user_id} deleted.")
+    def delete_by_email(self, email: EmailStr) -> None:
+        """Delete a user by email."""
+        user_id = self.get_id_by_email(email=email)
+        try:
+            self.delete(user_id=user_id)
+        except exceptions.UserNotFoundError:
+            msg = f"User with email {email} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundError(msg)
 
-    def _handle_id_prefix(self, user_id: str) -> str:
-        """Handle the user ID prefix for the authorization server.
+    def _add_auth0_id_prefix(self, user_id: str) -> str:
+        """Add the user ID prefix for the authorization server.
         That is, if the user ID does not have the Auth0 prefix ('auth0|'), add it.
-        If the user ID has the Auth0 prefix, remove it.
 
         Args:
             user_id: User ID without the 'Auth0|' prefix.
 
         Returns:
             user_id: User ID with the 'Auth0|' prefix.
+
+        """
+        if not user_id.startswith("auth0"):
+            return f"auth0|{user_id}"
+
+    def _remove_auth0_id_prefix(self, user_id: str) -> str:
+        """Remove the user ID prefix for the authorization server.
+        If the user ID has the Auth0 prefix, remove it.
+
+        Args:
+            user_id: User ID with the 'Auth0|' prefix.
+
+        Returns:
+            user_id: User ID without the 'Auth0|' prefix.
+
         """
         if user_id.startswith("auth0"):
             return user_id.split("|")[1]
-        return f"auth0|{user_id}"

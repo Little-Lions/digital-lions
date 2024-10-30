@@ -24,9 +24,8 @@ fastapi-mail = "^1.4.1"
 resend = "^2.4.0"
 cryptography = "^43.0.1"
 httpx = "^0.27.0"
-
 auth0-python = "^4.7.2"
-isort = "^5.13.2"
+
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
 ruff = "^0.3.4"
@@ -51,6 +50,7 @@ pythonpath = ["app"]
 [tool.pytest_env]
 ALLOWED_ORIGINS="http://localhost:8000,http://digitallions.com"
 FEATURE_API_KEY="false"
+FEATURE_OAUTH="false"
 POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digital_lion_test"
 
 [tool.ruff]

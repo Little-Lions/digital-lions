@@ -1,8 +1,15 @@
 import pytest
-from core.dependencies import (ChildService, CommunityService, TeamService,
-                          UserService, get_child_service,
-                          get_community_service, get_team_service,
-                          get_user_service)
+from unittest.mock import MagicMock
+from core.dependencies import (
+    ChildService,
+    CommunityService,
+    TeamService,
+    UserService,
+    get_child_service,
+    get_community_service,
+    get_team_service,
+    get_user_service,
+)
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
@@ -29,6 +36,11 @@ def client(mocker, session):
     # before we import the app otherwise it will break on finding the logging conf
     # TODO setup logging in function + to app.settings
     mocker.patch("logging.config.fileConfig")
+
+    # TODO: set this up later neatly
+    # mock all calls to Auth0
+    auth0 = MagicMock()
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
 
     from app.main import app
 

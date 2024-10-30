@@ -7,7 +7,6 @@ from core.settings import get_settings
 from database.auth0 import Auth0Repository
 from database.session import SessionDependency
 from models.api import generic, user
-from pydantic.networks import EmailStr
 from services.base import AbstractService, BaseService
 
 logger = logging.getLogger(__name__)

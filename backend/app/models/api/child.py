@@ -83,3 +83,10 @@ class ChildGetOut(BaseModel):
     first_name: str
     last_name: str
     id: int
+    age: int | None = Field(
+        default=None,
+        description="Age in years at the time of registration",
+    )
+    gender: str | None = Field(
+        default=None, description="Gender of child. Either male or female."
+    )

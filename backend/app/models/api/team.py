@@ -88,6 +88,13 @@ class TeamGetByIdOut(BaseModel, MetadataColumns):
         id: int = Field(description="ID of the child", example=1)
         first_name: str = Field(description="First name of the child", example="Nelson")
         last_name: str = Field(description="Last name of the child", example="Mandela")
+        age: int | None = Field(
+            default=None,
+            description="Age in years at the time of registration",
+        )
+        gender: str | None = Field(
+            default=None, description="Gender of child. Either male or female."
+        )
 
     id: int = Field(description="ID of the team", example=1)
     name: str = Field(description="Name of the team", example="The A-Team")

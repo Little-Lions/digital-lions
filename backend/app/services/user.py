@@ -55,55 +55,15 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserEmailExistsError(
                 f"User with email {obj.email} already exists."
             )
-        return self.resend_invite(obj.email)
+        return self.send_invite(user_id=user_id)
 
-    def reset_password(self, user_id: str = None, email: EmailStr = None) -> None:
-        """Send a password reset link to a user.
-
-        Args:
-            user_id: str: Auth0 user ID without the 'Auth0|' prefix.
-
-        """
-        if (user_id is None and email is None) or (
-            user_id is not None and email is not None
-        ):
-            raise exceptions.BadRequestError(
-                "Either user ID or email should be provided."
-            )
-
-        user = (
-            self.get_user_by_email(email=email)
-            if email
-            else self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
-        )
-        email = user["email"]
-
-        link = self.auth0.get_password_change_ticket(email=email)
-        self.email_service.send_reset_password_link(email=email, link=link)
-        msg = f"Succesfully sent password reset link to {email}"
-        logger.info(msg)
-        return generic.Message(detail=msg)
-
-    def resend_invite(self, user_id: str = None, email: EmailStr = None) -> None:
-        """Send a password reset link to a user.
+    def send_invite(self, user_id: str = None) -> generic.Message:
+        """Send an invitation link to the user.
 
         Args:
             user_id: str: Auth0 user ID without the 'Auth0|' prefix.
-            email str: user email address.
-
         """
-        if (user_id is None and email is None) or (
-            user_id is not None and email is not None
-        ):
-            raise exceptions.BadRequestError(
-                "Either user ID or email should be provided."
-            )
-
-        user = (
-            self.get_user_by_email(email=email)
-            if email
-            else self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
-        )
+        user = self.get(user_id=user_id)
         email = user["email"]
 
         link = self.auth0.get_password_change_ticket(email=email)
@@ -117,20 +77,20 @@ class UserService(BaseService, AbstractService):
         users = self.auth0.list_users()["users"]
         return [user.UserGetOut(**u) for u in users]
 
-    def get(self, user_id: str) -> user.UserGetOut:
+    def get(self, user_id: str = None):
         """Get a user from Auth0 by ID.
+
         In Auth0 user ID is of format Auth0|<user_id>.
 
         Args:
             user_id: Auth0 user ID without the prefix.
         """
-
         try:
             return self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
-        except exceptions.ItemNotFoundException:
+        except exceptions.UserNotFoundError:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
-            raise exceptions.UserNotFoundException(msg)
+            raise exceptions.UserNotFoundError(msg)
 
     def get_by_email(self, email: str) -> user.UserGetOut | None:
         """Get a user by email address."""
@@ -162,16 +122,6 @@ class UserService(BaseService, AbstractService):
             self.auth0.delete_user(auth0_user_id)
         except exceptions.UserNotFoundError:
             msg = f"User with ID {user_id} not found."
-            logger.error(msg)
-            raise exceptions.UserNotFoundError(msg)
-
-    def delete_by_email(self, email: EmailStr) -> None:
-        """Delete a user by email."""
-        user_id = self.get_id_by_email(email=email)
-        try:
-            self.delete(user_id=user_id)
-        except exceptions.UserNotFoundError:
-            msg = f"User with email {email} not found."
             logger.error(msg)
             raise exceptions.UserNotFoundError(msg)
 

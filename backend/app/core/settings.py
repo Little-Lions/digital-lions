@@ -17,16 +17,19 @@ class Settings(BaseSettings):
     FEATURE_OAUTH: bool | None = True
     FEATURE_API_KEY: bool | None = True
 
-    # security
-    API_KEY: str | None = None
+    # user management
     OAUTH_DOMAIN: str | None = None
     OAUTH_AUDIENCE: str | None = None
     OAUTH_CLIENT_ID: str | None = None
     OAUTH_CLIENT_SECRET: str | None = None
     OAUTH_CONNECTION_ID: str | None = None
 
-    # networking
+    # redirect URL for password reset
+    OAUTH_PWD_TICKET_RESULT_URL: str
+
+    # networking and security
     ALLOWED_ORIGINS: str
+    API_KEY: str | None = None
 
     # emails
     RESEND_API_KEY: str | None = None

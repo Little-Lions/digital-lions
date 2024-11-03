@@ -89,7 +89,11 @@ class Auth0Repository:
         """
         Get a password change ticket for a user.
         """
-        body = {"email": email, "connection_id": self.settings.OAUTH_CONNECTION_ID}
+        body = {
+            "email": email,
+            "connection_id": self.settings.OAUTH_CONNECTION_ID,
+            "result_url": self.settings.OAUTH_PWD_TICKET_RESULT_URL,
+        }
         return self.auth0.tickets.create_pswd_change(body=body)["ticket"]
 
     @_convert_auth0_error

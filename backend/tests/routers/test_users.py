@@ -1,55 +1,107 @@
-import pytest
+from datetime import datetime
+from unittest.mock import MagicMock
+
+from auth0.exceptions import Auth0Error
 from fastapi import status
 
 ENDPOINT = "/users"
 
 
-@pytest.fixture
-def mock_auth0_repository(mocker):
-    pass
+def test_get_user_not_found(client, mocker):
+    # assert that a 404 is returned when a user_id is passed that does not exist
+    auth0 = MagicMock()
+    auth0.users.get.side_effect = (
+        Auth0Error(
+            status_code=404, error_code="inexistent_user", message="User does not exist"
+        ),
+    )
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
 
-
-def test_get_user_not_found(client):
-    # assert that a 404 is raised when user is not found
-    non_existing_id = "2390nasgq23"
+    non_existing_id = "auth0|2390nasgq23"
     response = client.get(f"{ENDPOINT}/{non_existing_id}")
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text
 
+    # assert that the correct user_id is passed to the auth0 repository
+    auth0.users.get.assert_called_with(non_existing_id)
 
-#
-#
-# @pytest.mark.parametrize(
-#     "email_address,status_code",
-#     [
-#         ("invalid@email.", status.HTTP_422_UNPROCESSABLE_ENTITY),
-#         ("", status.HTTP_422_UNPROCESSABLE_ENTITY),
-#         ("nelson@mandela.com", status.HTTP_201_CREATED),
-#     ],
-# )
-# def test_add_user_with_email(client, email_address, status_code):
-#     # assert that a 422 is raised when user is added without password
-#     data = {
-#         "email_address": email_address,
-#         "first_name": "Nelson",
-#         "last_name": "Mandela",
-#         "password": "password",
-#     }
-#     response = client.post(ENDPOINT, json=data)
-#     assert response.status_code == status_code, response.text
-#
-#
-# def test_add_user_success(client):
-#     # test successfull creation of a user
-#     data = {
-#         "email_address": "valid@email.com",
-#         "first_name": "Nelson",
-#         "last_name": "Mandela",
-#         "password": "password",
-#     }
-#     response = client.post(ENDPOINT, json=data)
-#     assert response.status_code == status.HTTP_201_CREATED
-#
-#     id_ = response.json().get("id")
-#     response_get = client.get(f"{ENDPOINT}/{id_}")
-#     assert response_get.status_code == status.HTTP_200_OK
-#     assert response_get.json().get("email_address") == data["email_address"]
+
+def test_get_valid_user_found(client, mocker):
+    # assert that a 200 is returned when a user_id is passed that exists
+
+    valid_user_id = "auth0|1234"
+    email = "email@hotmail.com"
+    valid_user = {
+        "user_id": valid_user_id,
+        "email": email,
+        "email_verified": None,
+        "created_at": None,
+    }
+
+    auth0 = MagicMock()
+    auth0.users.get.return_value = valid_user
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
+
+    response = client.get(f"{ENDPOINT}/{valid_user_id}")
+    assert response.status_code == status.HTTP_200_OK, response.text
+
+    # assert that the correct user_id is passed to the auth0 repository
+    auth0.users.get.assert_called_with(valid_user_id)
+
+
+def test_add_user_success(client, mocker):
+    # test successfull creation of a user and sending of email
+    email = "valid@hotmail.com"
+    user_id = "auth0|1234"
+    created_user = {
+        "created_at": datetime.now(),
+        "email": email,
+        "email_verified": False,
+        "user_id": user_id,
+    }
+
+    auth0 = MagicMock()
+    auth0.users.create.return_value = created_user
+
+    # mock the return ticket link
+    ticket_link = "https://auth0.com"
+    auth0.tickets.create_pswd_change.return_value = {"ticket": ticket_link}
+
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
+
+    # mock the email service
+    resend = mocker.patch("core.email.resend")
+    mocker.patch("core.email.os")
+
+    data = {"email": email}
+    response = client.post(ENDPOINT, json=data)
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["user_id"] == user_id
+
+    assert resend.Emails.send.call_args.args[0]["to"][0] == email
+
+
+def test_delete_user_success(client, mocker):
+    # test successfull deletion of a user
+    user_id = "auth0|1234"
+    auth0 = MagicMock()
+    auth0.users.delete.return_value = None
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
+    response = client.delete(f"{ENDPOINT}/{user_id}")
+    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
+    # assert that the correct user_id is passed to the auth0 repository
+    auth0.users.delete.assert_called_with(user_id)
+
+
+def test_delete_user_not_found(client, mocker):
+    # assert that a 404 is returned when a user_id is passed that does not exist
+    auth0 = MagicMock()
+    auth0.users.get.side_effect = (
+        Auth0Error(
+            status_code=404, error_code="inexistent_user", message="User does not exist"
+        ),
+    )
+    mocker.patch("database.auth0.Auth0", return_value=auth0)
+
+    non_existing_id = "auth0|2390nasgq23"
+    response = client.delete(f"{ENDPOINT}/{non_existing_id}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND, response.text

@@ -40,7 +40,7 @@ class UserService(BaseService, AbstractService):
         """
         try:
             tmp_password = uuid.uuid4()
-            user = self.auth0.create_user(
+            created_user = self.auth0.create_user(
                 {
                     "email": obj.email,
                     "connection": self.AUTH0_USER_CONNECTION,
@@ -48,44 +48,49 @@ class UserService(BaseService, AbstractService):
                     "verify_email": False,
                 }
             )
-            user_id = user["user_id"]
+            user_id = created_user["user_id"]
             logger.info(f"User with email {obj.email} created. ID {user_id}")
         except exceptions.ItemAlreadyExistsException:
             raise exceptions.UserEmailExistsError(
                 f"User with email {obj.email} already exists."
             )
-        return self.send_invite(user_id=user_id)
+        msg = self._send_invite_by_email(obj.email)
+        return user.UserPostOut(user_id=user_id, message=msg)
 
     def send_invite(self, user_id: str = None) -> generic.Message:
         """Send an invitation link to the user.
 
         Args:
-            user_id: str: Auth0 user ID without the 'Auth0|' prefix.
+            user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
         user = self.get(user_id=user_id)
         email = user["email"]
 
+        return self._send_invite_by_email(email)
+
+    def _send_invite_by_email(self, email: str) -> generic.Message:
+        """Send an invitation link to user. This method assumes the user exists."""
         link = self.auth0.get_password_change_ticket(email=email)
         self.email_service.send_invite_link(email=email, link=link)
         msg = f"Succesfully sent invite link to {email}"
         logger.info(msg)
-        return generic.Message(detail=msg)
+        return msg
 
     def get_all(self) -> list[user.UserGetOut] | None:
         """Get all users from the table."""
         users = self.auth0.list_users()["users"]
         return [user.UserGetOut(**u) for u in users]
 
-    def get(self, user_id: str = None):
+    def get(self, user_id: str = None) -> user.UserGetOut | None:
         """Get a user from Auth0 by ID.
 
         In Auth0 user ID is of format Auth0|<user_id>.
 
         Args:
-            user_id: Auth0 user ID without the prefix.
+            user_id: Auth0 user ID including Auth0 prefix.
         """
         try:
-            return self.auth0.get_user(user_id=self._add_auth0_id_prefix(user_id))
+            return self.auth0.get_user(user_id=user_id)
         except exceptions.UserNotFoundError:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
@@ -102,52 +107,25 @@ class UserService(BaseService, AbstractService):
 
     def get_id_by_email(self, email: str) -> str:
         """Get the user ID by email."""
-        auth0_user_id = self.get_by_email(email=email)["user_id"]
-        # remove auth0 prefix
-        return auth0_user_id.split("|")[1]
+        return self.get_by_email(email=email)["user_id"]
 
-    def update(self) -> None:
-        """Update a user."""
-        pass
+    def update(self, user_id: str):
+        """Update a user by ID."""
+        raise NotImplementedError()
 
     def delete(self, user_id: str) -> None:
         """Delete a user by ID.
 
         Args:
-            user_id: str: Auth0 user ID without the 'Auth0|' prefix.
+            user_id: str: user ID, including 'Auth0|' prefix.
         """
-        auth0_user_id = self._add_auth0_id_prefix(user_id)
         try:
-            self.auth0.delete_user(auth0_user_id)
+            # auth0-python sdk does not raise an exception if user is not found
+            # so we ahve to check ourselves first whether the user exist
+            self.get(user_id=user_id)
         except exceptions.UserNotFoundError:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
             raise exceptions.UserNotFoundError(msg)
 
-    def _add_auth0_id_prefix(self, user_id: str) -> str:
-        """Add the user ID prefix for the authorization server.
-        That is, if the user ID does not have the Auth0 prefix ('auth0|'), add it.
-
-        Args:
-            user_id: User ID without the 'Auth0|' prefix.
-
-        Returns:
-            user_id: User ID with the 'Auth0|' prefix.
-
-        """
-        if not user_id.startswith("auth0"):
-            return f"auth0|{user_id}"
-
-    def _remove_auth0_id_prefix(self, user_id: str) -> str:
-        """Remove the user ID prefix for the authorization server.
-        If the user ID has the Auth0 prefix, remove it.
-
-        Args:
-            user_id: User ID with the 'Auth0|' prefix.
-
-        Returns:
-            user_id: User ID without the 'Auth0|' prefix.
-
-        """
-        if user_id.startswith("auth0"):
-            return user_id.split("|")[1]
+        self.auth0.delete_user(user_id)

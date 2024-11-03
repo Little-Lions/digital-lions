@@ -6,7 +6,6 @@ from core.dependencies import UserServiceDependency
 from fastapi import APIRouter, HTTPException, status
 from models.api import user
 from models.api.generic import Message, RecordCreated
-from pydantic.networks import EmailStr
 
 logger = logging.getLogger()
 
@@ -35,13 +34,13 @@ async def get_users(user_service: UserServiceDependency):
 async def get_user_by_id(user_id: str, user_service: UserServiceDependency):
     try:
         return user_service.get(user_id=user_id)
-    except exceptions.UserNotFoundException as exc:
+    except exceptions.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.post(
     "",
-    response_model=RecordCreated,
+    response_model=user.UserPostOut,
     status_code=status.HTTP_201_CREATED,
     summary="Invite new user to platform",
 )

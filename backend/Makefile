@@ -29,8 +29,8 @@ lint: format
 	poetry run ruff check app
 
 format:
-	poetry run isort app
-	poetry run black app
+	poetry run isort app tests
+	poetry run black app tests
 
 # Railway database service vars
 TCP_PROXY=monorail.proxy.rlwy.net:19362

@@ -24,6 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600&display=swap"
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
       <body className="flex flex-col min-h-screen bg-background text-background-text">
       <UserProvider>
@@ -35,20 +36,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="col-span-12 md:col-start-1 lg:col-span-8 xl:col-span-6">
                 <TransitionRouter
                   auto
-                  leave={(next) => {
-                    animate(
-                      wrapperRef.current,
-                      { opacity: [1, 0] },
-                      { duration: 0.2, onComplete: next }
-                    );
-                  }}
-                  enter={(next) => {
-                    animate(
-                      wrapperRef.current,
-                      { opacity: [0, 1] },
-                      { duration: 0.2, onComplete: next }
-                    );
-                  }}
+                  // leave={(next) => {
+                  //   animate(
+                  //     wrapperRef.current,
+                  //     { opacity: [1, 0] },
+                  //     { duration: 0.2, onComplete: next }
+                  //   );
+                  // }}
+                  // enter={(next) => {
+                  //   animate(
+                  //     wrapperRef.current,
+                  //     { opacity: [0, 1] },
+                  //     { duration: 0.2, onComplete: next }
+                  //   );
+                  // }}
                 >
                   <div ref={wrapperRef}>{children}</div>
                 </TransitionRouter>

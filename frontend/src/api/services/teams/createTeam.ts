@@ -17,21 +17,19 @@ const createTeam = async ({
   communityId: number;
 }): Promise<ApiResponse> => {
   try {
-    const response = await fetch(
-      `${API_URL}/teams`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(
-          createInput({
-            name,
-            communityId,
-          })
-        ),
-      }
-    );
+    const response = await fetch(`${API_URL}/teams`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
+      },
+      body: JSON.stringify(
+        createInput({
+          name,
+          communityId,
+        })
+      ),
+    });
 
     if (response.status === 409) {
       const errorData = await response.json();
@@ -57,7 +55,6 @@ function createInput({
   name: string;
   communityId: number;
 }): BodyInput {
-
   return {
     name: name,
     community_id: communityId,

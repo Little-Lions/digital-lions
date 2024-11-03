@@ -49,8 +49,8 @@ const ProgramTrackerCommunityPage: React.FC = () => {
               state={{ communityName: community.name }}
               className="mb-2"
             >
-                <div className="flex flex-col">
-                  <Badge className="mb-2" variant="secondary">
+                <div className="flex flex-col gap-2">
+                  <Badge variant="secondary">
                     3 active
                   </Badge>
                   <Badge variant="success">10 completed</Badge>

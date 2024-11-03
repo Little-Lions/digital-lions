@@ -19,21 +19,21 @@ const badgeColors: Record<BadgeVariant, string> = {
   warning: 'bg-warning text-text-light',
 };
 
-const badgeHoverColors: Record<BadgeVariant, string> = {
-  primary: 'hover:bg-primary-dark',
-  secondary: 'hover:bg-secondary-dark',
-  success: 'hover:bg-success-dark',
-  error: 'hover:bg-error-dark',
-  warning: 'hover:bg-warning-dark',
-};
+// const badgeHoverColors: Record<BadgeVariant, string> = {
+//   primary: 'hover:bg-primary-dark',
+//   secondary: 'hover:bg-secondary-dark',
+//   success: 'hover:bg-success-dark',
+//   error: 'hover:bg-error-dark',
+//   warning: 'hover:bg-warning-dark',
+// };
 
 const Badge: React.FC<BadgeProps> = ({ children, variant = 'primary', className = '' }) => {
-  const baseStyles = `inline-block px-3 py-1 text-sm font-semibold rounded-full transition-colors duration-200 ${className}`;
+  const baseStyles = `block w-fit px-3 py-1 text-sm font-semibold rounded-full ${className}`;
   const colorStyles = badgeColors[variant];
-  const hoverStyles = badgeHoverColors[variant];
+  // const hoverStyles = badgeHoverColors[variant];
 
   return (
-    <span className={`${baseStyles} ${colorStyles} ${hoverStyles}`}>
+    <span className={`${baseStyles} ${colorStyles}`}>
       {children}
     </span>
   );

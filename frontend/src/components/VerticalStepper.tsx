@@ -7,12 +7,14 @@ import { WorkshopInfo } from "@/types/workshopInfo.interface";
 import { AttendanceRecord } from "@/types/workshopAttendance.interface";
 import { AttendanceStatus } from "@/types/attendanceStatus.enum";
 import { Child } from "@/types/child.interface";
+import DatePicker from "./DatePicker";
 
 interface VerticalStepperProps {
   workshops: string[];
   currentWorkshop: number;
   onAttendanceChange: (childId: number, status: AttendanceStatus) => void;
   onSaveAttendance: () => void;
+  onDateChange: (date: string) => void;
   teamDetails: TeamWithChildren;
   workshopDetails: WorkshopInfo[];
   childs: Child[];
@@ -26,6 +28,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   currentWorkshop,
   onAttendanceChange,
   onSaveAttendance,
+  onDateChange,
   workshopDetails,
   childs,
   animationDuration = 1,
@@ -69,7 +72,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   useEffect(() => {
     const animateToCurrentWorkshop = () => {
-      console.log("Animating to current workshop");
       setChecked(0);
       setAnimatedSteps([]);
       for (let i = 0; i < currentWorkshop; i++) {
@@ -117,7 +119,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   useEffect(() => {
     if (isSaved) {
-      console.log("isSaved", isSaved);
       setChecked((prevChecked) => {
         const nextChecked = prevChecked + 1;
 
@@ -155,6 +156,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
           index === currentWorkshop && checked === currentWorkshop;
         const isPrevious = index < currentWorkshop;
         const isOpen = index === openIndex && isCurrent;
+
         return (
           <div key={index} className="relative pb-2 pl-7">
             <div
@@ -208,7 +210,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               {/* Draw line between steps */}
               {index < workshops.length - 1 && (
                 <span
-                  className={`absolute left-[9px] top-[2.6rem] bottom-[-25px] w-[2px] ${
+                  className={`absolute left-[9px] top-[2.7rem] bottom-[-25px] w-[2px] ${
                     index < checked
                       ? "bg-green-500"
                       : index === checked
@@ -221,6 +223,8 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               <div className={`${isCurrent ? "font-bold" : ""}`}>
                 {workshop}
               </div>
+
+              {isCurrent && <DatePicker onDateChange={onDateChange} />}
 
               {/* <div
                 className={`flex items-center space-x-2 ${

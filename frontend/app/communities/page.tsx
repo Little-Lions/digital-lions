@@ -85,6 +85,7 @@ const CommunityPage: React.FC = () => {
             label="Add Community"
             onClick={handleOpenCommunityModal}
             variant="primary"
+            isFullWidth
             className="hover:bg-card-dark hover:text-white mb-4"
           />
           {communities.map((community) => (

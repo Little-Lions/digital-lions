@@ -24,7 +24,10 @@ interface ApiResponse {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const getAttendance = async (childId: number, communityId: number): Promise<ApiResponse[]> => {
+const getAttendance = async (
+  childId: number,
+  communityId: number
+): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(
       `${API_URL}/attendance?child_id=${childId}&community_id=${communityId}`,
@@ -32,6 +35,7 @@ const getAttendance = async (childId: number, communityId: number): Promise<ApiR
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
         },
       }
     );

@@ -15,6 +15,7 @@ import { TeamInCommunity } from "@/types/teamInCommunity.interface";
 
 import { useRouter, useParams } from "next/navigation";
 import { Team } from "@/types/team.interface";
+import Badge from "@/components/Badge";
 
 const ProgramTrackerTeamsPage: React.FC = () => {
   const router = useRouter();
@@ -79,10 +80,9 @@ const ProgramTrackerTeamsPage: React.FC = () => {
                   className="mb-2"
                 >
 
-                  <div className="border-2 border-dashed flex flex-col p-2">
-                    <span>Workshop: 9/12</span>
-                    <span>Latest active</span>
-                    <span>Coach: A</span>
+                  <div className="flex flex-col gap-2">
+                    <Badge variant="primary">Workshop: 9/12</Badge>
+                    <Badge variant="secondary">Latest active coach: A</Badge>
                   </div>
                 </LinkCard>
               ))}

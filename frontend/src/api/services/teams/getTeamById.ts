@@ -1,14 +1,15 @@
-import { TeamWithChildren} from '@/types/teamWithChildren.interface'
+import { TeamWithChildren } from "@/types/teamWithChildren.interface";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getTeamById = async (teamsId: number): Promise<TeamWithChildren> => {
   try {
     const response = await fetch(`${API_URL}/teams/${teamsId}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
+      },
     });
 
     if (!response.ok) {

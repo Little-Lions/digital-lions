@@ -11,7 +11,7 @@ interface ListProps {
 
 const List: React.FC<ListProps> = ({ items }) => {
   return (
-    <div >
+    <div>
       {items.map((item, index) => (
         <ListItem
           key={index}

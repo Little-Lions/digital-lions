@@ -18,7 +18,7 @@ const updateChildById = async ({
 }: {
   childId: number;
   isActive: boolean;
-  age: number  | null;
+  age: number | null;
   gender: string | null;
   firstName: string;
   lastName: string;
@@ -32,16 +32,14 @@ const updateChildById = async ({
       last_name: lastName,
     };
 
-    const response = await fetch(
-      `${API_URL}/children/${childId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const response = await fetch(`${API_URL}/children/${childId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
+      },
+      body: JSON.stringify(body),
+    });
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);
     }

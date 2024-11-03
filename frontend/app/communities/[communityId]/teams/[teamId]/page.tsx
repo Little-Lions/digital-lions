@@ -16,10 +16,13 @@ import TextInput from "@/components/TextInput";
 import Loader from "@/components/Loader";
 import ConfirmModal from "@/components/ConfirmModal";
 import SkeletonLoader from "@/components/SkeletonLoader";
+import ButtonGroup from "@/components/ButtonGroup";
+
 
 import EmptyState from "@/components/EmptyState";
 
 import { UserIcon } from "@heroicons/react/24/solid";
+import { TrashIcon, PencilIcon } from "@heroicons/react/16/solid";
 
 import { TeamWithChildren } from "@/types/teamWithChildren.interface";
 
@@ -32,8 +35,6 @@ interface Team {
 
 const TeamsDetailPage: React.FC = () => {
   const router = useRouter();
-  // const { communityId, teamId } = useParams()
-  // const { communityId } = useParams();
 
   const params = useParams();
   const communityId = params?.communityId as string;
@@ -61,18 +62,18 @@ const TeamsDetailPage: React.FC = () => {
 
   const [deleteChildModalVisible, setDeleteChildModalVisible] = useState(false);
 
-  const [communityName, setCommunityName] = useState<string | null>(null);
-  const [teamName, setTeamName] = useState<string | null>(null);
+  // const [communityName, setCommunityName] = useState<string | null>(null);
+  // const [teamName, setTeamName] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Retrieve and parse state from localStorage
-    const storedState = localStorage.getItem("linkCardState");
-    if (storedState) {
-      const { communityName, teamName } = JSON.parse(storedState);
-      setCommunityName(communityName);
-      setTeamName(teamName);
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Retrieve and parse state from localStorage
+  //   const storedState = localStorage.getItem("linkCardState");
+  //   if (storedState) {
+  //     const { communityName, teamName } = JSON.parse(storedState);
+  //     // setCommunityName(communityName);
+  //     setTeamName(teamName);
+  //   }
+  // }, []);
 
   // Fetch all teams on component mount
   useEffect(() => {
@@ -290,7 +291,7 @@ const TeamsDetailPage: React.FC = () => {
               onClick={handleAddChild}
               variant={"primary"}
               isFullWidth={true}
-              className="hover:bg-card-dark hover:text-white mb-4"
+              className="mb-4"
             />
           ) : (
             <EmptyState
@@ -320,21 +321,28 @@ const TeamsDetailPage: React.FC = () => {
                   <div>
                     <p>{`First Name: ${child.first_name}`}</p>
                     <p>{`Last Name: ${child.last_name}`}</p>
+                    <p>{`Age: ${child.age}`}</p>
+                    <p>{`Gender: ${child.gender}`}</p>
                   </div>
-                  <div className="flex items-center justify-end border-t mt-4 border-gray-200 rounded-b dark:border-gray-600">
-                    <CustomButton
+                  <div className="border-t mt-4 border-gray-200 dark:border-gray-600"/>
+                   <ButtonGroup> 
+                   <CustomButton
                       className="mt-4"
                       label="Delete"
                       variant="error"
+                      icon={<TrashIcon />}
                       onClick={() => openDeleteChildModal(child.id)}
                     />
                     <CustomButton
                       className="mt-4 ml-2"
                       label="Edit"
                       variant="secondary"
+                      icon={<PencilIcon />}
                       onClick={() => handleEditChild(child.id)}
                     />
-                  </div>
+                    
+                   </ButtonGroup>
+               
                 </Accordion>
               ))}
             </>
@@ -362,7 +370,7 @@ const TeamsDetailPage: React.FC = () => {
               footer={
                 <CustomButton
                   label="Save"
-                  variant="secondary"
+                  variant="primary"
                   onClick={handleSaveChild}
                   isBusy={isLoadingChild}
                   className="hover:text-white"

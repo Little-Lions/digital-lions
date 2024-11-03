@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React, { useState, useEffect } from "react";
 import VerticalStepper from "@/components/VerticalStepper";
@@ -34,7 +34,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
   const [isSavingAttendance, setIsSavingAttendance] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
-
+  const [selectedDate, setSelectedDate] = useState("");
 
   // Fetch team details when teamId changes
   useEffect(() => {
@@ -59,6 +59,9 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     }
   }, [teamId]);
 
+  const handleDateChange = (date: string) => {
+    setSelectedDate(date);
+  };
 
   const handleAttendanceChange = (childId: number, status: string) => {
     setAttendance((prev) => ({
@@ -71,10 +74,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     if (selectedTeam) {
       const apiBody: Attendance = {
         // if there is no workshpoDetails take the current Date
-        date:
-          workshopDetails.length === 0
-            ? new Date().toISOString().split("T")[0]
-            : workshopDetails[0].workshop.date.split("T")[0],
+        date: selectedDate,
         workshop_number: selectedTeam.program.progress.current + 1,
         attendance: Object.entries(attendance).map(([childId, status]) => ({
           attendance: status,
@@ -133,34 +133,30 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const currentWorkshop = selectedTeam?.program.progress.current ?? 0;
 
   return (
-      <>
-        {isLoadingTeam ? (
-          <div className=" w-full mx-auto ">
-            {Array.from({ length: 12 }, (_, i) => (
-              <SkeletonLoader
-                key={i}
-                type="stepper"
-                index={i}
-                totalItems={12}
-              />
-            ))}
-          </div>
-        ) : (
-          selectedTeam && (
-            <VerticalStepper
-              workshops={workshops}
-              currentWorkshop={currentWorkshop}
-              childs={selectedTeam.children}
-              onAttendanceChange={handleAttendanceChange}
-              onSaveAttendance={handleSaveAttendance}
-              teamDetails={selectedTeam}
-              workshopDetails={workshopDetails}
-              isSavingAttendance={isSavingAttendance}
-              isSaved={isSaved}
-            />
-          )
-        )}
-      </>
+    <>
+      {isLoadingTeam ? (
+        <div className=" w-full mx-auto ">
+          {Array.from({ length: 12 }, (_, i) => (
+            <SkeletonLoader key={i} type="stepper" index={i} totalItems={12} />
+          ))}
+        </div>
+      ) : (
+        selectedTeam && (
+          <VerticalStepper
+            workshops={workshops}
+            currentWorkshop={currentWorkshop}
+            childs={selectedTeam.children}
+            onDateChange={handleDateChange}
+            onAttendanceChange={handleAttendanceChange}
+            onSaveAttendance={handleSaveAttendance}
+            teamDetails={selectedTeam}
+            workshopDetails={workshopDetails}
+            isSavingAttendance={isSavingAttendance}
+            isSaved={isSaved}
+          />
+        )
+      )}
+    </>
   );
 };
 

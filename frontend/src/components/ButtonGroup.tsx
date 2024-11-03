@@ -6,7 +6,7 @@ interface ButtonGroupProps {
 }
 
 const ButtonGroup: React.FC<ButtonGroupProps> = ({ children, className }) => {
-  return <div className={`flex gap-x-3 ${className}`}>{children}</div>;
+  return <div className={`flex gap-x-3 items-center justify-end ${className}`}>{children}</div>;
 };
 
 export default ButtonGroup;

@@ -20,7 +20,8 @@ interface AttendanceRecord {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
+        'API-Key': process.env.NEXT_PUBLIC_API_KEY as string,
           },
           body: JSON.stringify(data),
         }

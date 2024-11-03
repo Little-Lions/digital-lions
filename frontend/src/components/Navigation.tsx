@@ -32,7 +32,7 @@ const Navigation: React.FC = () => {
 
   return (
     <nav className="bg-gray-800 p-4 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="container mx-auto sm:px-4 flex-1">
         <div className="flex items-center justify-between">
           <div
             className={`flex items-center ${

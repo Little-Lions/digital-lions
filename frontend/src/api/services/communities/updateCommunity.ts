@@ -10,16 +10,14 @@ const getCommunities = async (
   input: ApiInput
 ): Promise<void> => {
   try {
-    const response = await fetch(
-      `${API_URL}/communities/${communityId}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(input),
-      }
-    );
+    const response = await fetch(`${API_URL}/communities/${communityId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
+      },
+      body: JSON.stringify(input),
+    });
 
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

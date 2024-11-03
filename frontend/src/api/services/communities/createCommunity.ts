@@ -8,11 +8,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const createCommunity = async (communityName: string): Promise<ApiResponse> => {
   try {
     const response = await fetch(`${API_URL}/communities`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
+        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
       },
-      body: JSON.stringify({ name: communityName })
+      body: JSON.stringify({ name: communityName }),
     });
 
     if (!response.ok) {
@@ -22,7 +23,7 @@ const createCommunity = async (communityName: string): Promise<ApiResponse> => {
     const data: ApiResponse = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error("Error fetching data:", error);
     throw error;
   }
 };

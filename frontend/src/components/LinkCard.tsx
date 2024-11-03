@@ -21,8 +21,7 @@ const LinkCard: React.FC<LinkCardProps> = ({ title, className, href, state, chil
       <div
         className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark dark:hover:bg-gray-800 transition-colors cursor-pointer`}
       >
-        <h2 className="flex-1 text-left flex items-center">{title}</h2>
-
+        <h2>{title}</h2>
         <div className="flex items-center space-x-2">
           {children && <div className="flex gap-2">{children}</div>}
           <svg

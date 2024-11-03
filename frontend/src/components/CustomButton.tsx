@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import React, { useState } from "react";
+import React from "react";
 
 interface CustomButtonProps {
   label: string;
@@ -9,6 +9,7 @@ interface CustomButtonProps {
   isBusy?: boolean;
   isDisabled?: boolean;
   isFullWidth?: boolean;
+  icon?: React.ReactNode;
   variant?:
     | "primary"
     | "secondary"
@@ -21,50 +22,41 @@ interface CustomButtonProps {
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   label,
-  onClick,
-  className,
-  isBusy,
-  isDisabled,
-  isFullWidth,
+  className = "",
+  isBusy = false,
+  isDisabled = false,
+  isFullWidth = false,
+  icon,
   variant = "primary",
+  onClick,
 }) => {
-  const [loading, setLoading] = useState(false);
 
-  const handleClick = () => {
-    if (onClick && !loading && !isDisabled) {
-      setLoading(true);
-      onClick();
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000); // Replace with actual async action
-    }
-  };
 
-  let buttonClass = "relative py-2 px-4 rounded-lg text-sm";
+  let buttonClass = "relative py-2 px-4 rounded-lg text-sm inline-flex items-center justify-center";
   let buttonColorClass = "";
-  let textColorClass = "bg-text";
+  let textColorClass = "text-primary";
   let borderColorClass = "border-transparent";
 
   switch (variant) {
     case "primary":
-      buttonColorClass = "bg-primary hover:bg-primary-dark";
-      textColorClass = "bg-text";
+      buttonColorClass = "bg-button-primary hover:bg-primary-dark";
+      textColorClass = "text-primary";
       break;
     case "secondary":
-      buttonColorClass = "bg-secondary hover:bg-secondary-dark";
-      textColorClass = "bg-text";
+      buttonColorClass = "bg-button-secondary hover:bg-secondary-dark";
+      textColorClass = "text-primary-light";
       break;
     case "success":
-      buttonColorClass = "bg-success hover:bg-success-dark";
-      textColorClass = "bg-text-light";
+      buttonColorClass = "bg-button-success hover:bg-success-dark";
+      textColorClass = "text-primary-light";
       break;
     case "error":
-      buttonColorClass = "bg-error hover:bg-error-dark";
-      textColorClass = "bg-text-light";
+      buttonColorClass = "bg-button-error hover:bg-error-dark";
+      textColorClass = "text-primary-light";
       break;
     case "warning":
-      buttonColorClass = "bg-warning hover:bg-warning-dark";
-      textColorClass = "bg-text-light";
+      buttonColorClass = "bg-button-warning hover:bg-warning-dark";
+      textColorClass = "text-primary-light";
       break;
     case "outline":
       buttonClass += " border";
@@ -82,14 +74,10 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   return (
     <button
       type="button"
-      className={
-        `${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} 
-        ${isFullWidth ? "w-full sm:w-auto" : ""}
-        ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}
-      `}
-      onClick={handleClick}
+      className={`${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} ${isFullWidth ? "w-full sm:w-auto" : ""} ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      onClick={onClick}
       disabled={isBusy || isDisabled}
-      style={{ minWidth: "8rem", minHeight: "2.5rem" }}
+      style={{ minWidth: "6rem", minHeight: "2.5rem" }}
       aria-busy={isBusy}
     >
       {isBusy ? (
@@ -116,10 +104,13 @@ const CustomButton: React.FC<CustomButtonProps> = ({
           </svg>
         </div>
       ) : (
-        label
+        <div className="flex gap-1 items-center">
+          {/* Render icon if provided */}
+          {icon && <span className="h-4 w-4">{icon}</span>}
+          <span>{label}</span>
+        </div>
       )}
     </button>
   );
 };
-
 export default CustomButton;

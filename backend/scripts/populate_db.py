@@ -2,6 +2,7 @@
 
 import logging
 import random
+import os
 import sys
 
 import requests
@@ -18,14 +19,16 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
-URL = "https://backend-dev-f90d.up.railway.app/api/v1"
+URL = "https://backend-01-dev.up.railway.app/api/v1"
 # URL = "https://backend-production-7bbc.up.railway.app/api/v1"
 COMMUNITY_COUNT = 3
 TEAM_COUNT = 3
 CHILD_COUNT = 3
 
+headers = {"Content-Type": "application/json", "API-Key": os.environ.get("API_KEY")}
+
 fake = Faker(LOCALE)
-Faker.seed(9)
+Faker.seed(0)
 
 if __name__ == "__main__":
     """Populate db with records, to be converted to integration test."""
@@ -35,14 +38,16 @@ if __name__ == "__main__":
     for _ in range(COMMUNITY_COUNT):
         community = {"name": fake.first_name()}
         logger.info(f"Creating community {community['name']}")
-        response = requests.post(f"{URL}/communities", json=community)
+        response = requests.post(f"{URL}/communities", json=community, headers=headers)
         logger.info(response.json())
         response.raise_for_status()
         logger.info(
             f"Community {community['name']} created with id {response.json()['id']}"
         )
 
-    community_ids = [r["id"] for r in requests.get(f"{URL}/communities").json()]
+    community_ids = [
+        r["id"] for r in requests.get(f"{URL}/communities", headers=headers).json()
+    ]
 
     logger.info(f"Adding {TEAM_COUNT} teams to the db")
     for _ in range(TEAM_COUNT):
@@ -68,7 +73,7 @@ if __name__ == "__main__":
         }
         logger.info(f"Creating team {team}")
         try:
-            response = requests.post(f"{URL}/teams", json=team)
+            response = requests.post(f"{URL}/teams", json=team, headers=headers)
             response.raise_for_status()
         except requests.exceptions.HTTPError as exc:
             logger.error(f"Error creating team: {response.text}")
@@ -80,11 +85,11 @@ if __name__ == "__main__":
 
     # for each team add some workshops
     logger.info("Adding workshops to teams")
-    team_ids = [x["id"] for x in requests.get(f"{URL}/teams").json()]
+    team_ids = [x["id"] for x in requests.get(f"{URL}/teams", headers=headers).json()]
 
     for id_ in team_ids:
         logger.info(f"Getting team info for team {id_}")
-        team = requests.get(f"{URL}/teams/{id_}").json()
+        team = requests.get(f"{URL}/teams/{id_}", headers=headers).json()
         children = team["children"]
 
         workshops = random.randint(3, 9)
@@ -104,4 +109,5 @@ if __name__ == "__main__":
                         for child in children
                     ],
                 },
+                headers=headers,
             )

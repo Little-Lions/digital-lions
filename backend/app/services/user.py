@@ -3,7 +3,6 @@ import uuid
 
 from core import exceptions
 from core.database.session import SessionDependency
-from core.email import EmailService
 from core.settings import get_settings
 from models import generic, user
 from repositories.auth0 import Auth0Repository
@@ -18,15 +17,14 @@ class UserService(BaseService, AbstractService):
     AUTH0_USER_CONNECTION = "Username-Password-Authentication"
 
     def __init__(self, session: SessionDependency) -> None:
-        """Instantiate all repositories.
+        """Instantiate UserService with Auth0Repository
 
         Args:
             session: database session.
         """
-        self._session: SessionDependency = session
         self.settings = get_settings()
         self.auth0 = Auth0Repository(settings=self.settings)
-        self.email_service = EmailService(settings=self.settings)
+        super().__init__(session=session)
 
     def create(self, obj: user.UserPostIn) -> str:
         """Invite new user to the system, by first creating,
@@ -54,8 +52,28 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserEmailExistsError(
                 f"User with email {obj.email} already exists."
             )
+
+        self.add_roles(user_id=user_id, roles=obj.roles)
+
         msg = self._send_invite_by_email(obj.email)
         return user.UserPostOut(user_id=user_id, message=msg)
+
+    def add_roles(self, user_id: str, roles: list[user.Role]) -> None:
+        """
+        Add roles to a user.
+        """
+        for role in roles:
+            role_in_db = {"user_id": user_id, "role": role.role, "scope": role.scope}
+            self._roles.create(role_in_db)
+
+    def get_roles(self, user_id: str) -> list[user.Role] | None:
+        """
+        Get all roles of a user.
+
+        Args:
+            user_id: str: Auth0 user ID with the 'Auth0|' prefix.
+        """
+        return self._roles.where(filters=[("user_id", user_id)])
 
     def send_invite(self, user_id: str = None) -> generic.Message:
         """Send an invitation link to the user.
@@ -82,7 +100,7 @@ class UserService(BaseService, AbstractService):
         return [user.UserGetOut(**u) for u in users]
 
     def get(self, user_id: str = None) -> user.UserGetOut | None:
-        """Get a user from Auth0 by ID.
+        """Get a user.
 
         In Auth0 user ID is of format Auth0|<user_id>.
 
@@ -90,11 +108,14 @@ class UserService(BaseService, AbstractService):
             user_id: Auth0 user ID including Auth0 prefix.
         """
         try:
-            return self.auth0.get_user(user_id=user_id)
+            user_obj = self.auth0.get_user(user_id=user_id)
         except exceptions.UserNotFoundError:
             msg = f"User with ID {user_id} not found."
             logger.error(msg)
             raise exceptions.UserNotFoundError(msg)
+
+        user_roles = self.get_roles(user_id=user_id)
+        return user.UserGetByIdOut(**user_obj, roles=user_roles)
 
     def get_by_email(self, email: str) -> user.UserGetOut | None:
         """Get a user by email address."""

@@ -63,6 +63,7 @@ class BaseService:
         self._children = db.ChildRepository(session=self._session)
         self._teams = db.TeamRepository(session=self._session)
         self._workshops = db.WorkshopRepository(session=self._session)
+        self._roles = db.RoleRepository(session=self._session)
         self.settings = get_settings()
         self.email_service = EmailService(settings=self.settings)
         self.cols = Columns

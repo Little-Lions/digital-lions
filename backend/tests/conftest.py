@@ -3,9 +3,11 @@ from core.dependencies import (
     ChildService,
     CommunityService,
     TeamService,
+    UserService,
     get_child_service,
     get_community_service,
     get_team_service,
+    get_user_service,
 )
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
@@ -45,9 +47,13 @@ def client(mocker, session):
     def get_team_service_override():
         return TeamService(session=session)
 
+    def get_user_service_override():
+        return UserService(session=session)
+
     app.dependency_overrides[get_community_service] = get_community_service_override
     app.dependency_overrides[get_child_service] = get_child_service_override
     app.dependency_overrides[get_team_service] = get_team_service_override
+    app.dependency_overrides[get_user_service] = get_user_service_override
 
     client = TestClient(app)
     yield client

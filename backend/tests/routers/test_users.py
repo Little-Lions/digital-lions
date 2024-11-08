@@ -51,6 +51,8 @@ def test_get_valid_user_found(client, mocker):
 def test_add_user_success(client, mocker):
     # test successfull creation of a user and sending of email
     email = "valid@hotmail.com"
+    # TODO: add roles
+    roles = [{"role": "coach", "scope": "2"}]
     user_id = "auth0|1234"
     created_user = {
         "created_at": datetime.now(),
@@ -72,7 +74,7 @@ def test_add_user_success(client, mocker):
     resend = mocker.patch("core.email.resend")
     mocker.patch("core.email.os")
 
-    data = {"email": email}
+    data = {"email": email, "roles": roles}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["user_id"] == user_id
@@ -83,8 +85,17 @@ def test_add_user_success(client, mocker):
 def test_delete_user_success(client, mocker):
     # test successfull deletion of a user
     user_id = "auth0|1234"
+    email = "mail@hotmail.com"
+    user = {
+        "created_at": datetime.now(),
+        "email": email,
+        "email_verified": False,
+        "user_id": user_id,
+    }
+
     auth0 = MagicMock()
     auth0.users.delete.return_value = None
+    auth0.users.get.return_value = user
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
     response = client.delete(f"{ENDPOINT}/{user_id}")
     assert response.status_code == status.HTTP_204_NO_CONTENT, response.text

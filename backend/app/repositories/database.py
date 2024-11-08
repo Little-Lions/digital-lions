@@ -35,6 +35,12 @@ class ProgramRepository(BaseRepository[schema.Program]):
     _model = schema.Program
 
 
+class RoleRepository(BaseRepository[schema.Roles]):
+    """Repository to interact with Roles table."""
+
+    _model = schema.Roles
+
+
 class TeamRepository(BaseRepository[schema.Team]):
     """Repository to interact with Team table."""
 

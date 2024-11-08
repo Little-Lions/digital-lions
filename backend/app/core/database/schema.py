@@ -144,5 +144,5 @@ class Roles(SQLModel, table=True):
     __tablename__ = "roles"
     id: int = Field(default=None, primary_key=True)
     user_id: str = Field(description="Auth0 user ID.")
-    role: str = Field(description="Role of the user in the app")
-    scope: str = Field(description="Scope of the role in the app")
+    role: str = Field(description="Role of the user")
+    scope: str = Field(description="Scope of the role ")

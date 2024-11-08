@@ -28,7 +28,9 @@ class UserGetOut(BaseModel):
     user_id: str
     nickname: str | None = Field(default=None)
     email: EmailStr
-    roles: list[Role] | None = Field(default=None, description="User roles on platform")
+    roles: list[Role] | None = Field(
+        default_factory=list, description="User roles on platform"
+    )
 
     # login information
     email_verified: bool
@@ -42,7 +44,9 @@ class UserGetByIdOut(BaseModel):
     user_id: str
     nickname: str | None = Field(default=None)
     email: EmailStr
-    roles: list[str] | None = Field(default=None, description="User roles on platform")
+    roles: list[Role] | None = Field(
+        default_factory=list, description="User roles on platform"
+    )
 
     # login information
     email_verified: bool | None
@@ -60,10 +64,12 @@ class UserPostIn(BaseModel):
     class Role(BaseModel):
         """Model for role that can be assigned to a user."""
 
-        role: str
+        role: RoleName
         scope: str
 
-    roles: list[Role] | None = Field(default=None, description="User roles on platform")
+    roles: list[Role] | None = Field(
+        default_factory=list, description="User roles on platform"
+    )
 
 
 class UserPostOut(BaseModel):

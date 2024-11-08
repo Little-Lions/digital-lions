@@ -1,8 +1,8 @@
 import logging
 
 from core import exceptions
-from models.api.child import ChildPatchIn, ChildPostIn
-from services.base import BaseService
+from models.child import ChildPatchIn, ChildPostIn
+from services._base import BaseService
 
 logger = logging.getLogger(__name__)
 

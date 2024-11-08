@@ -2,12 +2,12 @@ import logging
 import uuid
 
 from core import exceptions
+from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
-from database.auth0 import Auth0Repository
-from database.session import SessionDependency
-from models.api import generic, user
-from services.base import AbstractService, BaseService
+from models import generic, user
+from repositories.auth0 import Auth0Repository
+from services._base import AbstractService, BaseService
 
 logger = logging.getLogger(__name__)
 

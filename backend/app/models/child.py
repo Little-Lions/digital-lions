@@ -1,4 +1,8 @@
-from models.generic import CreateProperties, MetadataColumns, UpdateProperties
+from models._metadata import (
+    _CreatePropertiesIn,
+    _MetadataPropertiesOut,
+    _UpdatePropertiesIn,
+)
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -22,7 +26,7 @@ class ChildValidators:
         return v
 
 
-class ChildPostIn(BaseModel, CreateProperties, ChildValidators):
+class ChildPostIn(BaseModel, _CreatePropertiesIn, ChildValidators):
     """API payload model for creating a child."""
 
     first_name: str = Field(description="First name of child", example="Nelson")
@@ -40,7 +44,7 @@ class ChildPostIn(BaseModel, CreateProperties, ChildValidators):
     team_id: int = Field(description="Team ID to which the child belongs", example=1)
 
 
-class ChildPatchIn(BaseModel, UpdateProperties, ChildValidators):
+class ChildPatchIn(BaseModel, _UpdatePropertiesIn, ChildValidators):
     """API payload model for PATCH /children/:id for updating a child."""
 
     first_name: str | None = Field(
@@ -61,7 +65,7 @@ class ChildPatchIn(BaseModel, UpdateProperties, ChildValidators):
     )
 
 
-class ChildGetByIdOut(BaseModel, MetadataColumns):
+class ChildGetByIdOut(BaseModel, _MetadataPropertiesOut):
     """Response model for GET /children/{id}."""
 
     id: int

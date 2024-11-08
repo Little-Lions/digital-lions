@@ -1,11 +1,11 @@
 """Database schema for all tables in the database."""
 
-from models.generic import MetadataColumns
+from models._metadata import _MetadataPropertiesOut
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
 
-class Child(SQLModel, MetadataColumns, table=True):
+class Child(SQLModel, _MetadataPropertiesOut, table=True):
     """Schema for child model in database."""
 
     __tablename__ = "children"
@@ -30,7 +30,7 @@ class Child(SQLModel, MetadataColumns, table=True):
     )
 
 
-class Team(SQLModel, MetadataColumns, table=True):
+class Team(SQLModel, _MetadataPropertiesOut, table=True):
     """Data model for teams. A team is a group of children that
     follow the Little Lions program: a set of workshops. The workshops
     that the team follows are linked to the team as well."""
@@ -52,7 +52,7 @@ class Team(SQLModel, MetadataColumns, table=True):
     )
 
 
-class Community(SQLModel, MetadataColumns, table=True):
+class Community(SQLModel, _MetadataPropertiesOut, table=True):
     """Schema for community in database."""
 
     __tablename__ = "communities"
@@ -136,3 +136,13 @@ DefaultProgram = [
     Program(id=n, program_id=1, workshop=n, workshop_name=f"Workshop {n}")
     for n in range(1, 13)
 ]
+
+
+class Roles(SQLModel, table=True):
+    """Data model for user roles in the app."""
+
+    __tablename__ = "roles"
+    id: int = Field(default=None, primary_key=True)
+    user_id: str = Field(description="Auth0 user ID.")
+    role: str = Field(description="Role of the user in the app")
+    scope: str = Field(description="Scope of the role in the app")

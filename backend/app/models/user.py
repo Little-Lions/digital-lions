@@ -1,25 +1,23 @@
 from datetime import datetime
-from typing import Any
+from enum import Enum
 
-from models.generic import UpdateProperties
-from pydantic import BaseModel, EmailStr, Field, field_validator
-
-ROLES = ["admin", "partner", "community_manager", "coach"]
+from models._metadata import _UpdatePropertiesIn
+from pydantic import BaseModel, EmailStr, Field
 
 
-class UserValidators:
-    """Validators for user model."""
+class RoleName(str, Enum):
+    """Enumeration for possible user roles."""
 
-    @field_validator("role")
-    def validate_role(cls, value):
-        if value not in ROLES:
-            raise ValueError("Invalid role")
+    admin = "admin"
+    partner = "partner"
+    community_manager = "community_manager"
+    coach = "coach"
 
 
 class Role(BaseModel):
     """Model for role that can be assigned to a user."""
 
-    role: str
+    role: RoleName
     scope: str
 
 
@@ -75,7 +73,7 @@ class UserPostOut(BaseModel):
     message: str
 
 
-class UserPatchIn(BaseModel, UpdateProperties, UserValidators):
+class UserPatchIn(BaseModel, _UpdatePropertiesIn):
     """API payload model for PATCH /users/:id."""
 
     email_address: EmailStr | None = None

@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from database.session import SessionDependency
+from core.database.session import SessionDependency
 from fastapi import Depends
 from services import ChildService, CommunityService, TeamService, UserService
 

@@ -1,9 +1,9 @@
 import logging
 
 from core import exceptions
-from models.api import Message
-from models.api.community import CommunityPostIn
-from services.base import AbstractService, BaseService
+from models.community import CommunityPostIn
+from models.generic import Message
+from services._base import AbstractService, BaseService
 
 logger = logging.getLogger(__name__)
 

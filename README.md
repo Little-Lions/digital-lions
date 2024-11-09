@@ -4,10 +4,9 @@
 ![Backend Deployment](https://github.com/Little-Lions/digital-lions/actions/workflows/frontend.yml/badge.svg)
 
 ## Table of Contents
-- [About](#-about)
-- [System design](#-system-design)
-- [Development](#-development)
-- [Licence](#-licence)
+- [About](#about)
+- [System design](#system-design)
+- [Development](#development)
 
 
 ## About
@@ -67,7 +66,3 @@ You can disable `API-Key` and `Bearer token` authorization with feature flags in
 make token USERNAME=<email> PASSWORD=<your-password>
 ```
 This will provide you a JWT and decode it, such that permissions are visible too.
-
-## Licence
-
-To be added.

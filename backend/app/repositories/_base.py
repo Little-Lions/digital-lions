@@ -1,13 +1,11 @@
-"""Repositories for CRUD operations on the database.
-Each table in the database translate to a repository class."""
+"""Base repository for database repositories."""
 
 from enum import Enum
 from typing import Generic, TypeVar
 
 from core import exceptions
-from database import schema
-from database.session import SessionDependency
-from sqlalchemy import and_, delete, func
+from core.database.session import SessionDependency
+from sqlalchemy import and_, delete
 from sqlmodel import SQLModel
 
 Model = TypeVar("Model", bound=SQLModel)
@@ -18,10 +16,6 @@ class Columns(str, Enum):
 
     id = "id"
     name = "name"
-    email_address = "email_address"
-    password = "password"
-    salt = "salt"
-    hashed_password = "hashed_password"
     team_id = "team_id"
     workshop_number = "workshop_number"
     date = "date"
@@ -134,63 +128,3 @@ class BaseRepository(Generic[Model]):
             if expr[1] is not None:
                 filter_list.append(getattr(self._model, expr[0]) == expr[1])
         return filter_list
-
-
-class AttendanceRepository(BaseRepository[schema.Attendance]):
-    """Repository to interact with attendances table."""
-
-    _model = schema.Attendance
-
-
-class ChildRepository(BaseRepository[schema.Child]):
-    """Repository to interact with children table."""
-
-    _model = schema.Child
-
-
-class CommunityRepository(BaseRepository[schema.Community]):
-    """Repository to interact with Communities table."""
-
-    _model = schema.Community
-
-
-class ProgramRepository(BaseRepository[schema.Program]):
-    """Repository to interact with Program table."""
-
-    _model = schema.Program
-
-
-class TeamRepository(BaseRepository[schema.Team]):
-    """Repository to interact with Team table."""
-
-    _model = schema.Team
-
-
-class WorkshopRepository(BaseRepository[schema.Workshop]):
-    """Repository to interact with Workshop table."""
-
-    _model = schema.Workshop
-
-    # TODO ideally below method should pass 0 if a team has no workshop yet
-    # also saves us ugly list comprehesions later
-    def get_last_workshop_per_team(self, team_ids: list[int]) -> dict:
-        """For a list of team ID's, get the highest workshop number
-        for each team.
-
-        Args:
-            team_ids (list[int]): List of team ID's to get aggregation for.
-
-        Returns:
-            dict: Dictionary with team ID as key and highest workshop number as value.
-        """
-        results = (
-            self._session.query(
-                self._model.team_id, func.max(self._model.workshop_number)
-            )
-            .filter(self._model.team_id.in_(team_ids))
-            .group_by(self._model.team_id)
-            .all()
-        )
-
-        result_dict = {team_id: workshop_number for team_id, workshop_number in results}
-        return result_dict

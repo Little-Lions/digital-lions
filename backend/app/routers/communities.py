@@ -4,13 +4,13 @@ from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenDependency
 from core.dependencies import CommunityServiceDependency
 from fastapi import APIRouter, HTTPException, status
-from models.api import Message, RecordCreated
-from models.api.community import (
+from models.community import (
     CommunityGetByIdOut,
     CommunityGetOut,
     CommunityPatchIn,
     CommunityPostIn,
 )
+from models.generic import Message, RecordCreated
 
 logger = logging.getLogger(__name__)
 

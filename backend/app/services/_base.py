@@ -2,10 +2,11 @@ import logging
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
+from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
-from database import repositories
-from database.session import SessionDependency
+from repositories import database as db
+from repositories._base import Columns
 from sqlmodel import SQLModel
 
 Model = TypeVar("Model", bound=SQLModel)
@@ -50,8 +51,6 @@ class BaseService:
     """Internal class to make each API request act as
     on a unit of work on the database."""
 
-    cols = repositories.Columns
-
     def __init__(self, session: SessionDependency) -> None:
         """Instantiate all repositories.
 
@@ -59,15 +58,15 @@ class BaseService:
             session: database session.
         """
         self._session: SessionDependency = session
-        self._attendances = repositories.AttendanceRepository(session=self._session)
-        self._communities = repositories.CommunityRepository(session=self._session)
-        self._children = repositories.ChildRepository(session=self._session)
-        self._teams = repositories.TeamRepository(session=self._session)
-        self._workshops = repositories.WorkshopRepository(session=self._session)
+        self._attendances = db.AttendanceRepository(session=self._session)
+        self._communities = db.CommunityRepository(session=self._session)
+        self._children = db.ChildRepository(session=self._session)
+        self._teams = db.TeamRepository(session=self._session)
+        self._workshops = db.WorkshopRepository(session=self._session)
+        self._roles = db.RoleRepository(session=self._session)
         self.settings = get_settings()
         self.email_service = EmailService(settings=self.settings)
-
-        self._cols = repositories.Columns
+        self.cols = Columns
 
     def __enter__(self):
         """On entering context start a transaction."""

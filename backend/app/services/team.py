@@ -2,8 +2,8 @@ import logging
 from enum import Enum
 
 from core import exceptions
-from models.api.generic import Message
-from models.api.team import (
+from models.generic import Message
+from models.team import (
     TeamGetByIdOut,
     TeamGetOut,
     TeamGetWorkshopByNumberOut,
@@ -12,7 +12,7 @@ from models.api.team import (
     TeamPostIn,
     TeamPostWorkshopIn,
 )
-from services.base import AbstractService, BaseService
+from services._base import AbstractService, BaseService
 
 logger = logging.getLogger(__name__)
 

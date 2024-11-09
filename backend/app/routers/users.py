@@ -4,8 +4,8 @@ from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenDependency
 from core.dependencies import UserServiceDependency
 from fastapi import APIRouter, HTTPException, status
-from models.api import user
-from models.api.generic import Message, RecordCreated
+from models import user
+from models.generic import Message
 
 logger = logging.getLogger()
 

@@ -4,14 +4,15 @@ from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenDependency
 from core.dependencies import TeamServiceDependency
 from fastapi import APIRouter, HTTPException, status
-from models.api.generic import Message, RecordCreated
-from models.api.team import (
+from models.generic import Message, RecordCreated
+from models.team import (
     TeamGetByIdOut,
     TeamGetOut,
     TeamGetWorkshopByNumberOut,
     TeamGetWorkshopOut,
     TeamPostIn,
     TeamPostWorkshopIn,
+    TeamStatus,
 )
 
 logger = logging.getLogger()
@@ -43,14 +44,6 @@ async def post_team(team_service: TeamServiceDependency, team: TeamPostIn):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
-class Status(str):
-    """Possible values for the status query of GET /teams."""
-
-    active = "active"
-    inactive = "inactive"
-    all = "all"
-
-
 @router.get(
     "",
     response_model=list[TeamGetOut],
@@ -60,7 +53,7 @@ class Status(str):
 async def get_teams(
     team_service: TeamServiceDependency,
     community_id: int = None,
-    status: str = "active",
+    status: TeamStatus = TeamStatus.active,
 ):
     return team_service.get_all(community_id=community_id, status=status)
 
@@ -120,11 +113,8 @@ async def delete_team(
 async def get_workshops(team_service: TeamServiceDependency, team_id: int):
     try:
         return team_service.get_workshops(team_id)
-    except exceptions.TeamNotFoundException:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Team with ID {team_id} not found",
-        )
+    except exceptions.TeamNotFoundException as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.get(

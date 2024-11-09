@@ -1,17 +1,37 @@
 import datetime
+from enum import Enum
 
-from models.generic import CreateProperties, MetadataColumns, UpdateProperties
+from models._metadata import (
+    _CreatePropertiesIn,
+    _MetadataPropertiesOut,
+    _UpdatePropertiesIn,
+)
 from pydantic import BaseModel, Field, field_validator
 
 
-class TeamPostIn(BaseModel, CreateProperties):
+class TeamStatus(str, Enum):
+    """
+    Enumeration for possible team statuses used in the status query of GET /teams.
+
+    Attributes:
+        active: Represents an active team.
+        inactive: Represents an inactive team.
+        all: Represents all teams regardless of status.
+    """
+
+    active = "active"
+    inactive = "inactive"
+    all = "all"
+
+
+class TeamPostIn(BaseModel, _CreatePropertiesIn):
     """API payload model for POST /teams."""
 
     name: str = Field(description="Name of the team")
     community_id: int = Field(description="ID of community the team belongs to")
 
 
-class TeamPatchIn(BaseModel, UpdateProperties):
+class TeamPatchIn(BaseModel, _UpdatePropertiesIn):
     """API payload model for PATCH /teams."""
 
     # Note this model is mainly used to update the Team's active status
@@ -55,7 +75,7 @@ class TeamGetOut(BaseModel):
     program: Program
 
 
-class TeamGetByIdOut(BaseModel, MetadataColumns):
+class TeamGetByIdOut(BaseModel, _MetadataPropertiesOut):
     """API response model for GET /teams/:id."""
 
     class Community(BaseModel):

@@ -2,15 +2,17 @@ from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenDependency
 from core.dependencies import ChildServiceDependency
 from fastapi import APIRouter, HTTPException, status
-from models.api.child import ChildGetByIdOut, ChildGetOut, ChildPatchIn, ChildPostIn
-from models.api.generic import RecordCreated
+from models import child
+from models.generic import RecordCreated
 
 router = APIRouter(
     prefix="/children", dependencies=[APIKeyDependency, BearerTokenDependency]
 )
 
 
-@router.get("/{child_id}", summary="Get a child by id", response_model=ChildGetByIdOut)
+@router.get(
+    "/{child_id}", summary="Get a child by id", response_model=child.ChildGetByIdOut
+)
 async def get_child(child_id: int, child_service: ChildServiceDependency):
     try:
         return child_service.get(child_id)
@@ -21,7 +23,7 @@ async def get_child(child_id: int, child_service: ChildServiceDependency):
 @router.get(
     "",
     summary="Get children",
-    response_model=list[ChildGetOut] | None,
+    response_model=list[child.ChildGetOut] | None,
     status_code=status.HTTP_200_OK,
 )
 async def get_children(
@@ -39,7 +41,7 @@ async def get_children(
     status_code=status.HTTP_201_CREATED,
     response_model=RecordCreated,
 )
-async def add_child(child_service: ChildServiceDependency, child: ChildPostIn):
+async def add_child(child_service: ChildServiceDependency, child: child.ChildPostIn):
     try:
         return child_service.create(child)
     except exceptions.ChildAlreadyExistsException as exc:
@@ -51,13 +53,13 @@ async def add_child(child_service: ChildServiceDependency, child: ChildPostIn):
 @router.patch(
     "/{child_id}",
     summary="Update a child",
-    response_model=ChildGetByIdOut,
+    response_model=child.ChildGetByIdOut,
     status_code=status.HTTP_200_OK,
 )
 async def update_child(
     child_service: ChildServiceDependency,
     child_id: int,
-    child: ChildPatchIn,
+    child: child.ChildPatchIn,
 ):
     try:
         return child_service.update(object_id=child_id, obj=child)

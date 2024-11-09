@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 import yaml
+from core.database.session import init_db
 from core.settings import get_settings
-from database.session import init_db
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse

@@ -1,72 +1,16 @@
-"""Generic metadata properties for all database- and API models."""
+"""Generic API response models for all endpoints."""
 
-from datetime import datetime
-
-from pydantic import computed_field
+from pydantic import BaseModel
 
 
-class CreatedAtProperty:
-    """Created at timestamp."""
+class Message(BaseModel):
+    """Generic API message response model for API error messages."""
 
-    @computed_field
-    def created_at(self) -> datetime:
-        return datetime.now()
+    detail: str
 
 
-class CreatedAtColumn:
-    """Created at timestamp."""
+class RecordCreated(BaseModel):
+    """Generic API message response model for
+    when an object created in the database."""
 
-    created_at: datetime
-
-
-class IsActiveProperty:
-    """Is active property, defaults to True on creation of record."""
-
-    @computed_field
-    def is_active(self) -> bool:
-        return True
-
-
-class IsActiveUpdateProperty:
-    """Is active property, defaults to True on creation of record,
-    but can be updated to false at a later stage."""
-
-    is_active: bool | None = None
-
-
-class IsActiveColumn:
-    """Is active column in databases table."""
-
-    is_active: bool
-
-
-class LastUpdatedAtProperty:
-    """Updated at timestamp."""
-
-    @computed_field
-    def last_updated_at(self) -> datetime:
-        return datetime.now()
-
-
-class LastUpdatedAtColumn:
-    """Updated at timestamp."""
-
-    last_updated_at: datetime
-
-
-class CreateProperties(CreatedAtProperty, LastUpdatedAtProperty, IsActiveProperty):
-    """Properties for create objects."""
-
-    pass
-
-
-class UpdateProperties(LastUpdatedAtProperty, IsActiveUpdateProperty):
-    """Metadata properties for updating models."""
-
-    pass
-
-
-class MetadataColumns(CreatedAtColumn, LastUpdatedAtColumn, IsActiveColumn):
-    """Metadata columns for database models."""
-
-    pass
+    id: int

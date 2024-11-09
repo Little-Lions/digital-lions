@@ -38,3 +38,9 @@ db.ip:
 
 key: 
 	openssl rand -hex 32
+
+# get OAuth token from auth server 
+# usage: make token USERNAME=<email> PASSWORD=<password>
+token:
+	backend/scripts/token.sh
+

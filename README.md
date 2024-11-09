@@ -32,22 +32,41 @@ All components are dockerized and available in development locally with docker c
 
 ### Environment
 
-This project uses [direnv](https://direnv.net/) to setup environment variables. First copy `.env.dist` to `.env`. After that spin up the postgresDB (and optionally pgadmin if you want to inspect the database from the browser).
-
-### Build
+This project uses [direnv](https://direnv.net/) to setup environment variables. First copy `.env.dist` to `.env` and populate with the required values. After that you can build and run the services required the run the app. For the database (and optionally pgadmin):
 ```bash
 docker compose up -d db pgadmin
 ```
-After that spin up the backend (either detached or in separate window):
+For connecting to the database with pgadmin, the credentials can be found in the `docker-compose.yml`. Since you run pgadmin from within Docker you need obtain the IP of the container to connect to the database. You can find the IP with:
 ```bash
-docker compose up backend
+make db.ip
 ```
-The backend API should now be available at `http://localhost:8000/api/v1/docs#/`. Finally spin up the frontend (either detached or in separate window):
+Frontend and backend can be build and run with Docker as well, 
 ```bash
-docker compose up frontend
+docker compose up frontend backend
+```
+though for development it makes sense to run both services in development mode with hot reloading.
+
+### Frontend
+```bash
+cd frontend && npm run dev
 ```
 The frontend should now be available at `http://localhost:5173`.
 
+### Backend
+
+To run the backend API with Poetry and hot reloading:
+```bash
+cd backend && make app
+```
+The backend API should now be available at `http://localhost:8000/api/v1/docs#/`.
+
+### Authorization & authentication
+
+You can disable `API-Key` and `Bearer token` authorization with feature flags in the `.env` file. Once you have successfully populated your `.env` with the right client credentials, you can manually obtain a Bearer token from the authorization server with user credentials using
+```bash
+make token USERNAME=<email> PASSWORD=<your-password>
+```
+This will provide you a JWT and decode it, such that permissions are visible too.
 
 ## Licence
 

@@ -13,7 +13,9 @@
 
 Digital Lions is the private web application that is part of [Little Lions Child Coaching](https://littlelionschildcoaching.com/). Little Lion's Child Coaching is a Cape Town based NGO that provides workshops in social and emotional skills for children in the townships of Africa. The workshops are given in a 12-week program. This application is designed to help the coaches, volunteers, and administrators to keep track of the children, teams, and workshops. 
 
-  > Maintainers: X & Y
+> Maintainers  
+  [anne@littlelionschildcoaching.com](mailto:anne@littlelionschildcoaching.com)    
+  [kasper@littlelionschildcoaching.com](mailto:kasper@littlelionschildcoaching.com)
 
 
 ## System design

@@ -1,5 +1,6 @@
 import logging
-from typing import Annotated, Any
+from enum import Enum
+from typing import Annotated, Any, Optional
 
 import jwt
 import requests
@@ -52,10 +53,22 @@ class APIKeyHandler(APIKeyHeader):
         return True
 
 
+class Scopes(str, Enum):
+    """Scopes that can be assigned to a user."""
+
+    communities_read: str = "communities:read"
+    communities_write: str = "communities:write"
+    teams_read: str = "teams:read"
+    teams_write: str = "teams:write"
+    children_read: str = "children:read"
+    children_write: str = "children:write"
+    users_read: str = "users:read"
+    users_write: str = "users:write"
+
+
 class BearerTokenHandler(HTTPBearer):
     """FastAPI dependency for JWT token. Requirement of this token
     is enabled/disabled in the backend via environment variable `FEATURE_OAUTH`.
-    A JWT is obtained from the /users/session endpoint.
 
     Headers to be sent in the request:
     ```
@@ -70,10 +83,18 @@ class BearerTokenHandler(HTTPBearer):
     ALGORITHM = "RS256"
 
     def __init__(
-        self,
-        auto_error: bool = True,
+        self, auto_error: bool = True, required_scopes: Optional[list[str]] = None
     ):
+        """
+        Instantiate Bearer Token validator.
+
+        Args:
+            auto_error bool: Raise HTTPException if token is invalid.
+            required_scopes list[str]: List of scopes user
+                should have to call the endpoint.
+        """
         super().__init__(auto_error=auto_error)
+        self.required_scopes = required_scopes
 
     async def __call__(
         self, request: Request, settings: Annotated[Settings, Depends(get_settings)]
@@ -107,23 +128,38 @@ class BearerTokenHandler(HTTPBearer):
                     status_code=403, detail="Could not get public key for token"
                 )
 
-            self.jwt_token_decoded = self._verify_jwt(
+            jwt_token_decoded = self._verify_jwt(
                 token=credentials.credentials,
                 pub_key=pub_key,
                 algorithm=self.ALGORITHM,
                 audience=settings.OAUTH_AUDIENCE,
             )
-            if not self.jwt_token_decoded:
+            if not jwt_token_decoded:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid or expired token.",
                 )
-            return self.jwt_token_decoded
+
+            if not self._verify_required_scopes(jwt_token_decoded["permissions"]):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="User does not have required permission.",
+                )
+            return jwt_token_decoded
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization code.",
         )
+
+    def _verify_required_scopes(self, token_scopes: list[str]) -> bool:
+        """
+        Verify that token has the required scopes.
+
+        Args:
+            decoded_token dict: decoded token containing scopes.
+        """
+        return all(scope in token_scopes for scope in self.required_scopes)
 
     def _verify_jwt(
         self, token: str, pub_key: str, algorithm: str, audience: str

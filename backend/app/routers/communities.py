@@ -1,9 +1,15 @@
 import logging
+from typing import Any
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenDependency
+from core.auth import (
+    APIKeyDependency,
+    BearerTokenDependency,
+    BearerTokenHandler,
+    Scopes,
+)
 from core.dependencies import CommunityServiceDependency
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from models.community import (
     CommunityGetByIdOut,
     CommunityGetOut,
@@ -14,9 +20,7 @@ from models.generic import Message, RecordCreated
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(
-    prefix="/communities", dependencies=[APIKeyDependency, BearerTokenDependency]
-)
+router = APIRouter(prefix="/communities")
 
 
 @router.get(
@@ -25,7 +29,13 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
     summary="Get community by ID",
 )
-async def get_community(community_id: int, service: CommunityServiceDependency):
+async def get_community(
+    community_id: int,
+    service: CommunityServiceDependency,
+    token_dependency: Any = Depends(
+        BearerTokenHandler(required_scopes=[Scopes.communities_read])
+    ),
+):
     """Get a community by ID."""
     try:
         return service.get(community_id)
@@ -42,7 +52,12 @@ async def get_community(community_id: int, service: CommunityServiceDependency):
     status_code=status.HTTP_200_OK,
     response_model=list[CommunityGetOut] | None,
 )
-async def get_communities(service: CommunityServiceDependency):
+async def get_communities(
+    service: CommunityServiceDependency,
+    token_dependency: Any = Depends(
+        BearerTokenHandler(required_scopes=["communities:read"])
+    ),
+):
     return service.get_all()
 
 

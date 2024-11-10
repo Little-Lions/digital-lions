@@ -52,6 +52,7 @@ ALLOWED_ORIGINS="http://localhost:8000,http://digitallions.com"
 FEATURE_API_KEY="false"
 FEATURE_OAUTH="false"
 POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digital_lion_test"
+OAUTH_PWD_TICKET_RESULT_URL="http://localhost:8000/ticket_result"
 
 [tool.ruff]
 extend-exclude = ["alembic/*"]

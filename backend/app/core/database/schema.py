@@ -137,8 +137,7 @@ DefaultProgram = [
     for n in range(1, 13)
 ]
 
-#TODO: write a migration for this table
-class Roles(SQLModel, table=False):
+class Roles(SQLModel, table=True):
     """Data model for user roles in the app."""
 
     __tablename__ = "roles"

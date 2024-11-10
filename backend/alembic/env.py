@@ -6,7 +6,6 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from core.settings import get_settings
 from core.database import schema
 
 # this is the Alembic Config object, which provides
@@ -14,7 +13,6 @@ from core.database import schema
 config = context.config
 section = config.config_ini_section
 
-settings = get_settings()
 POSTGRES_URL = os.environ.get("POSTGRES_DATABASE_URL")
 config.set_main_option(
     "sqlalchemy.url",

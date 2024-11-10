@@ -1,8 +1,8 @@
-"""Remove user table, add roles table
+"""Remove users table, add roles table
 
-Revision ID: 675b36eee2fc
+Revision ID: 2a267f2aacfa
 Revises: fa53dc00de3c
-Create Date: 2024-11-08 18:25:04.081989
+Create Date: 2024-11-10 16:21:40.075311
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "675b36eee2fc"
+revision: str = "2a267f2aacfa"
 down_revision: Union[str, None] = "fa53dc00de3c"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

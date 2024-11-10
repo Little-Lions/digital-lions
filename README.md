@@ -67,4 +67,4 @@ You can disable `API-Key` and `Bearer token` authorization with feature flags in
 ```bash
 make token USERNAME=<email> PASSWORD=<your-password>
 ```
-This will provide you a JWT and decode it, such that permissions are visible too.
+This will provide you a JWT, **copies it to your clipboard**, and prints the decoded token to your terminal output.

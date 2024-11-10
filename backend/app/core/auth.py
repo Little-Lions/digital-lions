@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 import jwt
 import requests
@@ -48,22 +48,24 @@ class APIKeyHandler(APIKeyHeader):
         if key != self.settings.API_KEY:
             logger.error("Invalid API key")
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API key"
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key"
             )
         return True
 
 
 class Scopes(str, Enum):
-    """Scopes that can be assigned to a user."""
+    """OAuth scopes that can be assigned to roles."""
 
+    children_read: str = "children:read"
+    children_write: str = "children:write"
     communities_read: str = "communities:read"
     communities_write: str = "communities:write"
     teams_read: str = "teams:read"
     teams_write: str = "teams:write"
-    children_read: str = "children:read"
-    children_write: str = "children:write"
     users_read: str = "users:read"
     users_write: str = "users:write"
+    workshops_read: str = "workshops:read"
+    workshops_write: str = "workshops:write"
 
 
 class BearerTokenHandler(HTTPBearer):
@@ -83,7 +85,7 @@ class BearerTokenHandler(HTTPBearer):
     ALGORITHM = "RS256"
 
     def __init__(
-        self, auto_error: bool = True, required_scopes: Optional[list[str]] = None
+        self, auto_error: bool = True, required_scopes: list[str] | None = None
     ):
         """
         Instantiate Bearer Token validator.
@@ -92,6 +94,7 @@ class BearerTokenHandler(HTTPBearer):
             auto_error bool: Raise HTTPException if token is invalid.
             required_scopes list[str]: List of scopes user
                 should have to call the endpoint.
+
         """
         super().__init__(auto_error=auto_error)
         self.required_scopes = required_scopes
@@ -99,7 +102,8 @@ class BearerTokenHandler(HTTPBearer):
     async def __call__(
         self, request: Request, settings: Annotated[Settings, Depends(get_settings)]
     ) -> Any:
-        """Verify the bearer token and return the decoded token."""
+        """Verify the bearer token and optionally the scopes,
+        and return the decoded token."""
         if not settings.FEATURE_OAUTH:
             return
 
@@ -159,6 +163,8 @@ class BearerTokenHandler(HTTPBearer):
         Args:
             decoded_token dict: decoded token containing scopes.
         """
+        if not self.required_scopes:
+            return True
         return all(scope in token_scopes for scope in self.required_scopes)
 
     def _verify_jwt(

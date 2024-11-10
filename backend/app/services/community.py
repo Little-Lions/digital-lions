@@ -18,7 +18,7 @@ class CommunityService(AbstractService, BaseService):
             obj (CommunityPostIn): Community object to create.
         """
         if self._communities.where([("name", obj.name)]):
-            raise exceptions.CommunityAlreadyExistsException(
+            raise exceptions.CommunityAlreadyExistsError(
                 f"Community with name {obj.name} already exists."
             )
         community = self._communities.create(obj)
@@ -47,7 +47,7 @@ class CommunityService(AbstractService, BaseService):
 
         if self._teams.where([("community_id", object_id)]):
             if not cascade:
-                raise exceptions.CommunityHasTeamsException(
+                raise exceptions.CommunityHasTeamsError(
                     f"Community with ID {object_id} has teams assigned to it."
                 )
 
@@ -63,4 +63,4 @@ class CommunityService(AbstractService, BaseService):
         except exceptions.ItemNotFoundException:
             error_msg = f"Community with ID {community_id} not found"
             logger.error(error_msg)
-            raise exceptions.CommunityNotFoundException(error_msg)
+            raise exceptions.CommunityNotFoundError(error_msg)

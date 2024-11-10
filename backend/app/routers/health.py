@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from core.dependencies import CommunityServiceDependency
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/health")
@@ -24,10 +24,10 @@ async def get_health(community_service: CommunityServiceDependency):
         )
     except Exception as exc:
         if "psycopg2.OperationalError" in str(exc):
-            output = "Database connection error"
-        else:
-            output = str(exc)
-        return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"status": "error", "message": output},
-        )
+            error_msg = "Database connection error"
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={"status": "error", "message": error_msg},
+            )
+        # reraising will be catched by middleware and return a 500 as well
+        raise exc

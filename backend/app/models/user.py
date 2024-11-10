@@ -9,8 +9,6 @@ class RoleName(str, Enum):
     """Enumeration for possible user roles."""
 
     admin = "admin"
-    partner = "partner"
-    community_manager = "community_manager"
     coach = "coach"
 
 

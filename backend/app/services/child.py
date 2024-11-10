@@ -36,7 +36,7 @@ class ChildService(BaseService):
                 f"exists in team {team.name}"
             )
             logger.error(error_msg)
-            raise exceptions.ChildAlreadyExistsException(error_msg)
+            raise exceptions.ChildAlreadyExistsError(error_msg)
 
     def delete(self, object_id: int, cascade: bool = False):
         """Delete a child."""
@@ -50,7 +50,7 @@ class ChildService(BaseService):
                     "records and cascade is False"
                 )
                 logger.error(error_msg)
-                raise exceptions.ChildHasAttendanceException(error_msg)
+                raise exceptions.ChildHasAttendanceError(error_msg)
 
             # if cascade is True, delete all attendance records for the child
             logger.info(f"Deleting attendance records for child with ID {object_id}")
@@ -74,9 +74,7 @@ class ChildService(BaseService):
         try:
             return self._children.read(object_id=object_id)
         except exceptions.ItemNotFoundException:
-            raise exceptions.ChildNotFoundException(
-                f"Child with ID {object_id} not found"
-            )
+            raise exceptions.ChildNotFoundError(f"Child with ID {object_id} not found")
 
     def update(self, object_id: int, obj: ChildPatchIn):
         """Update a child.

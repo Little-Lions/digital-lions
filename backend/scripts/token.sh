@@ -1,6 +1,7 @@
 #!/bin/bash
-# utility script that gets bearer token from auth server and 
-# decodes it to show permissions
+# utility script that gets bearer token from auth server,
+# copies it to your clipboard, and prints the decoded
+# token to the console
 URL=https://${OAUTH_DOMAIN}/oauth/token
 
 TOKEN=$(curl \
@@ -27,5 +28,8 @@ function jwt-decode() {
 
 JWT_DECODED=$(jwt-decode $JWT)
 
-printf "JWT decoded: \n $JWT_DECODED"
+printf "JWT decoded: \n $JWT_DECODED\n"
+
+printf "Copying token to clipboard"
+echo $JWT | pbcopy
 

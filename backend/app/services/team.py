@@ -224,7 +224,10 @@ class TeamService(AbstractService, BaseService):
         if self._children.where([(self.cols.team_id, object_id)]):
             deleted_children = True
             if not cascade:
-                error_msg = f"Team with ID {object_id} not empty: has children."
+                error_msg = (
+                    f"Cannot delete team with ID {object_id} because it has related children record "
+                    + "and 'cascade' is set to False"
+                )
                 logger.error(error_msg)
                 raise exceptions.TeamHasChildrenException(error_msg)
 

@@ -40,3 +40,5 @@ HTTP_HOST=postgres.railway.internal:5432
 db.check:
 	cd app; poetry run alembic check
 
+token:
+	$(MAKE) -C .. token

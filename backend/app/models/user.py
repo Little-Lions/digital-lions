@@ -19,7 +19,6 @@ class Role(BaseModel):
     scope: str
 
 
-# note that BaseModel should come after the validators
 class UserGetOut(BaseModel):
     """API response model for GET /users."""
 

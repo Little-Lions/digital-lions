@@ -137,6 +137,7 @@ DefaultProgram = [
     for n in range(1, 13)
 ]
 
+
 class Roles(SQLModel, table=True):
     """Data model for user roles in the app."""
 

@@ -55,9 +55,60 @@ class UserService(BaseService, AbstractService):
             )
 
         self.add_roles(user_id=user_id, roles=obj.roles)
-
+        self.commit()
         msg = self._send_invite_by_email(obj.email)
         return models.UserPostOut(user_id=user_id, message=msg)
+
+    def get_all(self) -> list[models.UserGetOut] | None:
+        """Get all users from the table."""
+        users = self.auth0.list_users()["users"]
+        return [models.UserGetOut(**u) for u in users]
+
+    def get(self, user_id: str = None) -> models.UserGetOut | None:
+        """Get a user.
+
+        In Auth0 user ID is of format Auth0 | <user_id > .
+
+        Args:
+            user_id: Auth0 user ID including Auth0 prefix.
+        """
+        try:
+            user_obj = self.auth0.get_user(user_id=user_id)
+        except exceptions.UserNotFoundError:
+            msg = f"User with ID {user_id} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundError(msg)
+
+        return models.UserGetByIdOut(**user_obj)
+
+    def update(self, user_id: str):
+        """Update a user by ID."""
+        raise NotImplementedError()
+
+    def delete(self, user_id: str) -> None:
+        """Delete a user by ID.
+
+        Args:
+            user_id: str: user ID, including 'Auth0|' prefix.
+        """
+        try:
+            # auth0-python sdk does not raise an exception if user is not found
+            # so we have to check ourselves first whether the user exist
+            self.get(user_id=user_id)
+        except exceptions.UserNotFoundError:
+            msg = f"User with ID {user_id} not found."
+            logger.error(msg)
+            raise exceptions.UserNotFoundError(msg)
+
+        # delete user from auth0
+        self.auth0.delete_role(user_id)
+
+        # delete user roles from the database
+        self._roles.delete_where(attr="user_id", value=user_id)
+        self.commit()
+        msg = f"User with ID {user_id} deleted."
+        logger.info(msg)
+        return generic.Message(detail=msg)
 
     def add_role(self, user_id: str, role: models.RolePostIn) -> generic.Message:
         """
@@ -109,6 +160,7 @@ class UserService(BaseService, AbstractService):
             f"{role.resource_id} added to user {user_id}"
         )
         logger.info(msg)
+        self.commit()
         return generic.Message(detail=msg)
 
     def get_roles(self, user_id: str) -> list:
@@ -124,6 +176,63 @@ class UserService(BaseService, AbstractService):
             for r in roles
         ]
 
+    def delete_role(self, user_id: str, role: models.RolePostIn) -> generic.Message:
+        """
+        Delete a role from a user.
+
+        Args:
+            user_id: str: Auth0 user ID with the 'Auth0|' prefix.
+            role: user.RolePostIn: Role to delete.
+
+        Returns:
+            generic.Message: info message in case successfull.
+
+        Raises:
+            UserNotFoundError: If user is not found.
+            RoleNotFoundForUserError: If role does not exist for user.
+        """
+        user_in_db = self.get(user_id=user_id)
+        if not user_in_db:
+            raise exceptions.UserNotFoundError(f"User with ID {user_id} not found.")
+
+        # check if user has roles assigned in db
+        role_in_db = self._roles.where(filters=list(role.dict().items()))
+        if not role_in_db:
+            msg = (
+                f"User with ID {user_id} does not have role '{role.role.value}' "
+                f"assigned to {role.level.value} {role.resource_id}"
+            )
+            logger.error(msg)
+            raise exceptions.RoleNotFoundForUserError(msg)
+        if len(role_in_db) > 1:
+            msg = (
+                f"User with ID {user_id} has multiple roles '{role.role.value}' "
+                f"assigned to resource {role.resource_id}. This is a bug."
+            )
+            logger.error(msg)
+            raise exceptions.InternalServerError(msg)
+
+        self._roles.delete(role_in_db[0].id)
+
+        # if it is the last scoped role in the db we also need
+        # to remove the role in Auth0
+        if not self._roles.where(
+            filters=[("user_id", user_id), ("role", role.role.value)]
+        ):
+            logger.info(
+                f"User with ID {user_id} has no more roles in the database."
+                f"Deleting role '{role.role.value}' from Auth0"
+            )
+            self.auth0.delete_role(user_id=user_id, role_name=role.role.value)
+
+        self.commit()
+        msg = (
+            f"Role '{role.role.value}' for {role.level.value} "
+            f"{role.resource_id} deleted from user {user_id}"
+        )
+        logger.info(msg)
+        return generic.Message(detail=msg)
+
     def _get_auth0_roles(self, user_id: str) -> list | None:
         """Get all roles of a user in Auth0."""
         return self.auth0.get_roles(user_id=user_id)
@@ -133,7 +242,6 @@ class UserService(BaseService, AbstractService):
     ) -> bool:
         """Check if user has a role in Auth0."""
         roles = self._get_auth0_roles(user_id=user_id)
-
         return any(r["name"] == role.role for r in roles)
 
     def _validate_role_resource_id(self, role: models.RolePostIn):
@@ -146,6 +254,14 @@ class UserService(BaseService, AbstractService):
 
         Args:
             role: user.RolePostIn: Role to validate.
+
+        Returns:
+            bool: True if valid, False otherwise.
+
+        Raises:
+            BadRequestError: If role level is invalid.
+            ResourceNotFoundError: If resource ID is not found.
+
         """
         if role.level == models.Level.implementing_partner:
             if not role.resource_id == 1:
@@ -178,9 +294,7 @@ class UserService(BaseService, AbstractService):
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
         user = self.get(user_id=user_id)
-        email = user["email"]
-
-        return self._send_invite_by_email(email)
+        return generic.Message(detail=self._send_invite_by_email(user.email))
 
     def _send_invite_by_email(self, email: str) -> generic.Message:
         """Send an invitation link to user. This method assumes the user exists."""
@@ -190,28 +304,6 @@ class UserService(BaseService, AbstractService):
         logger.info(msg)
         return msg
 
-    def get_all(self) -> list[models.UserGetOut] | None:
-        """Get all users from the table."""
-        users = self.auth0.list_users()["users"]
-        return [models.UserGetOut(**u) for u in users]
-
-    def get(self, user_id: str = None) -> models.UserGetOut | None:
-        """Get a user.
-
-        In Auth0 user ID is of format Auth0 | <user_id > .
-
-        Args:
-            user_id: Auth0 user ID including Auth0 prefix.
-        """
-        try:
-            user_obj = self.auth0.get_user(user_id=user_id)
-        except exceptions.UserNotFoundError:
-            msg = f"User with ID {user_id} not found."
-            logger.error(msg)
-            raise exceptions.UserNotFoundError(msg)
-
-        return models.UserGetByIdOut(**user_obj)
-
     def _get_roles(self, user_id: str) -> list[models.Role]:
         """
         Get all roles of a user in the db.
@@ -219,37 +311,3 @@ class UserService(BaseService, AbstractService):
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
         return self._roles.where(filters=[("user_id", user_id)])
-
-    def get_by_email(self, email: str) -> models.UserGetOut | None:
-        """Get a user by email address."""
-        try:
-            return self.auth0.get_user_by_email(email=email)
-        except exceptions.UserNotFoundError:
-            msg = f"User with email {email} not found."
-            logger.error(msg)
-            raise exceptions.UserNotFoundError(msg)
-
-    def get_id_by_email(self, email: str) -> str:
-        """Get the user ID by email."""
-        return self.get_by_email(email=email)["user_id"]
-
-    def update(self, user_id: str):
-        """Update a user by ID."""
-        raise NotImplementedError()
-
-    def delete(self, user_id: str) -> None:
-        """Delete a user by ID.
-
-        Args:
-            user_id: str: user ID, including 'Auth0|' prefix.
-        """
-        try:
-            # auth0-python sdk does not raise an exception if user is not found
-            # so we have to check ourselves first whether the user exist
-            self.get(user_id=user_id)
-        except exceptions.UserNotFoundError:
-            msg = f"User with ID {user_id} not found."
-            logger.error(msg)
-            raise exceptions.UserNotFoundError(msg)
-
-        self.auth0.delete_user(user_id)

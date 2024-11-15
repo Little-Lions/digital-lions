@@ -6,6 +6,7 @@ from auth0.exceptions import Auth0Error
 from auth0.management import Auth0
 from core import exceptions
 from fastapi import status
+from pip._vendor.requests import delete
 
 
 class Auth0Repository:
@@ -111,6 +112,25 @@ class Auth0Repository:
         Get all roles of a user.
         """
         return self.auth0.users.list_roles(user_id)["roles"]
+
+    @convert_auth0_error
+    def delete_role(self, user_id: str, role_name: str) -> None:
+        """
+        Delete a role from a user.
+        Returns:
+            Empty string
+        """
+        auth0_roles = self.auth0.roles.list(name_filter=role_name)
+        if len(auth0_roles["roles"]) == 0:
+            # this should never happen because we validate the role on the API level
+            raise exceptions.RoleNotFoundError(f"Role {role_name} not found.")
+        if len(auth0_roles["roles"]) > 1:
+            # this should never happen
+            raise ValueError(
+                f"Multiple roles with name {role_name} found. This is a bug."
+            )
+        auth0_role = auth0_roles["roles"][0]
+        return self.auth0.users.remove_roles(id=user_id, roles=[auth0_role["id"]])
 
     @convert_auth0_error
     def get_password_change_ticket(self, email: str) -> str:

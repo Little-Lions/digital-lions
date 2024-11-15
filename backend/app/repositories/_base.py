@@ -47,7 +47,7 @@ class BaseRepository(Generic[Model]):
         """
         new_obj = self._model.model_validate(obj)
         self._session.add(new_obj)
-        self._session.commit()
+        self._session.flush()
         self._session.refresh(new_obj)
         return new_obj
 
@@ -97,7 +97,7 @@ class BaseRepository(Generic[Model]):
         obj_data = obj.model_dump(exclude_unset=True)
         db_object.sqlmodel_update(obj_data)
         self._session.add(db_object)
-        self._session.commit()
+        self._session.flush()
         self._session.refresh(db_object)
         return db_object
 
@@ -107,13 +107,13 @@ class BaseRepository(Generic[Model]):
         if not obj:
             raise exceptions.ItemNotFoundError()
         self._session.delete(obj)
-        self._session.commit()
+        self._session.flush()
 
     def delete_where(self, attr: str, value: str) -> None:
         """Delete all objects by an attribute matching a value."""
         statement = delete(self._model).where(getattr(self._model, attr) == value)
         self._session.exec(statement)
-        self._session.commit()
+        self._session.flush()
 
     def where(self, filters: list[tuple[str, str]]) -> list[Model] | None:
         """

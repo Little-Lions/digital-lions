@@ -180,7 +180,7 @@ async def resend_invite(
 
     """
     try:
-        return user_service.resend_invite(user_id=user_id)
+        return user_service.send_invite(user_id=user_id)
     except exceptions.BadRequestError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
     except exceptions.UserNotFoundError as exc:
@@ -353,6 +353,6 @@ async def remove_role_from_user(
 
     """
     try:
-        return user_service.remove_role(user_id=user_id, role=role)
+        return user_service.delete_role(user_id=user_id, role=role)
     except (exceptions.UserNotFoundError, exceptions.RoleNotFoundForUserError) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

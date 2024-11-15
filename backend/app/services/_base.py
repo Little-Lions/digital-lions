@@ -48,7 +48,7 @@ class AbstractService(ABC):
 
 
 class BaseService:
-    """Internal class to make each API request act as
+    """Internal base service to make each API request act as
     on a unit of work on the database."""
 
     def __init__(self, session: SessionDependency) -> None:

@@ -50,6 +50,9 @@ node_modules
 *.sln
 *.sw?
 
+# Python refactoring artifacts, cause we use Neovim btw
+*.ropeproject/
+
 *.tsbuildinfo
 # folder with local dev stuff
 sandbox/

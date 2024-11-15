@@ -59,7 +59,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["API-Key", "Content-Type", "Authorization"],
 )
-app.middleware("http")(catch_any_exception)
+# app.middleware("http")(catch_any_exception)
 app.include_router(health.router, tags=["health"])
 app.include_router(teams.router, tags=["teams"])
 app.include_router(children.router, tags=["children"])

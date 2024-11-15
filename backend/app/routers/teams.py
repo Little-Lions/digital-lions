@@ -6,6 +6,7 @@ from core.dependencies import TeamServiceDependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
+from routers._responses import with_default_responses
 
 logger = logging.getLogger()
 
@@ -17,13 +18,18 @@ router = APIRouter(prefix="/teams", dependencies=[APIKeyDependency])
     response_model=RecordCreated,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new team",
-    responses={
-        400: {"model": Message, "description": "Bad request"},
-        409: {
-            "model": Message,
-            "description": "Conflict: team with name already exists",
-        },
-    },
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": Message,
+                "description": "Community not found",
+            },
+            status.HTTP_409_CONFLICT: {
+                "model": Message,
+                "description": "Conflict: team name already exists",
+            },
+        }
+    ),
 )
 async def post_team(
     team_service: TeamServiceDependency,
@@ -41,9 +47,9 @@ async def post_team(
     """
     try:
         return team_service.create(team)
-    except exceptions.CommunityNotFoundException as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    except exceptions.TeamAlreadyExistsException as exc:
+    except exceptions.CommunityNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.TeamAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
@@ -52,6 +58,7 @@ async def post_team(
     response_model=list[models.TeamGetOut],
     status_code=status.HTTP_200_OK,
     summary="Get teams",
+    responses=with_default_responses(),
 )
 async def get_teams(
     team_service: TeamServiceDependency,
@@ -76,9 +83,14 @@ async def get_teams(
     response_model=models.TeamGetByIdOut,
     status_code=status.HTTP_200_OK,
     summary="Get team by id",
-    responses={
-        404: {"model": Message, "description": "Not found"},
-    },
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": Message,
+                "description": "Team not found",
+            },
+        }
+    ),
 )
 async def get_team(
     team_service: TeamServiceDependency,
@@ -96,7 +108,7 @@ async def get_team(
     """
     try:
         return team_service.get(object_id=team_id)
-    except exceptions.TeamNotFoundException as exc:
+    except exceptions.TeamNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
@@ -108,13 +120,18 @@ async def get_team(
     status_code=status.HTTP_200_OK,
     summary="Delete a team",
     response_model=Message,
-    responses={
-        404: {"model": Message, "description": "Not found"},
-        409: {
-            "model": Message,
-            "description": "Conflict: team has children and cascade is False",
-        },
-    },
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": Message,
+                "description": "Team not found",
+            },
+            status.HTTP_409_CONFLICT: {
+                "model": Message,
+                "description": "Conflict: team has children and cascade is False",
+            },
+        }
+    ),
 )
 async def delete_team(
     team_service: TeamServiceDependency,
@@ -136,12 +153,12 @@ async def delete_team(
     """
     try:
         return team_service.delete(object_id=team_id, cascade=cascade)
-    except exceptions.TeamHasChildrenException as exc:
+    except exceptions.TeamHasChildrenError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
         )
-    except exceptions.TeamNotFoundException as exc:
+    except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
@@ -150,6 +167,7 @@ async def delete_team(
     status_code=status.HTTP_200_OK,
     summary="Get workshops done by team",
     response_model=list[models.TeamGetWorkshopOut],
+    responses=with_default_responses(),
 )
 async def get_workshops(
     team_service: TeamServiceDependency,
@@ -167,7 +185,7 @@ async def get_workshops(
     """
     try:
         return team_service.get_workshops(team_id)
-    except exceptions.TeamNotFoundException as exc:
+    except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
@@ -176,11 +194,13 @@ async def get_workshops(
     status_code=status.HTTP_200_OK,
     summary="Get a team's workshop by number",
     response_model=models.TeamGetWorkshopByNumberOut,
-    responses={
-        404: {
-            "model": Message,
-        },
-    },
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": Message,
+            },
+        }
+    ),
 )
 async def get_workshop_by_number(
     team_service: TeamServiceDependency,
@@ -201,8 +221,8 @@ async def get_workshop_by_number(
     try:
         return team_service.get_workshop_by_number(team_id, workshop_number)
     except (
-        exceptions.TeamNotFoundException,
-        exceptions.WorkshopNotFoundException,
+        exceptions.TeamNotFoundError,
+        exceptions.WorkshopNotFoundError,
     ) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
@@ -212,15 +232,17 @@ async def get_workshop_by_number(
     status_code=status.HTTP_201_CREATED,
     summary="Add workshop to team",
     response_model=RecordCreated,
-    responses={
-        400: {
-            "model": Message,
-        },
-        409: {"model": Message},
-        404: {
-            "model": Message,
-        },
-    },
+    responses=with_default_responses(
+        {
+            400: {
+                "model": Message,
+            },
+            409: {"model": Message},
+            404: {
+                "model": Message,
+            },
+        }
+    ),
 )
 async def post_workshop(
     team_service: TeamServiceDependency,
@@ -239,9 +261,9 @@ async def post_workshop(
     """
     try:
         return team_service.create_workshop(team_id, workshop)
-    except exceptions.TeamNotFoundException as exc:
+    except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    except exceptions.WorkshopExistsException as exc:
+    except exceptions.WorkshopExistsError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
@@ -249,7 +271,7 @@ async def post_workshop(
     except (
         exceptions.ChildNotInTeam,
         exceptions.WorkshopIncompleteAttendance,
-        exceptions.WorkshopNumberInvalidException,
+        exceptions.WorkshopNumberInvalidError,
     ) as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

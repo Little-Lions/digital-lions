@@ -1,4 +1,3 @@
-import logging
 from typing import Any
 
 from core import exceptions
@@ -15,7 +14,7 @@ router = APIRouter(prefix="/communities", dependencies=[APIKeyDependency])
     "/{community_id}",
     response_model=models.CommunityGetByIdOut,
     status_code=status.HTTP_200_OK,
-    summary="Get community by ID",
+    summary="Get community",
     responses={
         status.HTTP_404_NOT_FOUND: {
             "model": Message,

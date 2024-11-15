@@ -36,32 +36,38 @@ class BaseRepository(Generic[Model]):
         self._session: SessionDependency = session
 
     def create(self, obj: Model) -> Model:
-        """Create an object in the table."""
+        """
+        Create an object in the database table.
+
+        Args:
+            obj (Model): The object to create.
+
+        Returns:
+            Model: The created object including primary key.
+        """
         new_obj = self._model.model_validate(obj)
         self._session.add(new_obj)
-        self._session.flush()
+        self._session.commit()
         self._session.refresh(new_obj)
         return new_obj
 
-    def delete(self, object_id: int) -> None:
-        """Delete an object from the table."""
-        obj = self._session.get(self._model, object_id)
-        if not obj:
-            raise exceptions.ItemNotFoundException()
-        self._session.delete(obj)
-        self._session.flush()
-
-    def delete_where(self, attr: str, value: str) -> None:
-        """Delete all objects by an attribute matching a value."""
-        statement = delete(self._model).where(getattr(self._model, attr) == value)
-        self._session.exec(statement)
-        self._session.flush()
-
     def read(self, object_id: int) -> Model | None:
-        """Read an object from the table."""
+        """
+        Read a record from the database table by primary key,
+        which is often the `id` column.
+
+        Args:
+            object_id (int): The primary key of the record to read.
+
+        Returns:
+            Model: The record from the database table.
+
+        Raises:
+            exceptions.ItemNotFoundError: If the record is not found.
+        """
         obj = self._session.get(self._model, object_id)
         if not obj:
-            raise exceptions.ItemNotFoundException()
+            raise exceptions.ItemNotFoundError(f"{self._model.__name__} not found.")
         return obj
 
     def read_all(self) -> list[Model] | None:
@@ -70,36 +76,69 @@ class BaseRepository(Generic[Model]):
         return objects
 
     def update(self, object_id: int, obj: Model) -> Model:
-        """Update an object in the table."""
+        """
+        Update a record in the database table by primary key.
+
+        Args:
+            object_id (int): The primary key of the record to update.
+            obj (Model): The updated record.
+
+        Returns:
+            Model: The updated record.
+
+        Raises:
+            exceptions.ItemNotFoundError: If the record is not found.
+        """
+
         db_object = self._session.get(self._model, object_id)
         if not db_object:
-            raise exceptions.ItemNotFoundException()
+            raise exceptions.ItemNotFoundError()
 
         obj_data = obj.model_dump(exclude_unset=True)
         db_object.sqlmodel_update(obj_data)
         self._session.add(db_object)
-        self._session.flush()
+        self._session.commit()
         self._session.refresh(db_object)
         return db_object
 
+    def delete(self, object_id: int) -> None:
+        """Delete an object from the table."""
+        obj = self._session.get(self._model, object_id)
+        if not obj:
+            raise exceptions.ItemNotFoundError()
+        self._session.delete(obj)
+        self._session.commit()
+
+    def delete_where(self, attr: str, value: str) -> None:
+        """Delete all objects by an attribute matching a value."""
+        statement = delete(self._model).where(getattr(self._model, attr) == value)
+        self._session.exec(statement)
+        self._session.commit()
+
     def where(self, filters: list[tuple[str, str]]) -> list[Model] | None:
-        """Filter table by one or more columns where all filters need to be met (AND).
+        """
+        Filter table by one or more columns where all filters need to be met (AND).
 
         Args:
-            filters (list[tuple[str, str]]): A list of tuples where each tuple contains
-            the column name and the value to filter by. E.g. [("name", "John"), ("age", 25)].
+            filters (list[tuple[str, str]]): A list of tuples where each tuple
+                contains the column name and the value to filter by.
+                E.g. [("name", "John"), ("age", 25)].
 
         Returns:
-            list[Model]: A list of objects that meet all the filters.
+            list[Model] | None: A list of objects that meet all the filters,
+                or empty list.
         """
         expr = and_(*self._construct_filter(filters))
         return self._session.query(self._model).where(and_(expr)).all()
 
     def where_in(self, attr: str, values: list[str]) -> list[Model] | None:
-        """Filter table by an attribute where the attribute value is in a list of values.
+        """
+        Filter table by list of values for one given column (attribute).
+
         Args:
-            attr (str): The attribute to filter by.
+            attr (str): The attribute (column) to filter by.
             values (list[str]): A list of values to filter by.
+
         Returns:
             list[Model]: A list of objects that meet the filter.
         """
@@ -115,13 +154,17 @@ class BaseRepository(Generic[Model]):
         return objects
 
     def _construct_filter(self, filters: list[tuple[str, str]]) -> list:
-        """Construct a filter from a list of tuples where each tuple
+        """
+        Construct a filter from a list of tuples where each tuple
         contains the attribute and the value to filter by.
 
         Args:
             filters (list[tuple[str, str]]): A list of tuples where each tuple
                 contains the attribute and the value to filter by. E.g.
                 [("name", "John"), ("age", 25)].
+
+        Returns:
+            list: A list of filter expressions
         """
         filter_list = []
         for expr in filters:

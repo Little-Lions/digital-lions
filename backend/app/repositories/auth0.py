@@ -34,7 +34,7 @@ class Auth0Repository:
         token = get_token.client_credentials(self.MGMT_API.format(self.domain))
         return token["access_token"]
 
-    def _convert_auth0_error(func) -> Callable:
+    def convert_auth0_error(func) -> Callable:
         """Auth0 error handler decorator to convert the generic Auth0 error
         to a more specific exception."""
 
@@ -45,48 +45,77 @@ class Auth0Repository:
                 return func(*args, **kwargs)
             except Auth0Error as exc:
                 match exc.status_code:
+                    case status.HTTP_400_BAD_REQUEST:
+                        raise exceptions.BadRequestError(str(exc))
                     case status.HTTP_409_CONFLICT:
-                        raise exceptions.ItemAlreadyExistsException(str(exc))
+                        raise exceptions.ItemAlreadyExistsError(str(exc))
                     case status.HTTP_404_NOT_FOUND:
                         raise exceptions.UserNotFoundError(str(exc))
                     case status.HTTP_403_FORBIDDEN:
-                        raise exceptions.ForbiddenException(str(exc))
+                        raise exceptions.ForbiddenError(str(exc))
                     case _:
                         raise exc
 
         return wrapper_handle_error
 
-    @_convert_auth0_error
-    def delete_user(self, user_id: str):
-        """
-        Delete a user from the authorization server.
-        """
-        return self.auth0.users.delete(user_id)
-
-    @_convert_auth0_error
-    def get_user(self, user_id: str) -> dict:
-        """
-        Get a user from the authorization server.
-        """
-        return self.auth0.users.get(user_id)
-
-    @_convert_auth0_error
-    def list_users(self) -> list:
-        """
-        Get all users from the authorization server.
-        """
-        return self.auth0.users.list()
-
-    @_convert_auth0_error
+    @convert_auth0_error
     def create_user(self, obj: dict):
         """
         Create a new user in the authorization server.
         """
         return self.auth0.users.create(obj)
 
-    @_convert_auth0_error
+    @convert_auth0_error
+    def get_user(self, user_id: str) -> dict:
+        """
+        Get a user from the authorization server.
+        """
+        return self.auth0.users.get(user_id)
+
+    @convert_auth0_error
+    def list_users(self) -> list:
+        """
+        Get all users from the authorization server.
+        """
+        return self.auth0.users.list()
+
+    @convert_auth0_error
+    def delete_user(self, user_id: str):
+        """
+        Delete a user from the authorization server.
+        """
+        return self.auth0.users.delete(user_id)
+
+    @convert_auth0_error
+    def add_role(self, user_id: str, role_name: str) -> None:
+        """
+        Add a role to a user.
+
+        Returns:
+            Empty string
+        """
+        auth0_roles = self.auth0.roles.list(name_filter=role_name)
+        if len(auth0_roles["roles"]) == 0:
+            # this should never happen because we validate the role on the API level
+            raise exceptions.RoleNotFoundError(f"Role {role_name} not found.")
+        if len(auth0_roles["roles"]) > 1:
+            # this should never happen
+            raise ValueError(f"Multiple roles with name {role_name} found.")
+
+        auth0_role = auth0_roles["roles"][0]
+        return self.auth0.users.add_roles(id=user_id, roles=[auth0_role["id"]])
+
+    @convert_auth0_error
+    def get_roles(self, user_id: str) -> list:
+        """
+        Get all roles of a user.
+        """
+        return self.auth0.users.list_roles(user_id)["roles"]
+
+    @convert_auth0_error
     def get_password_change_ticket(self, email: str) -> str:
         """
+
         Get a password change ticket for a user.
         """
         body = {
@@ -96,16 +125,14 @@ class Auth0Repository:
         }
         return self.auth0.tickets.create_pswd_change(body=body)["ticket"]
 
-    @_convert_auth0_error
+    @convert_auth0_error
     def get_user_by_email(self, email: str) -> dict:
         """
         Get the user ID by email.
         """
         users = self.auth0.users_by_email.search_users_by_email(email=email)
         if len(users) == 0:
-            raise exceptions.UserNotFoundException(
-                f"User with email {email} not found."
-            )
+            raise exceptions.UserNotFoundError(f"User with email {email} not found.")
         if len(users) > 1:
             # this should never happen
             raise ValueError(f"Multiple users with email {email} found.")

@@ -90,7 +90,7 @@ async def add_child(
         return child_service.create(child)
     except exceptions.ChildAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
-    except exceptions.TeamNotFoundException as exc:
+    except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 
@@ -145,7 +145,7 @@ async def delete_child(
     """
     try:
         child_service.delete(object_id=child_id, cascade=cascade)
-    except exceptions.ChildHasAttendanceException as exc:
+    except exceptions.ChildHasAttendanceError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
     except exceptions.ChildNotFoundError as exc:
         raise HTTPException(

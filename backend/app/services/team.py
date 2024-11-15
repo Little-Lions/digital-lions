@@ -17,10 +17,10 @@ from services._base import AbstractService, BaseService
 logger = logging.getLogger(__name__)
 
 
-class Attendance(Enum):
-    present: str = "present"
-    cancelled: str = "cancelled"
-    absent: str = "absent"
+class Attendance(str, Enum):
+    present = "present"
+    cancelled = "cancelled"
+    absent = "absent"
 
 
 class TeamService(AbstractService, BaseService):
@@ -30,10 +30,10 @@ class TeamService(AbstractService, BaseService):
         """Create a new team."""
         try:
             self._communities.read(object_id=team.community_id)
-        except exceptions.ItemNotFoundException:
+        except exceptions.ItemNotFoundError:
             msg = f"Community with ID {team.community_id} not found"
             logger.error(msg)
-            raise exceptions.CommunityNotFoundException(msg)
+            raise exceptions.CommunityNotFoundError(msg)
 
         new_team = self._teams.create(team)
         self.commit()
@@ -59,9 +59,12 @@ class TeamService(AbstractService, BaseService):
                 (self.cols.workshop_number, workshop.workshop_number),
             ]
         ):
-            error_msg = f"Workshop {workshop.workshop_number} for team {team_id} already exists."
+            error_msg = (
+                f"Workshop {workshop.workshop_number} for team "
+                "{team_id} already exists."
+            )
             logger.error(error_msg)
-            raise exceptions.WorkshopExistsException(error_msg)
+            raise exceptions.WorkshopExistsError(error_msg)
 
         # validate that the workshop number is the next valid workshop for the team
         workshops = self._workshops.where([(self.cols.team_id, team_id)])
@@ -74,7 +77,7 @@ class TeamService(AbstractService, BaseService):
                 + f"workshop for team {team_id}. Should be {valid_workshop_number}"
             )
             logger.error(error_msg)
-            raise exceptions.WorkshopNumberInvalidException(error_msg)
+            raise exceptions.WorkshopNumberInvalidError(error_msg)
 
         # validate that all children in the payload are part of the team
         payload_child_ids = set([child.child_id for child in workshop.attendance])
@@ -225,11 +228,11 @@ class TeamService(AbstractService, BaseService):
             deleted_children = True
             if not cascade:
                 error_msg = (
-                    f"Cannot delete team with ID {object_id} because it has related children record "
-                    + "and 'cascade' is set to False"
+                    f"Cannot delete team with ID {object_id} because it has related "
+                    + "children record and 'cascade' is set to False"
                 )
                 logger.error(error_msg)
-                raise exceptions.TeamHasChildrenException(error_msg)
+                raise exceptions.TeamHasChildrenError(error_msg)
 
         logger.info(f"Deleting team with ID {object_id}")
         self._teams.delete(object_id=object_id)
@@ -282,7 +285,7 @@ class TeamService(AbstractService, BaseService):
         )
         if not workshop:
             error_msg = f"Workshop {workshop_number} for team {team_id} not found."
-            raise exceptions.WorkshopNotFoundException(error_msg)
+            raise exceptions.WorkshopNotFoundError(error_msg)
 
         if len(workshop) > 1:
             error_msg = (
@@ -338,10 +341,10 @@ class TeamService(AbstractService, BaseService):
         """Check if a team exists."""
         try:
             return self._teams.read(object_id=team_id)
-        except exceptions.ItemNotFoundException:
+        except exceptions.ItemNotFoundError:
             error_msg = f"Team with ID {team_id} not found"
             logger.error(error_msg)
-            raise exceptions.TeamNotFoundException(error_msg)
+            raise exceptions.TeamNotFoundError(error_msg)
 
     @classmethod
     def factory(cls):

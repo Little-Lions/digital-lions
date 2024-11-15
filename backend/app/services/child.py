@@ -73,7 +73,7 @@ class ChildService(BaseService):
         """
         try:
             return self._children.read(object_id=object_id)
-        except exceptions.ItemNotFoundException:
+        except exceptions.ItemNotFoundError:
             raise exceptions.ChildNotFoundError(f"Child with ID {object_id} not found")
 
     def update(self, object_id: int, obj: ChildPatchIn):
@@ -92,7 +92,7 @@ class ChildService(BaseService):
         """Validate that a team exists."""
         try:
             self._teams.read(object_id=team_id)
-        except exceptions.ItemNotFoundException:
+        except exceptions.ItemNotFoundError:
             error_msg = f"Team with ID {team_id} not found"
             logger.error(error_msg)
-            raise exceptions.TeamNotFoundException(error_msg)
+            raise exceptions.TeamNotFoundError(error_msg)

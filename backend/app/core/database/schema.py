@@ -145,4 +145,5 @@ class Roles(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     user_id: str = Field(description="Auth0 user ID.")
     role: str = Field(description="Role of the user")
-    scope: str = Field(description="Scope of the role ")
+    level: str = Field(description="The level at which the role is assigned.")
+    resource_id: int = Field(description="ID of the resource the role is assigned to.")

@@ -5,18 +5,40 @@ from models._metadata import _UpdatePropertiesIn
 from pydantic import BaseModel, EmailStr, Field
 
 
-class RoleName(str, Enum):
+class Role(str, Enum):
     """Enumeration for possible user roles."""
 
-    admin = "admin"
-    coach = "coach"
+    admin = "Admin"
+    coach = "Coach"
 
 
-class Role(BaseModel):
+class Level(str, Enum):
+    """Enumeration for possible entity types that
+    a role can be assigned to."""
+
+    implementing_partner = "Implementing Partner"
+    community = "Community"
+    team = "Team"
+
+
+class RolePostIn(BaseModel):
     """Model for role that can be assigned to a user."""
 
-    role: RoleName
-    scope: str
+    role: Role = Field(description="Role of the user", examples=["Coach"])
+    level: Level = Field(
+        description="Level at which the role is assigned",
+        examples=["community", "team"],
+    )
+    resource_id: int = Field(description="ID of the resource the role is assigned to.")
+
+
+class UserGetRolesOut(BaseModel):
+    """API response model for GET /users/:id/roles."""
+
+    user_id: str
+    roles: list[RolePostIn] | None = Field(
+        default_factory=list, description="List of assigned roles on platform"
+    )
 
 
 class UserGetOut(BaseModel):
@@ -25,9 +47,6 @@ class UserGetOut(BaseModel):
     user_id: str
     nickname: str | None = Field(default=None)
     email: EmailStr
-    roles: list[Role] | None = Field(
-        default_factory=list, description="User roles on platform"
-    )
 
     # login information
     email_verified: bool
@@ -41,9 +60,6 @@ class UserGetByIdOut(BaseModel):
     user_id: str
     nickname: str | None = Field(default=None)
     email: EmailStr
-    roles: list[Role] | None = Field(
-        default_factory=list, description="User roles on platform"
-    )
 
     # login information
     email_verified: bool | None
@@ -58,10 +74,10 @@ class UserPostIn(BaseModel):
 
     email: EmailStr
 
-    class Role(BaseModel):
+    class RolePostIn(BaseModel):
         """Model for role that can be assigned to a user."""
 
-        role: RoleName
+        role: Role
         scope: str
 
     roles: list[Role] | None = Field(

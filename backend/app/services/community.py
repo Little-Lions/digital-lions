@@ -60,7 +60,7 @@ class CommunityService(AbstractService, BaseService):
         """Validate that community exists."""
         try:
             self._communities.read(object_id=community_id)
-        except exceptions.ItemNotFoundException:
+        except exceptions.ItemNotFoundError:
             error_msg = f"Community with ID {community_id} not found"
             logger.error(error_msg)
             raise exceptions.CommunityNotFoundError(error_msg)

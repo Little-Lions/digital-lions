@@ -289,7 +289,7 @@ const TeamsDetailPage: React.FC = () => {
             <CustomButton
               label="Add child"
               onClick={handleAddChild}
-              variant={"primary"}
+              variant="outline"
               isFullWidth={true}
               className="mb-4"
             />

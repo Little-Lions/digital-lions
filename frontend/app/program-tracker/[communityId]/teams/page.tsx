@@ -66,11 +66,9 @@ const ProgramTrackerTeamsPage: React.FC = () => {
         <>
           {teams.length > 0 ? (
             <>
-              <div className="flex justify-between">
-                <h1 className="text-2xl font-bold mb-4">
+                <h1 className="text-2xl font-bold mb-2">
                   Teams in {communityName}
                 </h1>
-              </div>
               {teams.map((team) => (
                 <LinkCard
                   key={team.id}

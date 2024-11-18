@@ -1,23 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@auth0/nextjs-auth0";
+import { NextResponse } from "next/server";
+import { getAccessToken } from "@auth0/nextjs-auth0";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL; // Ensure this is set correctly
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   console.log("API route /api/communities: Handler started");
 
   try {
     // Fetch session
     console.log("Fetching session...");
-    const session = await getSession(req, NextResponse.next());
+    const { accessToken } = await getAccessToken();
 
-    if (!session || !session.accessToken) {
-      console.log("Session or access token missing");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { accessToken } = session;
-
+    console.log("API-Key:", process.env.NEXT_PUBLIC_API_KEY);
     console.log("Access Token:", accessToken);
     console.log("API URL:", `${API_URL}/communities`);
 

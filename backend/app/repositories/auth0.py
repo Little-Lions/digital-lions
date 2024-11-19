@@ -6,7 +6,6 @@ from auth0.exceptions import Auth0Error
 from auth0.management import Auth0
 from core import exceptions
 from fastapi import status
-from pip._vendor.requests import delete
 
 
 class Auth0Repository:

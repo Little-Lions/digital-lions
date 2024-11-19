@@ -18,11 +18,11 @@ class Settings(BaseSettings):
     FEATURE_API_KEY: bool | None = True
 
     # user management
-    OAUTH_DOMAIN: str | None = None
-    OAUTH_AUDIENCE: str | None = None
-    OAUTH_CLIENT_ID: str | None = None
-    OAUTH_CLIENT_SECRET: str | None = None
-    OAUTH_CONNECTION_ID: str | None = None
+    OAUTH_DOMAIN: str
+    OAUTH_AUDIENCE: str
+    OAUTH_CLIENT_ID: str
+    OAUTH_CLIENT_SECRET: str
+    OAUTH_CONNECTION_ID: str
 
     # redirect URL for password reset
     OAUTH_PWD_TICKET_RESULT_URL: str

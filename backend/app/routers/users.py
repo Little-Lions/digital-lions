@@ -110,44 +110,44 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
-@router.post(
-    "/reset-password",
-    response_model=Message,
-    status_code=status.HTTP_200_OK,
-    summary="Request password reset",
-    responses=with_default_responses(
-        {
-            status.HTTP_404_NOT_FOUND: {
-                "model": Message,
-                "description": "User not found",
-            }
-        }
-    ),
-)
-async def reset_password(
-    user_service: UserServiceDependency,
-    user_id: str,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
-):
-    """
-    Request a password reset for a user. This will trigger a
-    password reset flow, i.e. a user will receive a link to reset their password.
-
-    **Note:** This endpoint is only used from within the platform, and is
-    not part of the general "Forgot Password" flow.
-
-    **Required scopes**
-    - `users:write`
-
-    """
-    try:
-        return user_service.reset_password(user_id=user_id)
-    except exceptions.BadRequestError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    except exceptions.UserNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+# @router.post(
+#     "/reset-password",
+#     response_model=Message,
+#     status_code=status.HTTP_200_OK,
+#     summary="Request password reset",
+#     responses=with_default_responses(
+#         {
+#             status.HTTP_404_NOT_FOUND: {
+#                 "model": Message,
+#                 "description": "User not found",
+#             }
+#         }
+#     ),
+# )
+# async def reset_password(
+#     user_service: UserServiceDependency,
+#     user_id: str,
+#     current_user: BearerTokenHandler = Depends(
+#         BearerTokenHandler(required_scopes=[Scopes.users_write])
+#     ),
+# ):
+#     """
+#     Request a password reset for a user. This will trigger a
+#     password reset flow, i.e. a user will receive a link to reset their password.
+#
+#     **Note:** This endpoint is only used from within the platform, and is
+#     not part of the general "Forgot Password" flow.
+#
+#     **Required scopes**
+#     - `users:write`
+#
+#     """
+#     try:
+#         return user_service.reset_password(user_id=user_id)
+#     except exceptions.BadRequestError as exc:
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+#     except exceptions.UserNotFoundError as exc:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
 
 @router.post(

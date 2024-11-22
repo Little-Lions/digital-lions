@@ -1,5 +1,10 @@
 "use client";
 
+interface ApiResponse {
+  name: string;
+  id: number;
+}
+
 const getCommunities = async (): Promise<ApiResponse[]> => {
   try {
     const response = await fetch("/api/communities", { method: "GET" });

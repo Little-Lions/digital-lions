@@ -3,17 +3,19 @@ interface ApiResponse {
   id: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-const getCommunities = async (communityId: string): Promise<ApiResponse[]> => {
+const getCommunitiesById = async (
+  communityId: string
+): Promise<ApiResponse[]> => {
   try {
-    const response = await fetch(`${API_URL}/communities/${communityId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
-    });
+    const response = await fetch(
+      `/api/communities?community_id=${communityId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);
@@ -27,4 +29,4 @@ const getCommunities = async (communityId: string): Promise<ApiResponse[]> => {
   }
 };
 
-export default getCommunities;
+export default getCommunitiesById;

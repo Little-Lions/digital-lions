@@ -22,17 +22,14 @@ interface ApiResponse {
   workshop: Workshop;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const getAttendancePerChild = async (
   attendanceId: number
 ): Promise<ApiResponse[]> => {
   try {
-    const response = await fetch(`${API_URL}/attendance/${attendanceId}`, {
+    const response = await fetch(`/api/attendance/${attendanceId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
       },
     });
 

@@ -5,21 +5,17 @@ interface ApiInput {
   cascade: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const deleteTeam = async ({
   teamId,
   cascade,
 }: ApiInput): Promise<TeamWithChildren> => {
   try {
     const response = await fetch(
-      `${API_URL}/teams/${teamId}?cascade=${cascade}
-`,
+      `/api/teams?team_id=${teamId}&cascade=${cascade}`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
         },
       }
     );

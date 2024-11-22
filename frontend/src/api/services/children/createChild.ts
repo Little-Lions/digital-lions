@@ -6,8 +6,6 @@ interface ApiResponse {
   last_name: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const createChild = async ({
   teamId,
   age,
@@ -22,11 +20,10 @@ const createChild = async ({
   lastName: string;
 }): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_URL}/children`, {
+    const response = await fetch(`/api/children`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
       },
       body: JSON.stringify({
         team_id: teamId,

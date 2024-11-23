@@ -3,6 +3,7 @@ export
 .PHONY: shell build run app tests lint format 
 
 SERVICE=backend
+POETRY=/opt/homebrew/bin/poetry
 
 shell: 
 	poetry shell
@@ -19,11 +20,12 @@ deploy:
 app:
 	cd app; poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+#TODO: use dev container with mounted code instead of env -i prefix
 test:
-	poetry run python -m pytest tests --disable-warnings -vvv --cov=app --cov-report=term-missing tests
+	env -i $(POETRY) run python -m pytest tests --disable-warnings -vvv --cov=app --cov-report=term-missing tests
 
 testpdb:
-	poetry run python -m pytest -vvv --pdb
+	env -i $(POETRY) run python -m pytest -vvv --pdb
 
 lint: format
 	poetry run ruff check app

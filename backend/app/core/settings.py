@@ -1,6 +1,7 @@
 from functools import lru_cache
-from typing import Any
+from typing import Annotated, Any, Generic
 
+from fastapi import Depends
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -9,6 +10,8 @@ class Settings(BaseSettings):
     """Application settings"""
 
     model_config = SettingsConfigDict(case_sensitive=False)
+
+    LOGGING_CONF: str | None = "logging.conf"
 
     # database
     POSTGRES_DATABASE_URL: str
@@ -56,5 +59,5 @@ class Settings(BaseSettings):
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> Settings:
     return Settings()

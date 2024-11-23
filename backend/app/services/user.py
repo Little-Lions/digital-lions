@@ -32,10 +32,13 @@ class UserService(BaseService, AbstractService):
         and then triggering a password reset.
 
         Args:
-            obj: user.UserPostIn: User data to create, containing email and roles.
+            obj: user.UserPostIn: User data to create, containing email.
 
         Returns:
-            str: Auth0 user ID without the 'Auth0|' prefix.
+            str: Auth0 user ID with the 'Auth0|' prefix.
+
+        Raises:
+            UserEmailExistsError: If user with email already exists.
         """
         try:
             tmp_password = uuid.uuid4()
@@ -54,7 +57,6 @@ class UserService(BaseService, AbstractService):
                 f"User with email {obj.email} already exists."
             )
 
-        self.add_roles(user_id=user_id, roles=obj.roles)
         self.commit()
         msg = self._send_invite_by_email(obj.email)
         return models.UserPostOut(user_id=user_id, message=msg)
@@ -101,7 +103,7 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserNotFoundError(msg)
 
         # delete user from auth0
-        self.auth0.delete_role(user_id)
+        self.auth0.delete_user(user_id)
 
         # delete user roles from the database
         self._roles.delete_where(attr="user_id", value=user_id)

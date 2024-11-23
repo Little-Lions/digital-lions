@@ -43,23 +43,23 @@ async def add_role_to_user(
     Digital Lions has the following hiearchicy between entities:
     **Implementing Partner > Community > Team**
 
-    Each of the above is a `level`. The payload for adding a role then consists of
+    Each of the above is a level. The payload for adding a role then consists of
     the following fields:
     - `role`: The role name
     - `level`: The level at which the role is assigned. This translated to a resource in
-      the hierarchical setup of the platform. I.e. `implementing_partner` (top-level),
-        `community` (mid-level), `team` (bottom-level).
-    - `resource_id`: The ID of the reousrce the role is assigned to.
+      the hierarchical setup of the platform. I.e. `Implementing Partner` (top-level),
+        `Community` (mid-level), `Team` (bottom-level).
+    - `resource_id`: The ID of the resource the role is assigned to.
 
     **Examples**
     - A user should be coach for team with id 1. In this case the payload should be
-    `{"role": "coach", "level": "team", "resource_id": 1}`
+    `{"role": "coach", "level": "Team", "resource_id": 1}`
     - A user should be coach for all teams in community that has id 2. In this case
       the payload should be
-    `{ "role": "coach", "level": "community", "resource_id": 2}`.
+    `{ "role": "coach", "level": "Community", "resource_id": 2}`.
 
     **Important**
-    - Currently the only supported `resource_id` for `level=implementing_parter`
+    - Currently the only supported `resource_id` for `level` `Implementing Partner`
     is the default implenting partner (Little Lions, ID 1).
 
     **Required scopes**

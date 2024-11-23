@@ -9,8 +9,7 @@ from fastapi import status
 
 
 class Auth0Repository:
-    """Repository for operations with the authorization server,
-    which is Auth0 by Okta."""
+    """Repository for operations with the Oauth authorization server"""
 
     MGMT_API = "https://{}/api/v2/"
 
@@ -47,12 +46,12 @@ class Auth0Repository:
                 match exc.status_code:
                     case status.HTTP_400_BAD_REQUEST:
                         raise exceptions.BadRequestError(str(exc))
-                    case status.HTTP_409_CONFLICT:
-                        raise exceptions.ItemAlreadyExistsError(str(exc))
-                    case status.HTTP_404_NOT_FOUND:
-                        raise exceptions.UserNotFoundError(str(exc))
                     case status.HTTP_403_FORBIDDEN:
                         raise exceptions.ForbiddenError(str(exc))
+                    case status.HTTP_404_NOT_FOUND:
+                        raise exceptions.UserNotFoundError(str(exc))
+                    case status.HTTP_409_CONFLICT:
+                        raise exceptions.ItemAlreadyExistsError(str(exc))
                     case _:
                         raise exc
 

@@ -1,10 +1,19 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import pytest
 from auth0.exceptions import Auth0Error
 from fastapi import status
 
 ENDPOINT = "/users"
+
+
+@pytest.fixture(autouse=True)
+def mock_auth0_repository(mocker):
+    """Mock the auth0 token for all tests."""
+    get_token_mock = mocker.MagicMock()
+    get_token_mock.client_credentials.return_value = {"access_token": "dummy-token"}
+    mocker.patch("repositories.auth0.GetToken", return_value=get_token_mock)
 
 
 def test_get_user_not_found(client, mocker):
@@ -51,8 +60,6 @@ def test_get_valid_user_found(client, mocker):
 def test_add_user_success(client, mocker):
     # test successfull creation of a user and sending of email
     email = "valid@hotmail.com"
-    # TODO: add roles
-    roles = [{"role": "coach", "scope": "2"}]
     user_id = "auth0|1234"
     created_user = {
         "created_at": datetime.now(),
@@ -74,7 +81,7 @@ def test_add_user_success(client, mocker):
     resend = mocker.patch("core.email.resend")
     mocker.patch("core.email.os")
 
-    data = {"email": email, "roles": roles}
+    data = {"email": email}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["user_id"] == user_id

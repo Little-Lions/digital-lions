@@ -1,34 +1,32 @@
 import logging
 import logging.config
+import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-import yaml
 from core.database.session import init_db
 from core.settings import get_settings
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from routers import children, communities, health, roles, teams, users, workshops
 
-settings = get_settings()
-
-logging_conf = "logging.conf"
-logging.config.fileConfig(logging_conf, disable_existing_loggers=False)  # type: ignore
 logger = logging.getLogger(__name__)
-logger.info("Logging configuration: %s", logging_conf)
-logger.info(f"OAuth authorization enabled: {settings.FEATURE_OAUTH}")
-logger.info(f"API-Key authentication enabled: {settings.FEATURE_API_KEY}")
 
 
-def get_config(path: str) -> dict:
-    """Get configuration from a yaml file."""
-    with open(path) as file:
-        return yaml.safe_load(file)
+def setup_logger(settings):
+    logging_conf = "logging.conf"
+    logging.config.fileConfig(logging_conf, disable_existing_loggers=False)  # type: ignore
+    logger = logging.getLogger(__name__)
+    logger.info("Logging configuration: %s", logging_conf)
+    logger.info(f"OAuth authorization enabled: {settings.FEATURE_OAUTH}")
+    logger.info(f"API-Key authentication enabled: {settings.FEATURE_API_KEY}")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan event handler for FastAPI."""
+    settings = get_settings()
+    setup_logger(settings)
 
     logger.info("Starting db client...")
     init_db()
@@ -51,11 +49,17 @@ async def catch_any_exception(request: Request, call_next: Any) -> Any:
 
 
 app = FastAPI(
-    title="Digital Lions API", version="0.1.0", root_path="/api/v1", lifespan=lifespan
+    title="Digital Lions API",
+    version="0.1.0",
+    root_path="/api/v1",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    # TODO: allowed origins should come from settings
+    # but settings is only available after instantiation of the API
+    # while the middleware is added before, not sure how to fix this
+    allow_origins=os.environ.get("ALLOWED_ORIGINS").split(","),
     allow_methods=["*"],
     allow_headers=["API-Key", "Content-Type", "Authorization"],
 )

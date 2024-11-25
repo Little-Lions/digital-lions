@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,23 +15,6 @@ def mock_auth0_repository(mocker):
     get_token_mock = mocker.MagicMock()
     get_token_mock.client_credentials.return_value = {"access_token": "dummy-token"}
     mocker.patch("repositories.auth0.GetToken", return_value=get_token_mock)
-
-
-@pytest.fixture
-def user_exists(mocker):
-    # fixture for existent user
-    valid_user_id = "auth0|1234"
-    email = "email@hotmail.com"
-    valid_user = {
-        "user_id": valid_user_id,
-        "email": email,
-        "email_verified": None,
-        "created_at": None,
-    }
-
-    auth0 = MagicMock()
-    auth0.users.get.return_value = valid_user
-    mocker.patch("repositories.auth0.Auth0", return_value=auth0)
 
 
 @pytest.fixture
@@ -63,15 +45,40 @@ def test_add_role_user_not_found(client, mocker):
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text
 
 
-# def test_add_role_success(client, mocker, user_exists, role_exists):
-#     # assert that a 200 is returned when a user_id is passed that exists
-#     mocker.patch(
-#         "repositories.database.CommunityRepository.read",
-#         return_value=mocker.MagicMock(),
-#     )
-#     user_id = "auth0|1234"
-#     response = client.post(
-#         f"{ENDPOINT}/{user_id}/roles",
-#         json={"role": "Admin", "level": "Community", "resource_id": 1},
-#     )
-#     assert response.status_code == status.HTTP_201_CREATED, response.text
+def test_add_role_success(client, mocker, role_exists):
+    # assert that a 200 is returned when a user_id is passed that exists
+    # TODO: move this to fixture
+    valid_user_id = "auth0|1234"
+    email = "email@hotmail.com"
+    valid_user = {
+        "user_id": valid_user_id,
+        "email": email,
+        "email_verified": None,
+        "created_at": None,
+    }
+
+    auth0 = MagicMock()
+    auth0.users.get.return_value = valid_user
+    mocker.patch("repositories.auth0.Auth0", return_value=auth0)
+
+    auth0.roles.list.return_value = {
+        "roles": [{"id": 1, "name": "Admin", "description": "Admin role"}]
+    }
+    mocker.patch("repositories.auth0.Auth0", return_value=auth0)
+
+    mocker.patch(
+        "repositories.database.CommunityRepository.read",
+        return_value=mocker.MagicMock(),
+    )
+    user_id = "auth0|1234"
+    response = client.post(
+        f"{ENDPOINT}/{user_id}/roles",
+        json={"role": "Admin", "level": "Community", "resource_id": 1},
+    )
+    assert response.status_code == status.HTTP_201_CREATED, response.text
+
+    response_get = client.get(f"{ENDPOINT}/{user_id}/roles")
+    assert response_get.status_code == status.HTTP_200_OK, response_get.text
+    assert response_get.json() == [
+        {"role": "Admin", "level": "Community", "resource_id": 1}
+    ]

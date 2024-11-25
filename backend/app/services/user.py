@@ -73,6 +73,7 @@ class UserService(BaseService, AbstractService):
 
         Args:
             user_id: Auth0 user ID including Auth0 prefix.
+
         """
         try:
             user_obj = self.auth0.get_user(user_id=user_id)
@@ -87,11 +88,18 @@ class UserService(BaseService, AbstractService):
         """Update a user by ID."""
         raise NotImplementedError()
 
-    def delete(self, user_id: str) -> None:
+    def delete(self, user_id: str) -> generic.Message:
         """Delete a user by ID.
 
         Args:
             user_id: str: user ID, including 'Auth0|' prefix.
+
+        Returns:
+            generic.Message: info message in case successfull.
+
+        Raises:
+            UserNotFoundError: If user is not found.
+
         """
         try:
             # auth0-python sdk does not raise an exception if user is not found
@@ -306,9 +314,10 @@ class UserService(BaseService, AbstractService):
         logger.info(msg)
         return msg
 
-    def _get_roles(self, user_id: str) -> list[models.Role]:
+    def _get_roles(self, user_id: str) -> list[models.Role] | None:
         """
         Get all roles of a user in the db.
+
         Args:
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """

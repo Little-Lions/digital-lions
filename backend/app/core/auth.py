@@ -64,6 +64,7 @@ class Scopes(str, Enum):
     teams_write: str = "teams:write"
     users_read: str = "users:read"
     users_write: str = "users:write"
+    roles_read: str = "roles:read"
     workshops_read: str = "workshops:read"
     workshops_write: str = "workshops:write"
 

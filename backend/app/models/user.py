@@ -1,33 +1,17 @@
 from datetime import datetime
-from enum import Enum
 
 from models._metadata import _UpdatePropertiesIn
+from models.role import Level, Role
 from pydantic import BaseModel, EmailStr, Field
 
 
-class Role(str, Enum):
-    """Enumeration for possible user roles."""
-
-    admin = "Admin"
-    coach = "Coach"
-
-
-class Level(str, Enum):
-    """Enumeration for possible entity types that
-    a role can be assigned to."""
-
-    implementing_partner = "Implementing Partner"
-    community = "Community"
-    team = "Team"
-
-
-class RolePostIn(BaseModel):
+class UserRolePostIn(BaseModel):
     """Model for role that can be assigned to a user."""
 
     role: Role = Field(description="Role of the user", examples=["Coach"])
     level: Level = Field(
         description="Level at which the role is assigned",
-        examples=["community", "team"],
+        examples=["Community", "Team"],
     )
     resource_id: int = Field(description="ID of the resource the role is assigned to.")
 
@@ -36,7 +20,7 @@ class UserGetRolesOut(BaseModel):
     """API response model for GET /users/:id/roles."""
 
     user_id: str
-    roles: list[RolePostIn] | None = Field(
+    roles: list[UserRolePostIn] | None = Field(
         default_factory=list, description="List of assigned roles on platform"
     )
 
@@ -74,16 +58,6 @@ class UserPostIn(BaseModel):
 
     email: EmailStr
 
-    class RolePostIn(BaseModel):
-        """Model for role that can be assigned to a user."""
-
-        role: Role
-        scope: str
-
-    roles: list[Role] | None = Field(
-        default_factory=list, description="User roles on platform"
-    )
-
 
 class UserPostOut(BaseModel):
     """API response model for POST /users."""
@@ -96,4 +70,3 @@ class UserPatchIn(BaseModel, _UpdatePropertiesIn):
     """API payload model for PATCH /users/:id."""
 
     email_address: EmailStr | None = None
-    role: str | None = Field(default=None, description="User role on platform")

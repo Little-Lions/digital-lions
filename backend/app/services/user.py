@@ -120,7 +120,7 @@ class UserService(BaseService, AbstractService):
         logger.info(msg)
         return generic.Message(detail=msg)
 
-    def add_role(self, user_id: str, role: models.RolePostIn) -> generic.Message:
+    def add_role(self, user_id: str, role: models.UserRolePostIn) -> generic.Message:
         """
         Add role to an existing user.
 
@@ -182,11 +182,11 @@ class UserService(BaseService, AbstractService):
         """
         roles = self._roles.where(filters=[("user_id", user_id)])
         return [
-            models.RolePostIn(role=r.role, level=r.level, resource_id=r.resource_id)
+            models.UserRolePostIn(role=r.role, level=r.level, resource_id=r.resource_id)
             for r in roles
         ]
 
-    def delete_role(self, user_id: str, role: models.RolePostIn) -> generic.Message:
+    def delete_role(self, user_id: str, role: models.UserRolePostIn) -> generic.Message:
         """
         Delete a role from a user.
 
@@ -248,13 +248,13 @@ class UserService(BaseService, AbstractService):
         return self.auth0.get_roles(user_id=user_id)
 
     def _validate_user_has_auth0_roles(
-        self, user_id: str, role: models.RolePostIn
+        self, user_id: str, role: models.UserRolePostIn
     ) -> bool:
         """Check if user has a role in Auth0."""
         roles = self._get_auth0_roles(user_id=user_id)
         return any(r["name"] == role.role for r in roles)
 
-    def _validate_role_resource_id(self, role: models.RolePostIn):
+    def _validate_role_resource_id(self, role: models.UserRolePostIn):
         """
         Validate the resource ID of the role. That is:
         - if the role is assigned on Implementing Partner level,

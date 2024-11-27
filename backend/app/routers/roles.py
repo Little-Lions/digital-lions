@@ -1,6 +1,5 @@
 import logging
 
-from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
 from core.dependencies import (
     CommunityServiceDependency,
@@ -9,7 +8,6 @@ from core.dependencies import (
 )
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import role as models
-from models.generic import Message
 from routers._responses import with_default_responses
 
 logger = logging.getLogger()
@@ -25,6 +23,7 @@ SCOPES = {
 
 @router.get(
     "",
+    tags=["roles"],
     response_model=list[str] | None,
     status_code=status.HTTP_200_OK,
     summary="List available user roles",
@@ -43,6 +42,7 @@ async def list_roles(
 
 @router.get(
     "/levels",
+    tags=["roles"],
     response_model=list[str] | None,
     status_code=status.HTTP_200_OK,
     summary="List levels at which a role can be assigned.",
@@ -64,7 +64,8 @@ async def list_levels(
 
 @router.get(
     "/resources",
-    response_model=list[models.GetRoleResourcesOut] | None,
+    tags=["roles"],
+    response_model=list[models.RoleResourcesGetOut] | None,
     status_code=status.HTTP_200_OK,
     summary="List resources for role and level",
     responses=with_default_responses(),
@@ -97,14 +98,14 @@ async def list_resources(
             detail="Role and level combination not supported.",
         )
     if level == models.Level.implementing_partner:
-        return [models.GetRoleResourcesOut(resource_id=1, resource_name="Litle Lions")]
+        return [models.RoleResourcesGetOut(resource_id=1, resource_name="Litle Lions")]
     if level == models.Level.community:
         return [
-            models.GetRoleResourcesOut(resource_id=v.id, resource_name=v.name)
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
             for v in community_service.get_all()
         ]
     if level == models.Level.team:
         return [
-            models.GetRoleResourcesOut(resource_id=v.id, resource_name=v.name)
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
             for v in team_service.get_all()
         ]

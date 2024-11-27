@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
@@ -6,6 +5,15 @@ from auth0.exceptions import Auth0Error
 from fastapi import status
 
 ENDPOINT = "/users"
+USER_ID = "auth0|1234"
+NON_EXISITNG_ID = "auth0|2390nasgq23"
+EMAIL = "email@hotmail.com"
+VALID_USER = {
+    "user_id": USER_ID,
+    "email": EMAIL,
+    "email_verified": None,
+    "created_at": None,
+}
 
 
 @pytest.fixture(autouse=True)
@@ -26,88 +34,88 @@ def test_get_user_not_found(client, mocker):
     )
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
 
-    non_existing_id = "auth0|2390nasgq23"
-    response = client.get(f"{ENDPOINT}/{non_existing_id}")
+    response = client.get(f"{ENDPOINT}/{NON_EXISITNG_ID}")
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text
 
     # assert that the correct user_id is passed to the auth0 repository
-    auth0.users.get.assert_called_with(non_existing_id)
+    auth0.users.get.assert_called_with(NON_EXISITNG_ID)
 
 
 def test_get_valid_user_found(client, mocker):
     # assert that a 200 is returned when a user_id is passed that exists
-
-    valid_user_id = "auth0|1234"
-    email = "email@hotmail.com"
-    valid_user = {
-        "user_id": valid_user_id,
-        "email": email,
-        "email_verified": None,
-        "created_at": None,
-    }
-
     auth0 = MagicMock()
-    auth0.users.get.return_value = valid_user
+    auth0.users.get.return_value = VALID_USER
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
 
-    response = client.get(f"{ENDPOINT}/{valid_user_id}")
+    response = client.get(f"{ENDPOINT}/{USER_ID}")
     assert response.status_code == status.HTTP_200_OK, response.text
 
     # assert that the correct user_id is passed to the auth0 repository
-    auth0.users.get.assert_called_with(valid_user_id)
+    auth0.users.get.assert_called_with(USER_ID)
 
 
 def test_add_user_success(client, mocker):
     # test successfull creation of a user and sending of email
-    email = "valid@hotmail.com"
-    user_id = "auth0|1234"
-    created_user = {
-        "created_at": datetime.now(),
-        "email": email,
-        "email_verified": False,
-        "user_id": user_id,
-    }
-
     auth0 = MagicMock()
-    auth0.users.create.return_value = created_user
+    auth0.users.create.return_value = VALID_USER
 
     # mock the return ticket link
     ticket_link = "https://auth0.com"
     auth0.tickets.create_pswd_change.return_value = {"ticket": ticket_link}
 
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
-
-    # mock the email service
     resend = mocker.patch("core.email.resend")
     mocker.patch("core.email.os")
 
-    data = {"email": email}
-    response = client.post(ENDPOINT, json=data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert response.json()["user_id"] == user_id
+    # act
+    response = client.post(ENDPOINT, json={"email": EMAIL})
 
-    assert resend.Emails.send.call_args.args[0]["to"][0] == email
+    # assert
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["user_id"] == USER_ID
+
+    assert resend.Emails.send.call_args.args[0]["to"][0] == EMAIL
+
+
+def test_add_user_duplicate(client, mocker):
+    # test that we can't create the same user twice
+    auth0 = MagicMock()
+    auth0.users.create.return_value = VALID_USER
+    mocker.patch("repositories.auth0.Auth0", return_value=auth0)
+
+    # mock the return ticket link
+    mocker.patch("services.user.UserService._send_invite_by_email", return_value="msg")
+
+    response = client.post(ENDPOINT, json={"email": EMAIL})
+    assert response.status_code == status.HTTP_201_CREATED
+
+    # second time should fail
+    auth0 = MagicMock()
+    auth0.users.create.side_effect = (
+        Auth0Error(
+            status_code=409,
+            error_code="existent_user",
+            message="User email already exists",
+        ),
+    )
+    mocker.patch("repositories.auth0.Auth0", return_value=auth0)
+    response = client.post(ENDPOINT, json={"email": EMAIL})
+    assert response.status_code == status.HTTP_409_CONFLICT, response.text
 
 
 def test_delete_user_success(client, mocker):
-    # test successfull deletion of a user
-    user_id = "auth0|1234"
-    email = "mail@hotmail.com"
-    user = {
-        "created_at": datetime.now(),
-        "email": email,
-        "email_verified": False,
-        "user_id": user_id,
-    }
-
+    # arrange
     auth0 = MagicMock()
     auth0.users.delete.return_value = None
-    auth0.users.get.return_value = user
+    auth0.users.get.return_value = VALID_USER
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
-    response = client.delete(f"{ENDPOINT}/{user_id}")
-    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
+
+    # act
+    response = client.delete(f"{ENDPOINT}/{USER_ID}")
+
     # assert that the correct user_id is passed to the auth0 repository
-    auth0.users.delete.assert_called_with(user_id)
+    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
+    auth0.users.delete.assert_called_with(USER_ID)
 
 
 def test_delete_user_not_found(client, mocker):
@@ -120,6 +128,5 @@ def test_delete_user_not_found(client, mocker):
     )
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
 
-    non_existing_id = "auth0|2390nasgq23"
-    response = client.delete(f"{ENDPOINT}/{non_existing_id}")
+    response = client.delete(f"{ENDPOINT}/{NON_EXISITNG_ID}")
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text

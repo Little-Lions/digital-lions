@@ -9,7 +9,23 @@ from fastapi import status
 
 
 class Auth0Repository:
-    """Repository for operations with the Oauth authorization server"""
+    """
+    Repository pattern implementation for Auth0 service integration.
+
+    Provides a clean abstraction layer between domain logic and Auth0 service,
+    handling user management, roles, and authentication operations.
+
+    Required settings:
+        OAUTH_DOMAIN: Auth0 domain
+        OAUTH_CLIENT_ID: Client ID
+        OAUTH_CLIENT_SECRET: Client secret
+        OAUTH_CONNECTION_ID: Database connection ID
+        OAUTH_PWD_TICKET_RESULT_URL: Password reset URL
+
+    Note:
+        Uses @convert_auth0_error to transform silent Auth0 exceptions into
+        proper Python exceptions.
+    """
 
     MGMT_API = "https://{}/api/v2/"
 
@@ -68,6 +84,15 @@ class Auth0Repository:
     def get_user(self, user_id: str) -> dict:
         """
         Get a user from the authorization server.
+
+        Args:
+            user_id str: The Auth0 user ID.
+
+        Returns:
+            dict: The user data.
+
+        Raises:
+            UserNotFoundError: If the user is not found.
         """
         return self.auth0.users.get(user_id)
 
@@ -75,6 +100,13 @@ class Auth0Repository:
     def list_users(self) -> list:
         """
         Get all users from the authorization server.
+
+        Args:
+            None
+
+        Returns:
+            list: list of users in Auth0.
+
         """
         return self.auth0.users.list()
 
@@ -90,8 +122,17 @@ class Auth0Repository:
         """
         Add a role to a user.
 
+        Args:
+            user_id str: The Auth0 user ID.
+            role_name str: The name of the role.
+
         Returns:
             Empty string
+
+        Raises:
+            RoleNotFoundError: If the role is not found.
+            ValueError: If multiple roles with the same name are found.
+
         """
         auth0_roles = self.auth0.roles.list(name_filter=role_name)
         if len(auth0_roles["roles"]) == 0:
@@ -133,7 +174,6 @@ class Auth0Repository:
     @convert_auth0_error
     def get_password_change_ticket(self, email: str) -> str:
         """
-
         Get a password change ticket for a user.
         """
         body = {
@@ -147,6 +187,16 @@ class Auth0Repository:
     def get_user_by_email(self, email: str) -> dict:
         """
         Get the user ID by email.
+
+        Args:
+            email str: The email of the user.
+
+        Returns:
+            dict: user object.
+
+        Raises:
+            UserNotFoundError: If the user is not found.
+            ValueError: If multiple users with the same email are found.
         """
         users = self.auth0.users_by_email.search_users_by_email(email=email)
         if len(users) == 0:

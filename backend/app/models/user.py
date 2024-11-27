@@ -16,13 +16,16 @@ class UserRolePostIn(BaseModel):
     resource_id: int = Field(description="ID of the resource the role is assigned to.")
 
 
-class UserGetRolesOut(BaseModel):
-    """API response model for GET /users/:id/roles."""
+class UserRoleGetOut(BaseModel):
+    """
+    Response model for GET /users/:id/roles. Used for listing the
+    roles that has been assigned to a user.
+    """
 
-    user_id: str
-    roles: list[UserRolePostIn] | None = Field(
-        default_factory=list, description="List of assigned roles on platform"
-    )
+    id: int = Field(description="ID of the role")
+    role: str = Field(description="Name of the role")
+    level: str = Field(description="Level at which the role is assigned")
+    resource_id: int = Field(description="ID of the resource the role is assigned to")
 
 
 class UserGetOut(BaseModel):

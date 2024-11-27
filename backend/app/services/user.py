@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 
 
 class UserService(BaseService, AbstractService):
-    """User service layer to do anything related to users."""
+    """User service layer to do anything related to users and roles.
+
+    Args:
+        session: database session.
+
+    """
 
     AUTH0_USER_CONNECTION = "Username-Password-Authentication"
 
     def __init__(self, session: SessionDependency) -> None:
-        """Instantiate UserService with Auth0Repository
-
-        Args:
-            session: database session.
-        """
         self.settings = get_settings()
         self.auth0 = Auth0Repository(settings=self.settings)
         super().__init__(session=session)
@@ -135,6 +135,7 @@ class UserService(BaseService, AbstractService):
             ResourceNotFoundError: If resource ID is not found.
             RoleAlreadyExistsError: If role already exists for user.
             UserNotFoundError: If user is not found.
+
         """
         user_in_db = self.get(user_id=user_id)
         if not user_in_db:
@@ -179,14 +180,20 @@ class UserService(BaseService, AbstractService):
 
         Args:
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
+
+        Returns:
+            list: List all the roles assigned to a user.
+
         """
         roles = self._roles.where(filters=[("user_id", user_id)])
         return [
-            models.UserRolePostIn(role=r.role, level=r.level, resource_id=r.resource_id)
-            for r in roles
+            models.UserRoleGetOut(
+                id=v.id, level=v.level, resource_id=v.resource_id, role=v.role
+            )
+            for v in roles
         ]
 
-    def delete_role(self, user_id: str, role: models.UserRolePostIn) -> generic.Message:
+    def delete_role(self, user_id: str, role_id: str) -> generic.Message:
         """
         Delete a role from a user.
 
@@ -200,44 +207,34 @@ class UserService(BaseService, AbstractService):
         Raises:
             UserNotFoundError: If user is not found.
             RoleNotFoundForUserError: If role does not exist for user.
+
         """
         user_in_db = self.get(user_id=user_id)
         if not user_in_db:
             raise exceptions.UserNotFoundError(f"User with ID {user_id} not found.")
 
         # check if user has roles assigned in db
-        role_in_db = self._roles.where(filters=list(role.dict().items()))
+        role_in_db = self._roles.where(filters=[("id", role_id)])
         if not role_in_db:
-            msg = (
-                f"User with ID {user_id} does not have role '{role.role.value}' "
-                f"assigned to {role.level.value} {role.resource_id}"
-            )
+            msg = f"Role with ID {role_id} not found for user {user_id}."
             logger.error(msg)
             raise exceptions.RoleNotFoundForUserError(msg)
-        if len(role_in_db) > 1:
-            msg = (
-                f"User with ID {user_id} has multiple roles '{role.role.value}' "
-                f"assigned to resource {role.resource_id}. This is a bug."
-            )
-            logger.error(msg)
-            raise exceptions.InternalServerError(msg)
 
-        self._roles.delete(role_in_db[0].id)
+        self._roles.delete(role_id)
+        role = role_in_db[0]
 
         # if it is the last scoped role in the db we also need
         # to remove the role in Auth0
-        if not self._roles.where(
-            filters=[("user_id", user_id), ("role", role.role.value)]
-        ):
+        if not self._roles.where(filters=[("user_id", user_id), ("role", role.role)]):
             logger.info(
-                f"User with ID {user_id} has no more roles in the database."
-                f"Deleting role '{role.role.value}' from Auth0"
+                f"User with ID {user_id} has no more {role.role} roles in the database."
+                f"Deleting role '{role.role}' from Auth0"
             )
-            self.auth0.delete_role(user_id=user_id, role_name=role.role.value)
+            self.auth0.delete_role(user_id=user_id, role_name=role)
 
         self.commit()
         msg = (
-            f"Role '{role.role.value}' for {role.level.value} "
+            f"Role '{role.role}' for {role.level} "
             f"{role.resource_id} deleted from user {user_id}"
         )
         logger.info(msg)

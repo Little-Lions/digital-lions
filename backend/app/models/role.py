@@ -29,7 +29,7 @@ class ScopedRole(BaseModel):
     )
 
 
-class GetRoleResourcesOut(BaseModel):
+class RoleResourcesGetOut(BaseModel):
     """
     Reponse model for GET /roles/resources. Used for listing
     the resources at which a role can be assigned. A resource is

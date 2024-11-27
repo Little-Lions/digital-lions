@@ -8,7 +8,7 @@ from models import user as models
 from models.generic import Message
 from routers._responses import with_default_responses
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", dependencies=[APIKeyDependency])
 
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/users", dependencies=[APIKeyDependency])
 @router.get(
     "",
     response_model=list[models.UserGetOut],
+    tags=["users"],
     status_code=status.HTTP_200_OK,
     summary="List all users",
     responses=with_default_responses(),
@@ -38,6 +39,7 @@ async def get_users(
 
 @router.get(
     "/{user_id}",
+    tags=["users"],
     response_model=models.UserGetByIdOut,
     status_code=status.HTTP_200_OK,
     summary="Get user",
@@ -72,6 +74,7 @@ async def get_user_by_id(
 
 @router.post(
     "",
+    tags=["users"],
     response_model=models.UserPostOut,
     status_code=status.HTTP_201_CREATED,
     summary="Invite new user",
@@ -110,48 +113,9 @@ async def create_user(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
 
 
-# @router.post(
-#     "/reset-password",
-#     response_model=Message,
-#     status_code=status.HTTP_200_OK,
-#     summary="Request password reset",
-#     responses=with_default_responses(
-#         {
-#             status.HTTP_404_NOT_FOUND: {
-#                 "model": Message,
-#                 "description": "User not found",
-#             }
-#         }
-#     ),
-# )
-# async def reset_password(
-#     user_service: UserServiceDependency,
-#     user_id: str,
-#     current_user: BearerTokenHandler = Depends(
-#         BearerTokenHandler(required_scopes=[Scopes.users_write])
-#     ),
-# ):
-#     """
-#     Request a password reset for a user. This will trigger a
-#     password reset flow, i.e. a user will receive a link to reset their password.
-#
-#     **Note:** This endpoint is only used from within the platform, and is
-#     not part of the general "Forgot Password" flow.
-#
-#     **Required scopes**
-#     - `users:write`
-#
-#     """
-#     try:
-#         return user_service.reset_password(user_id=user_id)
-#     except exceptions.BadRequestError as exc:
-#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-#     except exceptions.UserNotFoundError as exc:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-
-
 @router.post(
     "/resend-invite",
+    tags=["users"],
     response_model=Message,
     status_code=status.HTTP_200_OK,
     summary="Resend invite link",
@@ -191,6 +155,7 @@ async def resend_invite(
     "/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete user",
+    tags=["users"],
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
@@ -222,6 +187,7 @@ async def delete_user(
 
 @router.post(
     "/{user_id}/roles",
+    tags=["roles"],
     response_model=Message,
     status_code=status.HTTP_201_CREATED,
     summary="Add scoped role to a user",
@@ -288,8 +254,9 @@ async def add_role_to_user(
 
 @router.get(
     "/{user_id}/roles",
-    response_model=list[models.UserRolePostIn] | None,
+    response_model=list[models.UserRoleGetOut] | None,
     status_code=status.HTTP_200_OK,
+    tags=["roles"],
     summary="List all scoped roles of a user",
     responses=with_default_responses(
         {
@@ -323,8 +290,9 @@ async def get_roles_of_user(
 
 
 @router.delete(
-    "/{user_id}/roles",
+    "/{user_id}/roles/{role_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    tags=["roles"],
     summary="Remove a scoped role from a user",
     responses=with_default_responses(
         {
@@ -341,20 +309,21 @@ async def get_roles_of_user(
 )
 async def remove_role_from_user(
     user_id: str,
-    role: models.UserRolePostIn,
+    role_id: int,
     user_service: UserServiceDependency,
     current_user: BearerTokenHandler = Depends(
         BearerTokenHandler(required_scopes=[Scopes.users_write])
     ),
 ):
     """
-    Remove a scoped role from an existing user.
+    Remove a scoped role from an existing user. The `role_id` corresponds to the
+    ID that was returned when the role was assigned to a user.
 
     **Required scopes**
     - `users:write`
 
     """
     try:
-        return user_service.delete_role(user_id=user_id, role=role)
+        return user_service.delete_role(user_id=user_id, role_id=role_id)
     except (exceptions.UserNotFoundError, exceptions.RoleNotFoundForUserError) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

@@ -8,9 +8,6 @@ const getChildren = async (communityId: number): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(`/api/children?community_id=${communityId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

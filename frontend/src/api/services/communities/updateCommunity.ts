@@ -3,8 +3,6 @@ interface ApiInput {
   name: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const getCommunities = async (
   communityId: string,
   input: ApiInput
@@ -14,9 +12,6 @@ const getCommunities = async (
       `/api/communities?community_id=${communityId}`,
       {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(input),
       }
     );

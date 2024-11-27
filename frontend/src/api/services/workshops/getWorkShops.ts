@@ -10,9 +10,6 @@ const getWorkshops = async (): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(`/api/workshops`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

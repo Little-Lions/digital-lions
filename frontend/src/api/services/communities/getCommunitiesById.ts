@@ -11,9 +11,6 @@ const getCommunitiesById = async (
       `/api/communities?community_id=${communityId}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
 

@@ -6,9 +6,6 @@ const getTeamsOfCommunity = async (
   try {
     const response = await fetch(`/api/teams?community_id=${communityId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {

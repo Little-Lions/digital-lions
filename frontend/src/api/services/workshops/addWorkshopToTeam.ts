@@ -18,9 +18,6 @@ const addWorkshopToTeam = async (
   try {
     const response = await fetch(`/api/teams/${teamId}/workshops`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(data),
     });
 

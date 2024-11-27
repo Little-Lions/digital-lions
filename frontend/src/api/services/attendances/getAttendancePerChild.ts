@@ -28,9 +28,6 @@ const getAttendancePerChild = async (
   try {
     const response = await fetch(`/api/attendance/${attendanceId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {

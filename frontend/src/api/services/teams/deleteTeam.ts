@@ -14,9 +14,6 @@ const deleteTeam = async ({
       `/api/teams?team_id=${teamId}&cascade=${cascade}`,
       {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
 

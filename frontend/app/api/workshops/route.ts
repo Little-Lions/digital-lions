@@ -51,9 +51,6 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const endpoint = `/teams/${teamId}/workshops`;
-    console.log("endpoint", endpoint);
-    console.log("teamId", teamId);
-    console.log("body", body);
     const data = await apiRequest(endpoint, "POST", accessToken, body);
 
     return NextResponse.json(data, { status: 201 });

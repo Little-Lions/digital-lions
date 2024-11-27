@@ -4,9 +4,6 @@ const getWorkshopsByTeam = async (teamId: number): Promise<WorkshopInfo[]> => {
   try {
     const response = await fetch(`/api/teams/${teamId}/workshops`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {

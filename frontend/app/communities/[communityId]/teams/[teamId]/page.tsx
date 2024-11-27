@@ -315,9 +315,8 @@ const TeamsDetailPage: React.FC = () => {
                 <Accordion
                   key={index}
                   title={`${child.first_name} ${child.last_name}`}
-                  className="mt-2"
+                  className="mb-2"
                 >
-                  {/* Use div instead of nesting block elements in p */}
                   <div>
                     <p>{`First Name: ${child.first_name}`}</p>
                     <p>{`Last Name: ${child.last_name}`}</p>
@@ -334,15 +333,13 @@ const TeamsDetailPage: React.FC = () => {
                       onClick={() => openDeleteChildModal(child.id)}
                     />
                     <CustomButton
-                      className="mt-4 ml-2"
+                      className="mt-4"
                       label="Edit"
                       variant="secondary"
                       icon={<PencilIcon />}
                       onClick={() => handleEditChild(child.id)}
                     />
-                    
                    </ButtonGroup>
-               
                 </Accordion>
               ))}
             </>

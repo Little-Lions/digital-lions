@@ -6,9 +6,6 @@ const getTeams = async (status: teamsStatus): Promise<Team[]> => {
   try {
     const response = await fetch(`/api/teams?status=${status}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
 
     if (!response.ok) {

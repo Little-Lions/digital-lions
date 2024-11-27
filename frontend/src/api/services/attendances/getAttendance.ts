@@ -31,9 +31,6 @@ const getAttendance = async (
       `/api/attendance?child_id=${childId}&community_id=${communityId}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
 

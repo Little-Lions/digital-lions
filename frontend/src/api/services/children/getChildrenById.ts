@@ -12,9 +12,6 @@ const getChildrenById = async (childId: number): Promise<ApiResponse> => {
   try {
     const response = await fetch(`/api/children?child_id=${childId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
     });
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

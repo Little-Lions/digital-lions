@@ -54,9 +54,6 @@ export async function POST(request: Request, { params }: Params) {
 
     const endpoint = `/teams/${teamId}/workshops`;
 
-    console.log("Constructed endpoint:", endpoint);
-    console.log("Request body:", body);
-
     // Call the actual API
     const data = await apiRequest(endpoint, "POST", accessToken, body);
 

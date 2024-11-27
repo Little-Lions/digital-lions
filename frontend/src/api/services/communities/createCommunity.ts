@@ -7,9 +7,6 @@ const createCommunity = async (communityName: string): Promise<ApiResponse> => {
   try {
     const response = await fetch("/api/communities", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ name: communityName }),
     });
 

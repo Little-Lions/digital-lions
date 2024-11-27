@@ -22,9 +22,6 @@ const createChild = async ({
   try {
     const response = await fetch(`/api/children`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({
         team_id: teamId,
         age: age,

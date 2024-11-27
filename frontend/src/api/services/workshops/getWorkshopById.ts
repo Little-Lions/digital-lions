@@ -9,9 +9,6 @@ const getWorkshopById = async (
       `/api/teams/${teamId}/workshops/${workshopId}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
     if (!response.ok) {

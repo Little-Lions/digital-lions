@@ -46,6 +46,9 @@
   --color-primary: #B89B74;              /* Primary White */
   --color-primary-dark: #B5AFA5;         /* Light Gray for Hover States */
 
+  --color-secondary: #E2B842;            /* Secondary Yellow */
+  --color-secondary-dark: #CC9900;       /* Darker Secondary Yellow */
+
   /* Alert and State Colors */
   --color-success: #4CAF50;              /* Success Green */
   --color-success-dark: #388E3C;         /* Darker Green */

@@ -32,9 +32,6 @@ const updateChildById = async ({
 
     const response = await fetch(`/api/children?child_id=${childId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify(body),
     });
     if (!response.ok) {

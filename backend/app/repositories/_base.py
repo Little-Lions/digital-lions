@@ -1,6 +1,5 @@
 """Base repository for database repositories."""
 
-from enum import Enum
 from typing import Generic, TypeVar
 
 from core import exceptions
@@ -11,26 +10,12 @@ from sqlmodel import SQLModel
 Model = TypeVar("Model", bound=SQLModel)
 
 
-class Columns(str, Enum):
-    """Enum for all columns in the database."""
-
-    id = "id"
-    name = "name"
-    team_id = "team_id"
-    workshop_number = "workshop_number"
-    date = "date"
-    attendance = "attendance"
-    child_id = "child_id"
-    workshop_id = "workshop_id"
-
-
 class BaseRepository(Generic[Model]):
     """Generic repository template metaclass for all repositories that
     interact with a table in the database. Supports all classic CRUD
     operations as well as custom queries."""
 
     _model: type[Model]
-    cols: Columns
 
     def __init__(self, session: SessionDependency):
         self._session: SessionDependency = session
@@ -63,7 +48,7 @@ class BaseRepository(Generic[Model]):
             Model: The record from the database table.
 
         Raises:
-            exceptions.ItemNotFoundError: If the record is not found.
+            ItemNotFoundError: If the record is not found.
         """
         obj = self._session.get(self._model, object_id)
         if not obj:
@@ -105,7 +90,7 @@ class BaseRepository(Generic[Model]):
         """Delete an object from the table."""
         obj = self._session.get(self._model, object_id)
         if not obj:
-            raise exceptions.ItemNotFoundError()
+            raise exceptions.ItemNotFoundError(f"{self._model.__name__} not found.")
         self._session.delete(obj)
         self._session.flush()
 

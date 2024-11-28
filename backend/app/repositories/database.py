@@ -1,14 +1,9 @@
 """Repositories for CRUD operations on the database.
 Each table in the database translate to a repository class."""
 
-from typing import TypeVar
-
 from core.database import schema
 from repositories._base import BaseRepository
 from sqlalchemy import func
-from sqlmodel import SQLModel
-
-Model = TypeVar("Model", bound=SQLModel)
 
 
 class AttendanceRepository(BaseRepository[schema.Attendance]):
@@ -75,3 +70,18 @@ class WorkshopRepository(BaseRepository[schema.Workshop]):
 
         result_dict = {team_id: workshop_number for team_id, workshop_number in results}
         return result_dict
+
+
+class DatabaseRepositories:
+    """Container class for all repositories
+    that can be injected into services to gain
+    access to all tables in the database."""
+
+    def __init__(self, session):
+        self.attendances = AttendanceRepository(session=session)
+        self.children = ChildRepository(session=session)
+        self.communities = CommunityRepository(session=session)
+        self.programs = ProgramRepository(session=session)
+        self.roles = RoleRepository(session=session)
+        self.teams = TeamRepository(session=session)
+        self.workshops = WorkshopRepository(session=session)

@@ -5,8 +5,7 @@ from typing import TypeVar
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
-from repositories import database as db
-from repositories._base import Columns
+from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
 
 Model = TypeVar("Model", bound=SQLModel)
@@ -14,20 +13,37 @@ Model = TypeVar("Model", bound=SQLModel)
 logger = logging.getLogger(__name__)
 
 
-class AbstractService(ABC):
-    """Abstract class to be used as a parent class for all services,
-    defining the methods that each service should implement."""
+class BaseService(ABC):
+    """Abstract base class for all application services implementing
+    Unit of Work pattern.
 
-    @abstractmethod
-    def get_all(self):
-        """Get all objects from the table."""
-        pass
+    This class serves as the foundation for all service layer implementations,
+    providing:
+    - Database session management and transaction control
+    - Access to all repositories
+    - Email service integration
+    - Application settings access
+    - Unit of Work pattern implementation
 
-    @abstractmethod
-    def get(self, object_id):
-        """Get an object from the repository that is
-        represented by the service, by ID."""
-        pass
+    Each service inheriting from this class must implement the basic CRUD operations
+    and will automatically gain access to all repositories and shared functionality.
+
+    """
+
+    def __init__(self, session: SessionDependency) -> None:
+        """Initialize service with database session and instantiate dependencies.
+
+        Sets up all repository instances, email service, and loads application
+        settings. Each service instance operates within a single database
+        transaction context.
+
+        Args:
+            session: SQLAlchemy database session for transaction management
+        """
+        self._session: SessionDependency = session
+        self.settings = get_settings()
+        self.email_service = EmailService(settings=self.settings)
+        self.database = DatabaseRepositories(session=self._session)
 
     @abstractmethod
     def create(self, obj: Model):
@@ -36,7 +52,18 @@ class AbstractService(ABC):
         pass
 
     @abstractmethod
-    def update(self, object_id: int, obj):
+    def get(self, object_id: int) -> Model:
+        """Get an object from the repository that is
+        represented by the service, by ID."""
+        pass
+
+    @abstractmethod
+    def get_all(self) -> list[Model] | None:
+        """Get all objects from the table."""
+        pass
+
+    @abstractmethod
+    def update(self, object_id: int, obj: Model):
         """Update an object on the repository that is represented
         by the service."""
         pass
@@ -45,28 +72,6 @@ class AbstractService(ABC):
     def delete(self, object_id: int):
         """Delete an object from the repository."""
         pass
-
-
-class BaseService:
-    """Internal base service to make each API request act as
-    on a unit of work on the database."""
-
-    def __init__(self, session: SessionDependency) -> None:
-        """Instantiate all repositories.
-
-        Args:
-            session: database session.
-        """
-        self._session: SessionDependency = session
-        self._attendances = db.AttendanceRepository(session=self._session)
-        self._communities = db.CommunityRepository(session=self._session)
-        self._children = db.ChildRepository(session=self._session)
-        self._teams = db.TeamRepository(session=self._session)
-        self._workshops = db.WorkshopRepository(session=self._session)
-        self._roles = db.RoleRepository(session=self._session)
-        self.settings = get_settings()
-        self.email_service = EmailService(settings=self.settings)
-        self.cols = Columns
 
     def __enter__(self):
         """On entering context start a transaction."""
@@ -82,4 +87,5 @@ class BaseService:
 
     def rollback(self) -> None:
         """Rollback all staged changes in the database."""
+        logger.warning("Rolling back transaction")
         self._session.rollback()

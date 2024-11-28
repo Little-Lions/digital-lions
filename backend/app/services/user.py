@@ -7,12 +7,12 @@ from core.settings import get_settings
 from models import generic
 from models import user as models
 from repositories.auth0 import Auth0Repository
-from services._base import AbstractService, BaseService
+from services._base import BaseService
 
 logger = logging.getLogger(__name__)
 
 
-class UserService(BaseService, AbstractService):
+class UserService(BaseService):
     """User service layer to do anything related to users and roles.
 
     Args:
@@ -114,7 +114,7 @@ class UserService(BaseService, AbstractService):
         self.auth0.delete_user(user_id)
 
         # delete user roles from the database
-        self._roles.delete_where(attr="user_id", value=user_id)
+        self.database.roles.delete_where(attr="user_id", value=user_id)
         self.commit()
         msg = f"User with ID {user_id} deleted."
         logger.info(msg)
@@ -157,7 +157,7 @@ class UserService(BaseService, AbstractService):
             "level": role.level,
             "resource_id": role.resource_id,
         }
-        if self._roles.where(filters=list(role_in_db.items())):
+        if self.database.roles.where(filters=list(role_in_db.items())):
             msg = (
                 f"Role '{role.role.value}' for {role.level.value} "
                 f"{role.resource_id} already exists for user {user_id}"
@@ -165,7 +165,7 @@ class UserService(BaseService, AbstractService):
             logger.info(msg)
             raise exceptions.RoleAlreadyExistsError(msg)
 
-        self._roles.create(role_in_db)
+        self.database.roles.create(role_in_db)
         msg = (
             f"Role '{role.role.value}' for {role.level.value} "
             f"{role.resource_id} added to user {user_id}"
@@ -185,7 +185,7 @@ class UserService(BaseService, AbstractService):
             list: List all the roles assigned to a user.
 
         """
-        roles = self._roles.where(filters=[("user_id", user_id)])
+        roles = self.database.roles.where(filters=[("user_id", user_id)])
         return [
             models.UserRoleGetOut(
                 id=v.id, level=v.level, resource_id=v.resource_id, role=v.role
@@ -214,18 +214,20 @@ class UserService(BaseService, AbstractService):
             raise exceptions.UserNotFoundError(f"User with ID {user_id} not found.")
 
         # check if user has roles assigned in db
-        role_in_db = self._roles.where(filters=[("id", role_id)])
+        role_in_db = self.database.roles.where(filters=[("id", role_id)])
         if not role_in_db:
             msg = f"Role with ID {role_id} not found for user {user_id}."
             logger.error(msg)
             raise exceptions.RoleNotFoundForUserError(msg)
 
-        self._roles.delete(role_id)
+        self.database.roles.delete(role_id)
         role = role_in_db[0]
 
         # if it is the last scoped role in the db we also need
         # to remove the role in Auth0
-        if not self._roles.where(filters=[("user_id", user_id), ("role", role.role)]):
+        if not self.database.roles.where(
+            filters=[("user_id", user_id), ("role", role.role)]
+        ):
             logger.info(
                 f"User with ID {user_id} has no more {role.role} roles in the database."
                 f"Deleting role '{role.role}' from Auth0"
@@ -278,7 +280,7 @@ class UserService(BaseService, AbstractService):
             return
         elif role.level == models.Level.community:
             try:
-                self._communities.read(role.resource_id)
+                self.database.communities.read(role.resource_id)
                 return
             except exceptions.ItemNotFoundError:
                 raise exceptions.ResourceNotFoundError(
@@ -286,7 +288,7 @@ class UserService(BaseService, AbstractService):
                 )
         elif role.level == models.Level.team:
             try:
-                self._teams.read(role.resource_id)
+                self.database.teams.read(role.resource_id)
                 return
             except exceptions.ItemNotFoundError:
                 raise exceptions.ResourceNotFoundError(
@@ -318,4 +320,4 @@ class UserService(BaseService, AbstractService):
         Args:
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
-        return self._roles.where(filters=[("user_id", user_id)])
+        return self.database.roles.where(filters=[("user_id", user_id)])

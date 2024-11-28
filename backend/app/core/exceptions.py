@@ -1,76 +1,105 @@
 """Custom exceptions for the app."""
 
 
-class BadRequestError(Exception): ...
+class BadRequestError(Exception):
+    pass
 
 
-class ChildAlreadyExistsError(Exception): ...
+class ChildAlreadyExistsError(Exception):
+    pass
 
 
-class ChildHasAttendanceError(Exception): ...
+class ChildHasAttendanceError(Exception):
+    pass
 
 
-class ChildNotFoundError(Exception): ...
+class ChildNotFoundError(Exception):
+    pass
 
 
-class ChildNotInTeam(Exception): ...
+class ChildNotInTeam(Exception):
+    pass
 
 
-class CommunityAlreadyExistsError(Exception): ...
+class CommunityAlreadyExistsError(Exception):
+    pass
 
 
-class CommunityHasTeamsError(Exception): ...
+class CommunityHasTeamsError(Exception):
+    pass
 
 
-class CommunityNotFoundError(Exception): ...
+class CommunityNotFoundError(Exception):
+    pass
 
 
-class ForbiddenError(Exception): ...
+class ForbiddenError(Exception):
+    pass
 
 
-class InternalServerError(Exception): ...
+class InternalServerError(Exception):
+    pass
 
 
-class ItemAlreadyExistsError(Exception): ...
+class ItemAlreadyExistsError(Exception):
+    pass
 
 
-class ItemNotFoundError(Exception): ...
+class ItemNotFoundError(Exception):
+    pass
 
 
-class ResourceNotFoundError(Exception): ...
+class ResourceNotFoundError(Exception):
+    pass
 
 
-class RoleAlreadyExistsError(Exception): ...
+class RoleAlreadyExistsError(Exception):
+    pass
 
 
-class RoleNotFoundError(Exception): ...
+class RoleNotFoundError(Exception):
+    pass
 
 
-class RoleNotFoundForUserError(Exception): ...
+class RoleNotFoundForUserError(Exception):
+    pass
 
 
-class TeamHasChildrenError(Exception): ...
+class TeamAlreadyExistsError(Exception):
+    pass
 
 
-class TeamNotFoundError(Exception): ...
+class TeamHasChildrenError(Exception):
+    pass
 
 
-class UserEmailExistsError(Exception): ...
+class TeamNotFoundError(Exception):
+    pass
 
 
-class UserNotFoundError(Exception): ...
+class UserEmailExistsError(Exception):
+    pass
 
 
-class UserUnauthorizedError(Exception): ...
+class UserNotFoundError(Exception):
+    pass
 
 
-class WorkshopExistsError(Exception): ...
+class UserUnauthorizedError(Exception):
+    pass
 
 
-class WorkshopIncompleteAttendance(Exception): ...
+class WorkshopExistsError(Exception):
+    pass
 
 
-class WorkshopNotFoundError(Exception): ...
+class WorkshopIncompleteAttendance(Exception):
+    pass
 
 
-class WorkshopNumberInvalidError(Exception): ...
+class WorkshopNotFoundError(Exception):
+    pass
+
+
+class WorkshopNumberInvalidError(Exception):
+    pass

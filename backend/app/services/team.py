@@ -12,7 +12,7 @@ from models.team import (
     TeamPostIn,
     TeamPostWorkshopIn,
 )
-from services._base import AbstractService, BaseService
+from services._base import BaseService
 
 logger = logging.getLogger(__name__)
 
@@ -23,22 +23,39 @@ class Attendance(str, Enum):
     absent = "absent"
 
 
-class TeamService(AbstractService, BaseService):
+class TeamService(BaseService):
     """Team service layer to do anything related to teams."""
 
     def create(self, team: TeamPostIn):
         """Create a new team."""
+
+        self._validate_team_unique(team)
+
         try:
-            self._communities.read(object_id=team.community_id)
+            self.database.communities.read(object_id=team.community_id)
         except exceptions.ItemNotFoundError:
             msg = f"Community with ID {team.community_id} not found"
             logger.error(msg)
             raise exceptions.CommunityNotFoundError(msg)
 
-        new_team = self._teams.create(team)
+        new_team = self.database.teams.create(team)
         self.commit()
         logger.info(f"Team with ID {new_team.id} created.")
         return new_team
+
+    def _validate_team_unique(self, team: TeamPostIn | TeamPatchIn):
+        """Validate that a team name is unique.
+
+        Args:
+            team: Team data to validate
+
+        Raises:
+            TeamAlreadyExistsError: If a team with the same name already exists
+        """
+        if self.database.teams.where([("name", team.name)]):
+            error_msg = f"Team with name '{team.name}' already exists"
+            logger.error(error_msg)
+            raise exceptions.TeamAlreadyExistsError(error_msg)
 
     def create_workshop(self, team_id: int, workshop: TeamPostWorkshopIn) -> dict:
         """Create a workshop for a team.
@@ -53,10 +70,10 @@ class TeamService(AbstractService, BaseService):
         self._validate_team_exists(team_id)
 
         # validate that workshop does not exist yet for the team
-        if self._workshops.where(
+        if self.database.workshops.where(
             [
-                (self.cols.team_id, team_id),
-                (self.cols.workshop_number, workshop.workshop_number),
+                ("team_id", team_id),
+                ("workshop_number", workshop.workshop_number),
             ]
         ):
             error_msg = (
@@ -67,7 +84,7 @@ class TeamService(AbstractService, BaseService):
             raise exceptions.WorkshopExistsError(error_msg)
 
         # validate that the workshop number is the next valid workshop for the team
-        workshops = self._workshops.where([(self.cols.team_id, team_id)])
+        workshops = self.database.workshops.where([("team_id", team_id)])
         valid_workshop_number = (
             max(w.workshop_number for w in workshops) + 1 if len(workshops) > 0 else 1
         )
@@ -82,7 +99,7 @@ class TeamService(AbstractService, BaseService):
         # validate that all children in the payload are part of the team
         payload_child_ids = set([child.child_id for child in workshop.attendance])
         team_child_ids = set(
-            [child.id for child in self._children.where([(self.cols.team_id, team_id)])]
+            [child.id for child in self.database.children.where([("team_id", team_id)])]
         )
 
         payload_child_ids_not_in_team = [
@@ -110,7 +127,7 @@ class TeamService(AbstractService, BaseService):
 
         # create workshop
         attendance = workshop.attendance
-        workshop_record = self._workshops.create(
+        workshop_record = self.database.workshops.create(
             {
                 "team_id": team_id,
                 "date": workshop.date,
@@ -119,7 +136,7 @@ class TeamService(AbstractService, BaseService):
         )
         # create attendance records for all children in team
         for child_attendance in attendance:
-            self._attendances.create(
+            self.database.attendances.create(
                 {
                     "workshop_id": workshop_record.id,
                     "child_id": child_attendance.child_id,
@@ -135,7 +152,9 @@ class TeamService(AbstractService, BaseService):
                 f"Team with ID {team_id} has completed "
                 f"workshop {final_workshop} and is now inactive."
             )
-            self._teams.update(object_id=team_id, obj=TeamPatchIn(is_active=False))
+            self.database.teams.update(
+                object_id=team_id, obj=TeamPatchIn(is_active=False)
+            )
 
         self.commit()
         return workshop_record
@@ -162,15 +181,17 @@ class TeamService(AbstractService, BaseService):
             filters.append(("is_active", False))
 
         if filters:
-            teams = self._teams.where(filters=filters)
+            teams = self.database.teams.where(filters=filters)
         else:
-            teams = self._teams.read_all()
+            teams = self.database.teams.read_all()
 
         team_ids = [team.id for team in teams]
 
         # TODO ideally below method should pass 0 if a team has no workshop yet
         # also saves us ugly list comprehesions later
-        teams_progresses = self._workshops.get_last_workshop_per_team(team_ids=team_ids)
+        teams_progresses = self.database.workshops.get_last_workshop_per_team(
+            team_ids=team_ids
+        )
 
         return [
             TeamGetOut(
@@ -196,7 +217,7 @@ class TeamService(AbstractService, BaseService):
             object_id (int): Team ID to get Team for.
         """
         team = self._validate_team_exists(object_id)
-        teams_progresses = self._workshops.get_last_workshop_per_team(
+        teams_progresses = self.database.workshops.get_last_workshop_per_team(
             team_ids=[team.id]
         )
         # if the team has no workshops yet, its ID will not be in the dict
@@ -210,7 +231,7 @@ class TeamService(AbstractService, BaseService):
         )
 
     def update(self, object_id: int, obj):
-        return self._teams.update(object_id=object_id, obj=obj)
+        return self.database.teams.update(object_id=object_id, obj=obj)
 
     def delete(self, object_id: int, cascade: bool = False):
         """Delete a team and its children (including attendances).
@@ -224,7 +245,7 @@ class TeamService(AbstractService, BaseService):
         self._validate_team_exists(object_id)
 
         deleted_children = False
-        if self._children.where([(self.cols.team_id, object_id)]):
+        if self.database.children.where([("team_id", object_id)]):
             deleted_children = True
             if not cascade:
                 error_msg = (
@@ -235,7 +256,7 @@ class TeamService(AbstractService, BaseService):
                 raise exceptions.TeamHasChildrenError(error_msg)
 
         logger.info(f"Deleting team with ID {object_id}")
-        self._teams.delete(object_id=object_id)
+        self.database.teams.delete(object_id=object_id)
         self.commit()
 
         msg = (
@@ -249,7 +270,7 @@ class TeamService(AbstractService, BaseService):
         """Get all workshops for a team."""
         self._validate_team_exists(team_id)
 
-        workshops = self._workshops.where([(self.cols.team_id, team_id)])
+        workshops = self.database.workshops.where([("team_id", team_id)])
 
         # TODO this is quite inefficient because we do a query for each workshop (at most 12)
         # we could do a single query to get all the scores at once and let the db do the lifting
@@ -280,8 +301,8 @@ class TeamService(AbstractService, BaseService):
         """
         self._validate_team_exists(team_id)
 
-        workshop = self._workshops.where(
-            [(self.cols.team_id, team_id), (self.cols.workshop_number, workshop_number)]
+        workshop = self.database.workshops.where(
+            [("team_id", team_id), ("workshop_number", workshop_number)]
         )
         if not workshop:
             error_msg = f"Workshop {workshop_number} for team {team_id} not found."
@@ -296,7 +317,7 @@ class TeamService(AbstractService, BaseService):
 
         # get per child attendance for the workshop
         workshop_id = workshop[0].id
-        attendance = self._attendances.where([("workshop_id", workshop_id)])
+        attendance = self.database.attendances.where([("workshop_id", workshop_id)])
 
         workshop = TeamGetWorkshopByNumberOut(
             workshop={
@@ -319,7 +340,7 @@ class TeamService(AbstractService, BaseService):
 
     def get_aggregated_attendance(self, workshop_id: int) -> dict:
         """Get aggregated attendance score of a workshop."""
-        attendance = self._attendances.where([("workshop_id", workshop_id)])
+        attendance = self.database.attendances.where([("workshop_id", workshop_id)])
 
         total = len(attendance)
         present = len(
@@ -340,7 +361,7 @@ class TeamService(AbstractService, BaseService):
     def _validate_team_exists(self, team_id: int):
         """Check if a team exists."""
         try:
-            return self._teams.read(object_id=team_id)
+            return self.database.teams.read(object_id=team_id)
         except exceptions.ItemNotFoundError:
             error_msg = f"Team with ID {team_id} not found"
             logger.error(error_msg)

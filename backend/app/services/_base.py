@@ -1,10 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import TypeVar, Any, Annotated
+from fastapi import Depends
 
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
+from core.auth import BearerTokenHandler
 from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
 
@@ -24,13 +26,21 @@ class BaseService(ABC):
     - Email service integration
     - Application settings access
     - Unit of Work pattern implementation
+    - Access to the current user for RBAC
 
     Each service inheriting from this class must implement the basic CRUD operations
     and will automatically gain access to all repositories and shared functionality.
 
     """
 
-    def __init__(self, session: SessionDependency) -> None:
+    def __init__(
+        self,
+        session: SessionDependency,
+        current_user: Annotated[
+            BearerTokenHandler,
+            Depends(BearerTokenHandler(required_scopes=["users:read"])),
+        ],
+    ) -> None:
         """Initialize service with database session and instantiate dependencies.
 
         Sets up all repository instances, email service, and loads application
@@ -44,6 +54,8 @@ class BaseService(ABC):
         self.settings = get_settings()
         self.email_service = EmailService(settings=self.settings)
         self.database = DatabaseRepositories(session=self._session)
+        self.current_user = current_user
+        print(self.current_user)
 
     @abstractmethod
     def create(self, obj: Model):

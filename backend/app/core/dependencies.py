@@ -3,6 +3,7 @@
 from typing import Annotated
 
 from core.database.session import SessionDependency
+from core.auth import BearerTokenHandler
 from fastapi import Depends
 from services import ChildService, CommunityService, TeamService, UserService
 
@@ -11,8 +12,11 @@ def get_team_service(session: SessionDependency):
     return TeamService(session=session)
 
 
-def get_community_service(session: SessionDependency):
-    return CommunityService(session=session)
+def get_community_service(
+    session: SessionDependency,
+    current_user: Annotated[BearerTokenHandler, Depends(BearerTokenHandler())],
+):
+    return CommunityService(session=session, current_user=current_user)
 
 
 def get_child_service(session: SessionDependency):

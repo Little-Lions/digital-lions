@@ -7,8 +7,6 @@ export interface BodyInput {
   community_id: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const createTeam = async ({
   name,
   communityId,
@@ -17,12 +15,8 @@ const createTeam = async ({
   communityId: number;
 }): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_URL}/teams`, {
+    const response = await fetch(`/api/teams`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
       body: JSON.stringify(
         createInput({
           name,

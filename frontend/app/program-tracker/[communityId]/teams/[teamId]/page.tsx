@@ -73,8 +73,8 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const handleSaveAttendance = async () => {
     if (selectedTeam) {
       const apiBody: Attendance = {
-        // if there is no workshpoDetails take the current Date
-        date: selectedDate,
+        // if there is no workshopDetails take the current Date
+        date: selectedDate || new Date().toISOString().split("T")[0],
         workshop_number: selectedTeam.program.progress.current + 1,
         attendance: Object.entries(attendance).map(([childId, status]) => ({
           attendance: status,

@@ -4,6 +4,8 @@ interface DatePickerProps {
   onDateChange: (date: string) => void;
 }
 
+const today = new Date().toISOString().split("T")[0];
+
 const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -33,6 +35,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
         id="default-datepicker"
         value={selectedDate}
         onChange={handleDateChange}
+        max={today}
         className="w-36 sm:w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         placeholder="Select date"
       />

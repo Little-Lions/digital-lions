@@ -84,7 +84,7 @@ const CommunityPage: React.FC = () => {
           <CustomButton
             label="Add Community"
             onClick={handleOpenCommunityModal}
-            variant="primary"
+            variant="outline"
             isFullWidth
             className="hover:bg-card-dark hover:text-white mb-4"
           />

@@ -8,16 +8,10 @@ interface ApiResponse {
   id: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const getChildrenById = async (childId: number): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_URL}/children/${childId}`, {
+    const response = await fetch(`/api/children?child_id=${childId}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
     });
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

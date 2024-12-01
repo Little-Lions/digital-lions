@@ -1,16 +1,10 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-const getChildrenById = async (
+const deleteChild = async (
   childId: number,
   cascade: boolean
 ): Promise<void> => {
   try {
-    await fetch(`${API_URL}/children/${childId}?cascade=${cascade}`, {
+    await fetch(`/api/children?child_id=${childId}&cascade=${cascade}`, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
     });
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -18,4 +12,4 @@ const getChildrenById = async (
   }
 };
 
-export default getChildrenById;
+export default deleteChild;

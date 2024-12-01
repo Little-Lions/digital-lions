@@ -121,7 +121,7 @@ const TeamsPage: React.FC = () => {
         <>
           <SkeletonLoader width="142px" type="button" />
           <div className="flex justify-between">
-            <SkeletonLoader width="227px" height="40px" type="text" />
+            <SkeletonLoader width="189px" height="40px" type="text" />
             <SkeletonLoader width="142px" type="button" />
           </div>
           {Array.from({ length: 5 }, (_, i) => (
@@ -136,11 +136,11 @@ const TeamsPage: React.FC = () => {
                 label="Add team"
                 isFullWidth
                 onClick={handleOpenTeamModal}
-                variant="primary"
+                variant="outline"
                 className="hover:bg-card-dark hover:text-white mb-4"
               />
-              <div className="flex justify-between">
-                <h1 className="text-2xl font-bold mb-4">
+              <div className="flex justify-between mb-2">
+                <h1 className="text-xl font-bold">
                   Teams in {communityName}
                 </h1>
                 <ToggleSwitch onChange={handleToggleChange} />

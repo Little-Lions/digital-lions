@@ -6,8 +6,6 @@ interface ApiBody {
   last_name: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const updateChildById = async ({
   childId,
   isActive,
@@ -32,12 +30,8 @@ const updateChildById = async ({
       last_name: lastName,
     };
 
-    const response = await fetch(`${API_URL}/children/${childId}`, {
+    const response = await fetch(`/api/children?child_id=${childId}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
       body: JSON.stringify(body),
     });
     if (!response.ok) {

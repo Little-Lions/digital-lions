@@ -40,7 +40,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   switch (variant) {
     case "primary":
       buttonColorClass = "bg-button-primary hover:bg-primary-dark";
-      textColorClass = "text-primary";
+      textColorClass = "text-primary-light";
       break;
     case "secondary":
       buttonColorClass = "bg-button-secondary hover:bg-secondary-dark";

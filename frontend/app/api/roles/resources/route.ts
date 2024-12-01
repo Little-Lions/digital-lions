@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
     const encodedLevel = encodeURIComponent(level);
 
-    const endpoint = `/roles/levels?role=${role}&level=${encodedLevel}`;
+    const endpoint = `/roles/resources?role=${role}&level=${encodedLevel}`;
 
     const data = await apiRequest(endpoint, "GET", accessToken);
 

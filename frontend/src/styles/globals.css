@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,81 +16,89 @@
 
 :root {
   /* Button Colors */
-  --color-button-primary: #B89B74;       /* Soft Light Tan for Primary Button */
-  --color-button-secondary: #E2B842;     /* Muted Earthy Yellow for Secondary Button */
-  --color-button-error: #D15656;         /* Muted Red-Orange for Error Button */
-  --color-button-text: #333333;          /* Dark Text for Buttons */
-  --color-button-text-light: #FFFFFF;    /* Light Text for Darker Buttons */
+  --color-button-primary: #b89b74; /* Soft Light Tan for Primary Button */
+  --color-button-secondary: #e2b842; /* Muted Earthy Yellow for Secondary Button */
+  --color-button-error: #d15656; /* Muted Red-Orange for Error Button */
+  --color-button-text: #333333; /* Dark Text for Buttons */
+  --color-button-text-light: #ffffff; /* Light Text for Darker Buttons */
 
   /* Background Colors */
-  --color-background: #F4ECE2;           /* Overall Background Color */
-  --color-background-text: #333333;      /* Text Color for Background */
+  --color-background: #f4ece2; /* Overall Background Color */
+  --color-background-text: #333333; /* Text Color for Background */
 
   /* Footer Colors */
-  --color-footer-background: #1A6878;    /* Footer Background */
-  --color-footer-text: #FFFFFF;          /* Footer Text Color */
+  --color-footer-background: #1a6878; /* Footer Background */
+  --color-footer-text: #ffffff; /* Footer Text Color */
 
   /* Card Colors */
-  --color-card: #ABC69E;                 /* Primary Card Color (Muted Green) */
-  --color-card-dark: #8CA47F;            /* Card Hover Color */
-  --color-card-secondary: #E2B842;       /* Updated Secondary Card Color (matches button secondary) */
-  --color-card-secondary-dark: #CC9900;  /* Secondary Card Hover Color */
-  --color-card-text: #333333;            /* Text Color in Cards */
+  --color-card: #abc69e; /* Primary Card Color (Muted Green) */
+  --color-card-dark: #8ca47f; /* Card Hover Color */
+  --color-card-secondary: #e2b842; /* Updated Secondary Card Color (matches button secondary) */
+  --color-card-secondary-dark: #cc9900; /* Secondary Card Hover Color */
+  --color-card-text: #333333; /* Text Color in Cards */
 
   /* Border Colors */
-  --color-border: #CCCCCC;               /* Light Gray Border for Outline */
-  --color-border-card: #8CA47F;          /* Slightly Darker Card Border */
+  --color-border: #cccccc; /* Light Gray Border for Outline */
+  --color-border-card: #8ca47f; /* Slightly Darker Card Border */
 
   /* Primary Colors */
-  --color-primary: #B89B74;              /* Primary White */
-  --color-primary-dark: #B5AFA5;         /* Light Gray for Hover States */
+  --color-primary: #b89b74; /* Primary White */
+  --color-primary-dark: #b5afa5; /* Light Gray for Hover States */
 
-  --color-secondary: #E2B842;            /* Secondary Yellow */
-  --color-secondary-dark: #CC9900;       /* Darker Secondary Yellow */
+  --color-secondary: #e2b842; /* Secondary Yellow */
+  --color-secondary-dark: #cc9900; /* Darker Secondary Yellow */
 
   /* Alert and State Colors */
-  --color-success: #4CAF50;              /* Success Green */
-  --color-success-dark: #388E3C;         /* Darker Green */
-  --color-error: #D15656;                /* Updated Error Color */
-  --color-error-dark: #CC3333;           /* Darker Error Color */
-  --color-warning: #FFA500;              /* Warning Orange */
-  --color-warning-dark: #CC9900;         /* Darker Orange */
+  --color-success: #4caf50; /* Success Green */
+  --color-success-dark: #388e3c; /* Darker Green */
+  --color-error: #d15656; /* Updated Error Color */
+  --color-error-dark: #cc3333; /* Darker Error Color */
+  --color-warning: #ffa500; /* Warning Orange */
+  --color-warning-dark: #cc9900; /* Darker Orange */
+  --color-info: #4a90e2; /* Info Blue */
+  --color-info-dark: #3366cc; /* Darker Blue */
 
   /* Neutral and Text Colors */
-  --color-neutral-light: #F2F2F2;        /* Neutral Light Gray */
-  --color-text: #333333;                 /* Standard Dark Text */
-  --color-text-light: #FFFFFF;           /* Light Text */
+  --color-neutral-light: #f2f2f2; /* Neutral Light Gray */
+  --color-text: #333333; /* Standard Dark Text */
+  --color-text-light: #ffffff; /* Light Text */
 }
 
 /* Updated Button Background Colors */
 .bg-button-primary {
-  background-color: var(--color-button-primary);   /* Light Tan for Primary Button */
+  background-color: var(
+    --color-button-primary
+  ); /* Light Tan for Primary Button */
 }
 .bg-button-secondary {
-  background-color: var(--color-button-secondary); /* Muted Yellow for Secondary Button */
+  background-color: var(
+    --color-button-secondary
+  ); /* Muted Yellow for Secondary Button */
 }
 .bg-button-error {
-  background-color: var(--color-button-error);     /* Muted Red-Orange for Error Button */
+  background-color: var(
+    --color-button-error
+  ); /* Muted Red-Orange for Error Button */
 }
 .bg-button-success {
-  background-color: var(--color-success);          /* Green for Success Button */
+  background-color: var(--color-success); /* Green for Success Button */
 }
 .bg-button-warning {
-  background-color: var(--color-warning);          /* Orange for Warning Button */
+  background-color: var(--color-warning); /* Orange for Warning Button */
 }
 .text-button-text {
-  color: var(--color-button-text);                 /* Dark Text for Light Buttons */
+  color: var(--color-button-text); /* Dark Text for Light Buttons */
 }
 .text-button-text-light {
-  color: var(--color-button-text-light);           /* Light Text for Dark Buttons */
+  color: var(--color-button-text-light); /* Light Text for Dark Buttons */
 }
 
 /* Background and Text Colors */
 .bg-background {
-  background-color: var(--color-background);       /* Overall Background Color */
+  background-color: var(--color-background); /* Overall Background Color */
 }
 .text-background-text {
-  color: var(--color-background-text);             /* Text Color on Background */
+  color: var(--color-background-text); /* Text Color on Background */
 }
 
 /* Footer Colors */
@@ -99,131 +106,136 @@
   background-color: var(--color-footer-background); /* Footer Background */
 }
 .text-footer-text {
-  color: var(--color-footer-text);                  /* Footer Text Color */
+  color: var(--color-footer-text); /* Footer Text Color */
 }
 
 /* Card Colors */
 .bg-card {
-  background-color: var(--color-card);             /* Primary Card Background */
+  background-color: var(--color-card); /* Primary Card Background */
 }
 .bg-card-dark {
-  background-color: var(--color-card-dark);        /* Card Hover Color */
+  background-color: var(--color-card-dark); /* Card Hover Color */
 }
 .bg-card-secondary {
-  background-color: var(--color-card-secondary);   /* Secondary Card Background */
+  background-color: var(--color-card-secondary); /* Secondary Card Background */
 }
 .bg-card-secondary-dark {
-  background-color: var(--color-card-secondary-dark); /* Secondary Card Hover Color */
+  background-color: var(
+    --color-card-secondary-dark
+  ); /* Secondary Card Hover Color */
 }
 .text-card-text {
-  color: var(--color-card-text);                   /* Text Color in Cards */
+  color: var(--color-card-text); /* Text Color in Cards */
 }
 
 /* Border Colors */
 .border-border {
-  border-color: var(--color-border);               /* Standard Border Color */
+  border-color: var(--color-border); /* Standard Border Color */
 }
 .border-border-card {
-  border-color: var(--color-border-card);          /* Card Border Color */
+  border-color: var(--color-border-card); /* Card Border Color */
 }
 /* Primary and Secondary Colors */
 .bg-primary {
-  background-color: var(--color-primary);          /* Primary Color - White */
+  background-color: var(--color-primary); /* Primary Color - White */
 }
 .bg-primary-dark {
-  background-color: var(--color-primary-dark);     /* Darker Shade for Primary */
+  background-color: var(--color-primary-dark); /* Darker Shade for Primary */
 }
 .bg-secondary {
-  background-color: var(--color-button-secondary); /* Secondary Button Background */
+  background-color: var(
+    --color-button-secondary
+  ); /* Secondary Button Background */
 }
 .bg-secondary-dark {
-  background-color: var(--color-secondary-dark);   /* Darker Secondary Color */
+  background-color: var(--color-secondary-dark); /* Darker Secondary Color */
 }
 /* Status Colors */
 .bg-success {
-  background-color: var(--color-success);          /* Success Green */
+  background-color: var(--color-success); /* Success Green */
 }
 .bg-success-dark {
-  background-color: var(--color-success-dark);     /* Darker Green */
+  background-color: var(--color-success-dark); /* Darker Green */
 }
 .bg-error {
-  background-color: var(--color-error);            /* Error Color */
+  background-color: var(--color-error); /* Error Color */
 }
 .bg-error-dark {
-  background-color: var(--color-error-dark);       /* Darker Error Color */
+  background-color: var(--color-error-dark); /* Darker Error Color */
 }
 .bg-warning {
-  background-color: var(--color-warning);          /* Warning Orange */
+  background-color: var(--color-warning); /* Warning Orange */
 }
 .bg-warning-dark {
-  background-color: var(--color-warning-dark);     /* Darker Orange */
-}
-.bg-neutral-light {
-  background-color: var(--color-neutral-light);    /* Light Gray for Outlines */
+  background-color: var(--color-warning-dark); /* Darker Orange */
 }
 
-/* Blue Accent Colors */
-.bg-primary-blue {
-  background-color: var(--color-primary-blue);     /* Standard Blue */
+.bg-info {
+  background-color: var(--color-info); /* Standard Blue */
 }
-.bg-primary-blue-dark {
-  background-color: var(--color-primary-blue-dark); /* Dark Blue */
+.bg-info-dark {
+  background-color: var(--color-info-dark); /* Dark Blue */
+}
+
+.bg-neutral-light {
+  background-color: var(--color-neutral-light); /* Light Gray for Outlines */
 }
 
 /* Text Colors */
 .text-primary {
-  color: var(--color-text);                        /* Standard Dark Text */
+  color: var(--color-text); /* Standard Dark Text */
 }
 .text-primary-light {
-  color: var(--color-text-light);                  /* Light Text */
+  color: var(--color-text-light); /* Light Text */
 }
 .text-secondary {
-  color: var(--color-button-secondary);            /* Muted Yellow for Secondary Text */
+  color: var(--color-button-secondary); /* Muted Yellow for Secondary Text */
 }
 .text-secondary-dark {
-  color: var(--color-secondary-dark);              /* Darker Shade for Secondary Text */
+  color: var(--color-secondary-dark); /* Darker Shade for Secondary Text */
 }
 .text-success {
-  color: var(--color-success);                     /* Success Green Text */
+  color: var(--color-success); /* Success Green Text */
 }
 .text-success-dark {
-  color: var(--color-success-dark);                /* Darker Success Green Text */
+  color: var(--color-success-dark); /* Darker Success Green Text */
 }
 .text-error {
-  color: var(--color-error);                       /* Error Red Text */
+  color: var(--color-error); /* Error Red Text */
 }
 .text-error-dark {
-  color: var(--color-error-dark);                  /* Darker Error Text */
+  color: var(--color-error-dark); /* Darker Error Text */
 }
 .text-warning {
-  color: var(--color-warning);                     /* Warning Orange Text */
+  color: var(--color-warning); /* Warning Orange Text */
 }
 .text-warning-dark {
-  color: var(--color-warning-dark);                /* Darker Warning Text */
+  color: var(--color-warning-dark); /* Darker Warning Text */
 }
-.text-primary-blue {
-  color: var(--color-primary-blue);                /* Standard Blue Text */
+.text-info {
+  color: var(--color-info); /* Standard Blue Text */
 }
-.text-primary-blue-dark {
-  color: var(--color-primary-blue-dark);           /* Dark Blue Text */
+.text-info-dark {
+  color: var(--color-info-dark); /* Dark Blue Text */
 }
 
 body {
-  background-color: #f3f4f6; 
+  background-color: #f3f4f6;
   margin: 0;
   padding: 0;
-  font-family: 'Work Sans', sans-serif;
+  font-family: "Work Sans", sans-serif;
   display: flex;
   flex-direction: column;
-  min-height: 100vh; 
+  min-height: 100vh;
 }
 
-html, #__next {
+html,
+#__next {
   height: 100%;
 }
 
 main {
-  flex: 1; 
+  flex: 1;
 }
 
 footer {
@@ -235,21 +247,24 @@ footer {
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-in-out;
 }
 
-
 @keyframes expandCard {
   from {
     max-height: 0;
   }
   to {
-    max-height: 1000px; 
+    max-height: 1000px;
   }
 }
 

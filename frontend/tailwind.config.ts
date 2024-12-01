@@ -13,56 +13,59 @@ const config: Config = {
     extend: {
       colors: {
         /* Button Background Colors */
-        'button-primary': 'var(--color-button-primary)',          // Primary button color (light tan)
-        'button-secondary': 'var(--color-button-secondary)',      // Secondary button color (muted yellow)
-        'button-error': 'var(--color-button-error)',              // Error button color (muted red-orange)
-        'button-success': 'var(--color-success)',                 // Success button color (green)
-        'button-warning': 'var(--color-warning)',                 // Warning button color (orange)
-        'button-text': 'var(--color-button-text)',                // Dark text for light buttons
-        'button-text-light': 'var(--color-button-text-light)',    // Light text for dark buttons
-    
+        "button-primary": "var(--color-button-primary)",
+        "button-secondary": "var(--color-button-secondary)",
+        "button-error": "var(--color-button-error)",
+        "button-success": "var(--color-success)",
+        "button-warning": "var(--color-warning)",
+        "button-text": "var(--color-button-text)",
+        "button-text-light": "var(--color-button-text-light)",
+
         /* Background and Text Colors */
-        'background': 'var(--color-background)',                  // Background color
-        'background-text': 'var(--color-background-text)',        // Text color on background
-    
+        background: "var(--color-background)",
+        "background-text": "var(--color-background-text)",
+
         /* Footer Colors */
-        'footer-background': 'var(--color-footer-background)',    // Footer background color
-        'footer-text': 'var(--color-footer-text)',                // Footer text color
-    
+        "footer-background": "var(--color-footer-background)",
+        "footer-text": "var(--color-footer-text)",
+
         /* Card Colors */
-        'card': 'var(--color-card)',                              // Primary card color
-        'card-dark': 'var(--color-card-dark)',                    // Card hover color
-        'card-secondary': 'var(--color-card-secondary)',          // Secondary card color
-        'card-secondary-dark': 'var(--color-card-secondary-dark)',// Secondary card hover color
-        'card-text': 'var(--color-card-text)',                    // Text color in cards
-        'border': 'var(--color-border)',                          // Standard border color
-        'border-card': 'var(--color-border-card)',                // Card border color
-    
+        card: "var(--color-card)",
+        "card-dark": "var(--color-card-dark)",
+        "card-secondary": "var(--color-card-secondary)",
+        "card-secondary-dark": "var(--color-card-secondary-dark)",
+        "card-text": "var(--color-card-text)",
+        border: "var(--color-border)",
+        "border-card": "var(--color-border-card)",
+
         /* Primary and Secondary Colors */
-        'primary': 'var(--color-primary)',                        // Primary color - white
-        'primary-dark': 'var(--color-primary-dark)',              // Darker shade of primary
-        'secondary': 'var(--color-button-secondary)',             // Secondary color for buttons and highlights
-        'secondary-dark': 'var(--color-secondary-dark)',          // Darker secondary color
-    
+        primary: "var(--color-primary)",
+        "primary-dark": "var(--color-primary-dark)",
+        secondary: "var(--color-secondary)",
+        "secondary-dark": "var(--color-secondary-dark)",
+
         /* Status Colors */
-        'success': 'var(--color-success)',                        // Success green (used for bg-button-success)
-        'success-dark': 'var(--color-success-dark)',              // Darker success green
-        'error': 'var(--color-error)',                            // Error color
-        'error-dark': 'var(--color-error-dark)',                  // Darker error color
-        'warning': 'var(--color-warning)',                        // Warning orange (used for bg-button-warning)
-        'warning-dark': 'var(--color-warning-dark)',              // Darker warning color
-        'neutral-light': 'var(--color-neutral-light)',            // Light neutral for outlines
-    
+        success: "var(--color-success)",
+        "success-dark": "var(--color-success-dark)",
+        error: "var(--color-error)",
+        "error-dark": "var(--color-error-dark)",
+        warning: "var(--color-warning)",
+        "warning-dark": "var(--color-warning-dark)",
+        info: "var(--color-info)",
+        "info-dark": "var(--color-info-dark)",
+
+        /* Neutral and Light Colors */
+        "neutral-light": "var(--color-neutral-light)",
+
         /* Blue Accent Colors */
-        'primary-blue': 'var(--color-primary-blue)',              // Standard blue
-        'primary-blue-dark': 'var(--color-primary-blue-dark)',    // Darker blue
-    
+        "primary-blue": "var(--color-primary-blue)",
+        "primary-blue-dark": "var(--color-primary-blue-dark)",
+
         /* Text Colors */
-        'text-primary': 'var(--color-text)',                      // Dark text
-        'text-primary-light': 'var(--color-text-light)',          // Light text for dark backgrounds
+        "text-primary": "var(--color-text)",
+        "text-primary-light": "var(--color-text-light)",
       },
     },
-    
   },
   variants: {
     extend: {
@@ -71,4 +74,5 @@ const config: Config = {
   },
   plugins: [],
 };
+
 export default config;

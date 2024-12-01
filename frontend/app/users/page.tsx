@@ -8,6 +8,7 @@ import ButtonGroup from "@/components/ButtonGroup";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import Accordion from "@/components/Accordion";
 import SelectInput from "@/components/SelectInput";
+import Toast from "@/components/Toast";
 import Loader from "@/components/Loader";
 
 import { TrashIcon, PencilIcon, UserPlusIcon } from "@heroicons/react/16/solid";
@@ -20,14 +21,15 @@ import getUsers from "@/api/services/users/getUsers";
 import createUser from "@/api/services/users/createUser";
 import createUserInvite from "@/api/services/users/createUserInvite";
 import deleteUser from "@/api/services/users/deleteUser";
+import assignRoleToUser from "@/api/services/users/assignRoleToUser";
 
 // import getCommunities from "@/api/services/communities/getCommunities";
 
 import { User } from "@/types/user.interface";
-// import { Community } from "@/types/community.interface";
 import { Role } from "@/types/role.type";
 import { Level } from "@/types/level.type";
 import { Resource } from "@/types/resource.interface";
+import AlertBanner from "@/components/AlertBanner";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -37,6 +39,7 @@ const UsersPage = () => {
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const [isAssigningUser, setIsAssigningUser] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
 
   //   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
 
@@ -44,6 +47,12 @@ const UsersPage = () => {
   const [editUserModalVisible, setEditUserModalVisible] = useState(false);
   const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false);
   const [assignUserModalVisible, setAssignUserModalVisible] = useState(false);
+
+  const [isRoleAssignmentComplete, setIsRoleAssignmentComplete] =
+    useState(false);
+  const [isAddingUserComplete, setIsAddingUserComplete] = useState(false);
+  const [isDeletingUserComplete, setIsDeletingUserComplete] = useState(false);
+  // const [isEditingUserComplete, setIsEditingUserComplete] = useState(false);
 
   const [nickName, setNickName] = useState<string>("");
   const [emailAddress, setEmailAddress] = useState<string>("");
@@ -56,7 +65,12 @@ const UsersPage = () => {
 
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
-  const [selectedResource, setSelectedResource] = useState<string | null>(null);
+  const [selectedResourceName, setSelectedResourceName] = useState<
+    string | null
+  >(null);
+  const [selectedResourceId, setSelectedResourceId] = useState<number | null>(
+    null
+  );
 
   //   const [communities, setCommunities] = useState<Community[]>([]);
 
@@ -70,8 +84,9 @@ const UsersPage = () => {
     fetchResources(level);
   };
 
-  const handleResourceChange = (resource: string) => {
-    setSelectedResource(resource);
+  const handleResourceChange = (resource: Resource) => {
+    setSelectedResourceName(resource.resource_name);
+    setSelectedResourceId(resource.resource_id);
   };
 
   const fetchUsers = async () => {
@@ -151,24 +166,26 @@ const UsersPage = () => {
   };
 
   const handleOpenEditUserModal = (userId: string) => {
-    setSelectedUserId(userId); // Store the selected user ID
-    fetchUser(userId); // Fetch user details and populate fields
-    setEditUserModalVisible(true); // Open the modal
+    setSelectedUserId(userId);
+    fetchUser(userId);
+    setEditUserModalVisible(true);
   };
 
   const handleCloseEditUserModal = () => {
     setEditUserModalVisible(false);
-    setSelectedUserId(null); // Clear selected user ID
+    setSelectedUserId(null);
+    setNickName("");
+    setEmailAddress("");
   };
 
   const handleOpenDeleteUserModal = (userId: string) => {
-    setSelectedUserId(userId); // Set user ID for deletion
+    setSelectedUserId(userId);
     setDeleteUserModalVisible(true);
   };
 
   const handleCloseDeleteUserModal = () => {
     setDeleteUserModalVisible(false);
-    setSelectedUserId(null); // Clear selected user after closing modal
+    setSelectedUserId(null);
   };
 
   const handleOpenAssignUserModal = async (userId: string) => {
@@ -179,14 +196,25 @@ const UsersPage = () => {
 
   const handleCloseAssignUserModal = () => {
     setAssignUserModalVisible(false);
-    setSelectedUserId(null); // Clear selected user after closing modal
+    setSelectedUserId(null);
+    setSelectedRole(null);
+    setSelectedLevel(null);
+    setSelectedResourceName(null);
+    setSelectedResourceId(null);
   };
 
   const handleAssignRoleToUser = async () => {
     if (!selectedUserId) return;
     setIsAssigningUser(true);
+
     try {
-      await assignRoleToUser(selectedUserId);
+      await assignRoleToUser(
+        selectedUserId,
+        selectedRole as Role,
+        selectedLevel as Level,
+        selectedResourceId as number
+      );
+      setIsRoleAssignmentComplete(true);
       await fetchUsers();
     } catch (error) {
       console.error("Failed to update user:", error);
@@ -198,10 +226,12 @@ const UsersPage = () => {
 
   const handleAddUser = async () => {
     if (emailAddress.trim() === "") return;
+
     setIsAddingUser(true);
     try {
-      const newUser = await createUser(emailAddress);
+      await createUser(emailAddress);
       await fetchUsers();
+      setIsAddingUserComplete(true);
     } catch (error) {
       console.error("Failed to add user:", error);
     } finally {
@@ -210,65 +240,69 @@ const UsersPage = () => {
     }
   };
 
-  const handleAddUserInvite = async () => {
-    if (!selectedUserId) return;
-    setIsLoadingUser(true);
-    try {
-      await createUserInvite(selectedUserId);
-      await fetchUsers();
-    } catch (error) {
-      console.error("Failed to update user:", error);
-    } finally {
-      setIsLoadingUser(false);
-      handleCloseEditUserModal();
-    }
-  };
+  // const handleAddUserInvite = async () => {
+  //   if (!selectedUserId) return;
+  //   setIsLoadingUser(true);
+  //   try {
+  //     await createUserInvite(selectedUserId);
+  //     await fetchUsers();
+  //   } catch (error) {
+  //     console.error("Failed to update user:", error);
+  //   } finally {
+  //     setIsLoadingUser(false);
+  //     handleCloseEditUserModal();
+  //   }
+  // };
 
   const handleDeleteUser = async () => {
     if (!selectedUserId) return;
+    setIsDeletingUser(true);
     try {
       await deleteUser(selectedUserId);
+
+      setIsDeletingUserComplete(true);
       setUsers(users.filter((user) => user.user_id !== selectedUserId));
     } catch (error) {
       console.error("Failed to delete user:", error);
     } finally {
+      setIsDeletingUser(false);
       handleCloseDeleteUserModal();
     }
   };
 
   const fetchRoles = async () => {
     try {
-      setIsFetching(true)
+      setIsFetching(true);
       const roles = await getRoles();
       setAvailableRoles(roles);
     } catch (error) {
       console.error("Failed to fetch roles:", error);
     } finally {
-      setIsFetching(false)
+      setIsFetching(false);
     }
   };
 
   const fetchLevels = async (role: Role) => {
     try {
-      setIsFetching(true)
+      setIsFetching(true);
       const levels = await getLevels(role);
       setAvailableLevels(levels);
     } catch (error) {
       console.error("Failed to fetch levels:", error);
     } finally {
-      setIsFetching(false)
+      setIsFetching(false);
     }
   };
 
   const fetchResources = async (level: Level) => {
     try {
-      setIsFetching(true)
+      setIsFetching(true);
       const resources = await getResources(selectedRole as Role, level);
       setAvailableResources(resources);
     } catch (error) {
       console.error("Failed to fetch resources:", error);
     } finally {
-      setIsFetching(false)
+      setIsFetching(false);
     }
   };
 
@@ -422,17 +456,25 @@ const UsersPage = () => {
               <SelectInput
                 className="mb-2"
                 label="Resource"
-                value={selectedResource?.toString() ?? ""}
+                value={selectedResourceName ?? ""}
                 disabled={!selectedRole || !selectedLevel}
-                onChange={(value: string | number) =>
-                  handleResourceChange(value as string)
-                }
+                onChange={(value: string | number) => {
+                  const selected = availableResources?.find(
+                    (resource) => resource.resource_name === value
+                  );
+                  if (selected) {
+                    handleResourceChange(selected as Resource);
+                  }
+                }}
               >
                 <option value="">Select resource</option>
                 {availableResources &&
-                  availableResources.map((resource, index) => (
-                    <option key={index} value={resource.toString()}>
-                      {resource.toString()}
+                  availableResources.map((resource) => (
+                    <option
+                      key={resource.resource_id}
+                      value={resource.resource_name}
+                    >
+                      {resource.resource_name}
                     </option>
                   ))}
               </SelectInput>
@@ -445,10 +487,45 @@ const UsersPage = () => {
               title="Delete user"
               acceptText="Delete"
               onAccept={handleDeleteUser}
-              isBusy={false}
+              isBusy={isDeletingUser}
             >
               <p>Are you sure you want to delete this user?</p>
             </Modal>
+          )}
+          {isAddingUserComplete && (
+            <Toast
+              variant="success"
+              message="User added successfully"
+              isCloseable
+              onClose={() => setIsAddingUserComplete(false)}
+            />
+          )}
+
+          {isDeletingUserComplete && (
+            <Toast
+              variant="success"
+              message="User deleted successfully"
+              isCloseable
+              onClose={() => setIsDeletingUserComplete(false)}
+            />
+          )}
+
+          {/* {isEditingUserComplete && (
+            <Toast
+              variant="success"
+              message="User edited successfully"
+              isCloseable
+              onClose={() => setIsEditingUserComplete(false)}
+            />
+          )} */}
+
+          {isRoleAssignmentComplete && (
+            <Toast
+              variant="success"
+              message="Role assigned successfully"
+              isCloseable
+              onClose={() => setIsRoleAssignmentComplete(false)}
+            />
           )}
         </>
       )}

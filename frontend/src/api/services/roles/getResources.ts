@@ -2,12 +2,8 @@ import { Role } from "@/types/role.type";
 import { Level } from "@/types/level.type";
 import { Resource } from "@/types/resource.interface";
 
-const getResources = async (
-  role: Role,
-  decodedLevel: Level
-): Promise<Resource[]> => {
+const getResources = async (role: Role, level: Level): Promise<Resource[]> => {
   try {
-    const level = encodeURIComponent(decodedLevel);
     const queryParams = new URLSearchParams({ role, level });
 
     const response = await fetch(

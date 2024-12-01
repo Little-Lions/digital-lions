@@ -1,14 +1,5 @@
 import pytest
-from core.dependencies import (
-    ChildService,
-    CommunityService,
-    TeamService,
-    UserService,
-    get_child_service,
-    get_community_service,
-    get_team_service,
-    get_user_service,
-)
+from core.database.session import get_session
 from core.settings import Settings, get_settings
 from fastapi.testclient import TestClient
 from main import app
@@ -65,12 +56,9 @@ def client(mocker, session):
     """Create a FastAPI test client."""
 
     app.dependency_overrides[get_settings] = lambda: DefaultTestSettings
-    app.dependency_overrides[get_community_service] = lambda: CommunityService(
-        session=session
-    )
-    app.dependency_overrides[get_child_service] = lambda: ChildService(session=session)
-    app.dependency_overrides[get_team_service] = lambda: TeamService(session=session)
-    app.dependency_overrides[get_user_service] = lambda: UserService(session=session)
+
+    # overwrite the session dependency with the session fixture
+    app.dependency_overrides[get_session] = lambda: session
 
     client = TestClient(app)
     yield client

@@ -1,12 +1,11 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Annotated, Any, TypeVar
+from typing import TypeVar
 
 from core.auth import BearerTokenHandler
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
-from fastapi import Depends
 from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
 
@@ -34,12 +33,7 @@ class BaseService(ABC):
     """
 
     def __init__(
-        self,
-        session: SessionDependency,
-        current_user: Annotated[
-            BearerTokenHandler,
-            Depends(BearerTokenHandler(required_scopes=["users:read"])),
-        ],
+        self, session: SessionDependency, current_user: BearerTokenHandler
     ) -> None:
         """Initialize service with database session and instantiate dependencies.
 
@@ -55,7 +49,6 @@ class BaseService(ABC):
         self.email_service = EmailService(settings=self.settings)
         self.database = DatabaseRepositories(session=self._session)
         self.current_user = current_user
-        print(self.current_user)
 
     @abstractmethod
     def create(self, obj: Model):

@@ -3,6 +3,7 @@
 from collections.abc import Callable
 from typing import Annotated
 
+from core.auth import BearerTokenHandler
 from core.database.session import SessionDependency
 from fastapi import Depends, Request
 from services import ChildService, CommunityService, TeamService, UserService
@@ -23,10 +24,11 @@ class ServiceProvider:
         """Instantiate the provider with the service
         to be injected."""
         self.service = service
+        self.required_scopes = required_scopes
 
     async def __call__(self, request: Request, session: SessionDependency):
         """Callable required for dependency injection."""
-        current_user = await BearerTokenHandler(required_scopes=self.required_scopes)
+        current_user = BearerTokenHandler(required_scopes=self.required_scopes)
         return self.service(session=session, current_user=current_user)
 
 

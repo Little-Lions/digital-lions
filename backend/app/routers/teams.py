@@ -1,12 +1,14 @@
 import logging
+from typing import Annotated
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
-from core.dependencies import TeamServiceDependency
+from core.auth import APIKeyDependency, Scopes
+from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
 from routers._responses import with_default_responses
+from services import TeamService
 
 logger = logging.getLogger()
 
@@ -32,11 +34,13 @@ router = APIRouter(prefix="/teams", dependencies=[APIKeyDependency])
     ),
 )
 async def post_team(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_write])
+        ),
+    ],
     team: models.TeamPostIn,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.teams_write])
-    ),
 ):
     """
     Create a new team.
@@ -61,12 +65,14 @@ async def post_team(
     responses=with_default_responses(),
 )
 async def get_teams(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_read])
+        ),
+    ],
     community_id: int = None,
     status: models.TeamStatus = models.TeamStatus.active,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.teams_read])
-    ),
 ):
     """
     Get list of teams that a user has access to.
@@ -93,11 +99,13 @@ async def get_teams(
     ),
 )
 async def get_team(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_read])
+        ),
+    ],
     team_id: int,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.teams_read])
-    ),
 ):
     """
     Get a team by ID.
@@ -134,12 +142,14 @@ async def get_team(
     ),
 )
 async def delete_team(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_write])
+        ),
+    ],
     team_id: int,
     cascade: bool = False,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.teams_write])
-    ),
 ):
     """
     Delete a team.

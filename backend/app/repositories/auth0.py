@@ -1,12 +1,13 @@
 import functools
 from collections.abc import Callable
+from datetime import datetime, timedelta
 
-from auth0.authentication import GetToken, Users
+from auth0.authentication import GetToken
 from auth0.exceptions import Auth0Error
 from auth0.management import Auth0
 from core import exceptions
-from fastapi import status
 from core.settings import get_settings
+from fastapi import status
 
 
 class Auth0Repository:
@@ -33,9 +34,24 @@ class Auth0Repository:
     def __init__(self):
         self.settings = get_settings()
         self.domain = self.settings.OAUTH_DOMAIN
+        self._auth0_client: Auth0 = None
+        self._token_expiry: datetime = None
 
-        token = self._get_mgmt_token()
-        self.auth0 = Auth0(domain=self.domain, token=token)
+    @property
+    def auth0(self) -> Auth0:
+        """
+        Get the Auth0 management API client.
+        Lazily initializes the client and caches it until token expiry.
+        """
+        if self._auth0_client is None or (
+            self._token_expiry and datetime.now() >= self._token_expiry
+        ):
+            token = self._get_mgmt_token()
+            self._auth0_client = Auth0(domain=self.domain, token=token)
+            # Auth0 management tokens typically expire in 24 hours
+            self._token_expiry = datetime.now() + timedelta(hours=23)
+
+        return self._auth0_client
 
     def _get_mgmt_token(self) -> str:
         """
@@ -206,10 +222,3 @@ class Auth0Repository:
             # this should never happen
             raise ValueError(f"Multiple users with email {email} found.")
         return users[0]
-
-    @convert_auth0_error
-    def user_info(self, access_token: str) -> dict:
-        """
-        Get user information by user ID.
-        """
-        return Users().userinfo(access_token=access_token)

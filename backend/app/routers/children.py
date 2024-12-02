@@ -1,11 +1,12 @@
-from typing import Any
+from typing import Annotated
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
-from core.dependencies import ChildServiceDependency
+from core.auth import APIKeyDependency, Scopes
+from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import child as models
 from models.generic import Message, RecordCreated
+from services import ChildService
 
 router = APIRouter(prefix="/children", dependencies=[APIKeyDependency])
 
@@ -23,10 +24,14 @@ router = APIRouter(prefix="/children", dependencies=[APIKeyDependency])
 )
 async def get_child(
     child_id: int,
-    child_service: ChildServiceDependency,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.children_read])
-    ),
+    child_service: Annotated[
+        ChildService,
+        Depends(
+            ServiceProvider(
+                service=ChildService, required_scopes=[Scopes.children_read]
+            )
+        ),
+    ],
 ):
     """
     Get a child by ID.
@@ -48,11 +53,15 @@ async def get_child(
     status_code=status.HTTP_200_OK,
 )
 async def get_children(
-    child_service: ChildServiceDependency,
+    child_service: Annotated[
+        ChildService,
+        Depends(
+            ServiceProvider(
+                service=ChildService, required_scopes=[Scopes.children_read]
+            )
+        ),
+    ],
     community_id: int = None,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.children_read])
-    ),
 ):
     """
     Get list of children, optionally filtered by community.
@@ -73,11 +82,15 @@ async def get_children(
     response_model=RecordCreated,
 )
 async def add_child(
-    child_service: ChildServiceDependency,
+    child_service: Annotated[
+        ChildService,
+        Depends(
+            ServiceProvider(
+                service=ChildService, required_scopes=[Scopes.children_write]
+            )
+        ),
+    ],
     child: models.ChildPostIn,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.children_write])
-    ),
 ):
     """
     Add child to team.
@@ -101,12 +114,16 @@ async def add_child(
     status_code=status.HTTP_200_OK,
 )
 async def update_child(
-    child_service: ChildServiceDependency,
+    child_service: Annotated[
+        ChildService,
+        Depends(
+            ServiceProvider(
+                service=ChildService, required_scopes=[Scopes.children_write]
+            )
+        ),
+    ],
     child_id: int,
     child: models.ChildPatchIn,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.children_write])
-    ),
 ):
     """
     Update child info.
@@ -128,11 +145,15 @@ async def update_child(
 )
 async def delete_child(
     child_id: int,
-    child_service: ChildServiceDependency,
+    child_service: Annotated[
+        ChildService,
+        Depends(
+            ServiceProvider(
+                service=ChildService, required_scopes=[Scopes.children_write]
+            )
+        ),
+    ],
     cascade: bool = False,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.children_write])
-    ),
 ):
     """
     Delete a child by ID.

@@ -1,12 +1,14 @@
 import logging
+from typing import Annotated
 
 from core import exceptions
 from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
-from core.dependencies import UserServiceDependency
+from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import user as models
 from models.generic import Message
 from routers._responses import with_default_responses
+from services import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -40,10 +42,12 @@ async def get_me(
     responses=with_default_responses(),
 )
 async def get_users(
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_read])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_read])
+        ),
+    ],
 ):
     """
     Get a list of all users.
@@ -72,10 +76,12 @@ async def get_users(
 )
 async def get_user_by_id(
     user_id: str,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_read])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_read])
+        ),
+    ],
 ):
     """
     Get a user by ID.
@@ -111,10 +117,12 @@ async def get_user_by_id(
 )
 async def create_user(
     user: models.UserPostIn,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
 ):
     """
     Invite a new user to the platform. This will trigger creation
@@ -147,11 +155,13 @@ async def create_user(
     ),
 )
 async def resend_invite(
-    user_service: UserServiceDependency,
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
     user_id: str = None,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
 ):
     """
     Resend an invite link for a new user. This will trigger a new invite email
@@ -185,10 +195,12 @@ async def resend_invite(
 )
 async def delete_user(
     user_id: str,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
 ):
     """
     Delete a user by ID.
@@ -225,10 +237,12 @@ async def delete_user(
 async def add_role_to_user(
     user_id: str,
     role: models.UserRolePostIn,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
 ):
     """
     Digital Lions has the following hiearchicy between entities:
@@ -287,10 +301,12 @@ async def add_role_to_user(
 )
 async def get_roles_of_user(
     user_id: str,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_read])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
 ):
     """
     List all scoped roles of an existing user.
@@ -328,10 +344,12 @@ async def get_roles_of_user(
 async def remove_role_from_user(
     user_id: str,
     role_id: int,
-    user_service: UserServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_write])
-    ),
+    user_service: Annotated[
+        UserService,
+        Depends(
+            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
+        ),
+    ],
 ):
     """
     Remove a scoped role from an existing user. The `role_id` corresponds to the

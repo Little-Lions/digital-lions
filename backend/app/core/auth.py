@@ -4,13 +4,13 @@ from typing import Annotated, Any
 
 import jwt
 import requests
-from core.settings import Settings, get_settings
-from models.user import CurrentUser
 from core.database.session import SessionDependency
-from repositories.auth0 import Auth0Repository
-from repositories.database import RoleRepository
+from core.settings import Settings, get_settings
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
+from models.user import CurrentUser
+from repositories.auth0 import Auth0Repository
+from repositories.database import RoleRepository
 
 logger = logging.getLogger(__name__)
 
@@ -113,10 +113,10 @@ class BearerTokenHandler(HTTPBearer):
         """Verify the bearer token and optionally the scopes,
         and return the decoded token."""
         self.settings = settings
-        self.roles = RoleRepository(session=session)
-        self.auth0 = Auth0Repository()
         if not self.settings.FEATURE_OAUTH:
             return None
+
+        self.roles = RoleRepository(session=session)
 
         token, kid = await self._verify_request(request)
         current_user = self._verify_token(token=token, kid=kid)
@@ -131,8 +131,7 @@ class BearerTokenHandler(HTTPBearer):
         # add roles to current user
         roles = self.roles.where([("user_id", current_user["sub"])])
 
-        misc = self.auth0.user_info(access_token=token)
-        return CurrentUser.from_jwt(current_user, roles=roles, misc=misc)
+        return CurrentUser.from_jwt(current_user, roles=roles)
 
     async def _verify_request(self, request: Request) -> [str, str]:
         """Verify the credentials and return the decoded token."""

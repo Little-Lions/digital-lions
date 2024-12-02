@@ -21,9 +21,9 @@ class UserService(BaseService):
 
     AUTH0_USER_CONNECTION = "Username-Password-Authentication"
 
-    def __init__(self, session: SessionDependency) -> None:
+    def __init__(self, session: SessionDependency, current_user) -> None:
         self.auth0 = Auth0Repository()
-        super().__init__(session=session)
+        super().__init__(session=session, current_user=current_user)
 
     def create(self, obj: models.UserPostIn) -> str:
         """Invite new user to the system, by first creating,

@@ -1,11 +1,12 @@
-from typing import Any
+from typing import Annotated
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
-from core.dependencies import CommunityServiceDependency
+from core.auth import APIKeyDependency, Scopes
+from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import community as models
 from models.generic import Message, RecordCreated
+from services import CommunityService
 
 router = APIRouter(prefix="/communities", dependencies=[APIKeyDependency])
 
@@ -24,10 +25,14 @@ router = APIRouter(prefix="/communities", dependencies=[APIKeyDependency])
 )
 async def get_community(
     community_id: int,
-    service: CommunityServiceDependency,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.communities_read])
-    ),
+    service: Annotated[
+        CommunityService,
+        Depends(
+            ServiceProvider(
+                service=CommunityService, required_scopes=[Scopes.communities_read]
+            )
+        ),
+    ],
 ):
     """
     Get a community by ID.
@@ -49,10 +54,14 @@ async def get_community(
     response_model=list[models.CommunityGetOut] | None,
 )
 async def get_communities(
-    service: CommunityServiceDependency,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.communities_read])
-    ),
+    service: Annotated[
+        CommunityService,
+        Depends(
+            ServiceProvider(
+                service=CommunityService, required_scopes=[Scopes.communities_read]
+            )
+        ),
+    ],
 ):
     """
     List all communities that a user has access to.
@@ -78,10 +87,14 @@ async def get_communities(
 )
 async def post_community(
     community: models.CommunityPostIn,
-    service: CommunityServiceDependency,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.communities_write])
-    ),
+    service: Annotated[
+        CommunityService,
+        Depends(
+            ServiceProvider(
+                service=CommunityService, required_scopes=[Scopes.communities_write]
+            )
+        ),
+    ],
 ):
     """
     Add a community.
@@ -111,10 +124,14 @@ async def post_community(
 async def update_community(
     community_id: int,
     community: models.CommunityPatchIn,
-    service: CommunityServiceDependency,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.communities_write])
-    ),
+    service: Annotated[
+        CommunityService,
+        Depends(
+            ServiceProvider(
+                service=CommunityService, required_scopes=[Scopes.communities_write]
+            )
+        ),
+    ],
 ):
     """
     Update a community.
@@ -148,11 +165,15 @@ async def update_community(
 )
 async def delete_community(
     community_id: int,
-    service: CommunityServiceDependency,
+    service: Annotated[
+        CommunityService,
+        Depends(
+            ServiceProvider(
+                service=CommunityService, required_scopes=[Scopes.communities_write]
+            )
+        ),
+    ],
     cascade: bool = False,
-    current_user: Any = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.communities_write])
-    ),
 ):
     """
     Delete a community.

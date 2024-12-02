@@ -44,9 +44,13 @@ def mock_settings(mocker):
         mocker.patch(
             "core.database.session.get_settings", return_value=DefaultTestSettings
         ),
-        mocker.patch("services.user.get_settings", return_value=DefaultTestSettings),
         mocker.patch("services._base.get_settings", return_value=DefaultTestSettings),
         mocker.patch("main.get_settings", return_value=DefaultTestSettings),
+        mocker.patch(
+            "repositories.auth0.get_settings", return_value=DefaultTestSettings
+        ),
+        # this should be moved to proper fixture
+        mocker.patch("core.auth.Auth0Repository"),
     ):
         yield
 

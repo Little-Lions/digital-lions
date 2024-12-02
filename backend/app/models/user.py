@@ -15,12 +15,13 @@ class CurrentUser(BaseModel):
     misc: Any
 
     @classmethod
-    def from_jwt(cls, jwt_token: dict, roles: list[dict] = None):
+    def from_jwt(cls, jwt_token: dict, misc, roles: list[dict] = None):
         """Create a CurrentUser object from a decoded JWT token."""
         return cls(
             sub=jwt_token["sub"],
             permissions=jwt_token.get("permissions", []),
             roles=roles,
+            misc=misc,
         )
 
     def verify_scope(self, required_scope: str) -> bool:

@@ -18,7 +18,7 @@ const PieChart: React.FC = () => {
     const rootStyle = getComputedStyle(document.documentElement);
     const colorSuccess = rootStyle.getPropertyValue('--color-success').trim();
     const colorWarning = rootStyle.getPropertyValue('--color-warning').trim();
-    const colorPrimaryBlue = rootStyle.getPropertyValue('--color-primary-blue').trim();
+    const colorPrimaryBlue = rootStyle.getPropertyValue('--color-primary').trim();
 
     const data: ChartData<'pie'> = {
       labels: ['11/12', '<10/12', '12/12'],

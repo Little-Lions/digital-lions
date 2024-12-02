@@ -3,21 +3,18 @@ interface ApiInput {
   name: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const getCommunities = async (
   communityId: string,
   input: ApiInput
 ): Promise<void> => {
   try {
-    const response = await fetch(`${API_URL}/communities/${communityId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
-      body: JSON.stringify(input),
-    });
+    const response = await fetch(
+      `/api/communities?community_id=${communityId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(input),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);

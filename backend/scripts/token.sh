@@ -11,9 +11,10 @@ TOKEN=$(curl \
   --data "grant_type=password" \
   --data "client_id=${OAUTH_CLIENT_ID}" \
   --data "client_secret=${OAUTH_CLIENT_SECRET}" \
+  --data "scope=openid profile email" \
   --data "audience=${OAUTH_AUDIENCE}" \
   --data "username=${USERNAME}" \
-  --data "password=${PASSWORD}" )
+  --data "password=${PASSWORD}")
 
 printf "Response: \n $TOKEN \n"
 
@@ -32,4 +33,3 @@ printf "JWT decoded: \n $JWT_DECODED\n"
 
 printf "Copying token to clipboard"
 echo $JWT | pbcopy
-

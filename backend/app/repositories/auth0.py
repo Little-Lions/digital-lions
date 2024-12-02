@@ -1,11 +1,12 @@
 import functools
 from collections.abc import Callable
 
-from auth0.authentication import GetToken
+from auth0.authentication import GetToken, Users
 from auth0.exceptions import Auth0Error
 from auth0.management import Auth0
 from core import exceptions
 from fastapi import status
+from core.settings import get_settings
 
 
 class Auth0Repository:
@@ -29,8 +30,8 @@ class Auth0Repository:
 
     MGMT_API = "https://{}/api/v2/"
 
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self):
+        self.settings = get_settings()
         self.domain = self.settings.OAUTH_DOMAIN
 
         token = self._get_mgmt_token()
@@ -205,3 +206,10 @@ class Auth0Repository:
             # this should never happen
             raise ValueError(f"Multiple users with email {email} found.")
         return users[0]
+
+    @convert_auth0_error
+    def user_info(self, access_token: str) -> dict:
+        """
+        Get user information by user ID.
+        """
+        return Users().userinfo(access_token=access_token)

@@ -5,6 +5,10 @@ from typing import Annotated, Any
 import jwt
 import requests
 from core.settings import Settings, get_settings
+from models.user import CurrentUser
+from core.database.session import SessionDependency
+from repositories.auth0 import Auth0Repository
+from repositories.database import RoleRepository
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials, HTTPBearer
 
@@ -101,13 +105,37 @@ class BearerTokenHandler(HTTPBearer):
         self.required_scopes = required_scopes
 
     async def __call__(
-        self, request: Request, settings: Annotated[Settings, Depends(get_settings)]
+        self,
+        request: Request,
+        settings: Annotated[Settings, Depends(get_settings)],
+        session: SessionDependency,
     ) -> Any:
         """Verify the bearer token and optionally the scopes,
         and return the decoded token."""
-        if not settings.FEATURE_OAUTH:
-            return
+        self.settings = settings
+        self.roles = RoleRepository(session=session)
+        self.auth0 = Auth0Repository()
+        if not self.settings.FEATURE_OAUTH:
+            return None
 
+        token, kid = await self._verify_request(request)
+        current_user = self._verify_token(token=token, kid=kid)
+
+        # TODO: scope validation should be moved to the repository calls
+        if not self._verify_required_scopes(current_user["permissions"]):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User does not have required permission.",
+            )
+
+        # add roles to current user
+        roles = self.roles.where([("user_id", current_user["sub"])])
+
+        misc = self.auth0.user_info(access_token=token)
+        return CurrentUser.from_jwt(current_user, roles=roles, misc=misc)
+
+    async def _verify_request(self, request: Request) -> [str, str]:
+        """Verify the credentials and return the decoded token."""
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
         if credentials:
             if not credentials.scheme == self.CREDENTIAL_SCHEME:
@@ -122,40 +150,38 @@ class BearerTokenHandler(HTTPBearer):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Bearer token is no valid JWT.",
                 )
-
-            pub_key = self._get_public_key(
-                token=credentials.credentials,
-                kid=token_headers["kid"],
-                pub_key_url=self.PUBLIC_KEY_URL.format(settings.OAUTH_DOMAIN),
-            )
-            if pub_key is None:
-                raise HTTPException(
-                    status_code=403, detail="Could not get public key for token"
-                )
-
-            jwt_token_decoded = self._verify_jwt(
-                token=credentials.credentials,
-                pub_key=pub_key,
-                algorithm=self.ALGORITHM,
-                audience=settings.OAUTH_AUDIENCE,
-            )
-            if not jwt_token_decoded:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid or expired token.",
-                )
-
-            if not self._verify_required_scopes(jwt_token_decoded["permissions"]):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User does not have required permission.",
-                )
-            return jwt_token_decoded
+            return credentials.credentials, token_headers["kid"]
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authorization code.",
         )
+
+    def _verify_token(self, token: str, kid: str) -> dict:
+        """Verify access token."""
+        pub_key = self._get_public_key(
+            token=token,
+            kid=kid,
+            pub_key_url=self.PUBLIC_KEY_URL.format(self.settings.OAUTH_DOMAIN),
+        )
+        if pub_key is None:
+            raise HTTPException(
+                status_code=403, detail="Could not get public key for token"
+            )
+
+        jwt_token_decoded = self._verify_jwt(
+            token=token,
+            pub_key=pub_key,
+            algorithm=self.ALGORITHM,
+            audience=self.settings.OAUTH_AUDIENCE,
+        )
+        if not jwt_token_decoded:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token.",
+            )
+
+        return jwt_token_decoded
 
     def _verify_required_scopes(self, token_scopes: list[str]) -> bool:
         """

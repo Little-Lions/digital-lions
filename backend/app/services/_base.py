@@ -1,12 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import TypeVar, Any, Annotated
-from fastapi import Depends
+from typing import Annotated, Any, TypeVar
 
+from core.auth import BearerTokenHandler
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import get_settings
-from core.auth import BearerTokenHandler
+from fastapi import Depends
 from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
 

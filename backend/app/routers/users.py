@@ -14,6 +14,24 @@ router = APIRouter(prefix="/users", dependencies=[APIKeyDependency])
 
 
 @router.get(
+    "/me",
+    # response_model=models.CurrentUser,
+    tags=["users"],
+    status_code=status.HTTP_200_OK,
+    summary="Get information about the current user",
+)
+async def get_me(
+    current_user: BearerTokenHandler = Depends(BearerTokenHandler()),
+):
+    """
+    Get the current user.
+
+    """
+
+    return current_user
+
+
+@router.get(
     "",
     response_model=list[models.UserGetOut],
     tags=["users"],

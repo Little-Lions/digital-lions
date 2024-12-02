@@ -3,16 +3,10 @@ interface ApiResponse {
   id: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const createCommunity = async (communityName: string): Promise<ApiResponse> => {
   try {
-    const response = await fetch(`${API_URL}/communities`, {
+    const response = await fetch("/api/communities", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "API-Key": process.env.NEXT_PUBLIC_API_KEY as string,
-      },
       body: JSON.stringify({ name: communityName }),
     });
 

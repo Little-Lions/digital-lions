@@ -1,83 +1,82 @@
-"use client";
+'use client'
 
-import React from "react";
+import React from 'react'
 
 interface CustomButtonProps {
-  label: string;
-  onClick?: () => void;
-  className?: string;
-  isBusy?: boolean;
-  isDisabled?: boolean;
-  isFullWidth?: boolean;
-  icon?: React.ReactNode;
+  label: string
+  onClick?: () => void
+  className?: string
+  isBusy?: boolean
+  isDisabled?: boolean
+  isFullWidth?: boolean
+  icon?: React.ReactNode
   variant?:
-    | "primary"
-    | "secondary"
-    | "success"
-    | "error"
-    | "warning"
-    | "outline"
-    | "none";
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'error'
+    | 'warning'
+    | 'outline'
+    | 'none'
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   label,
-  className = "",
+  className = '',
   isBusy = false,
   isDisabled = false,
   isFullWidth = false,
   icon,
-  variant = "primary",
+  variant = 'primary',
   onClick,
 }) => {
-
-
-  let buttonClass = "relative py-2 px-4 rounded-lg text-sm inline-flex items-center justify-center";
-  let buttonColorClass = "";
-  let textColorClass = "text-primary";
-  let borderColorClass = "border-transparent";
+  let buttonClass =
+    'relative py-2 px-4 rounded-lg text-sm inline-flex items-center justify-center'
+  let buttonColorClass = ''
+  let textColorClass = 'text-primary'
+  let borderColorClass = 'border-transparent'
 
   switch (variant) {
-    case "primary":
-      buttonColorClass = "bg-button-primary hover:bg-primary-dark";
-      textColorClass = "text-primary-light";
-      break;
-    case "secondary":
-      buttonColorClass = "bg-button-secondary hover:bg-secondary-dark";
-      textColorClass = "text-primary-light";
-      break;
-    case "success":
-      buttonColorClass = "bg-button-success hover:bg-success-dark";
-      textColorClass = "text-primary-light";
-      break;
-    case "error":
-      buttonColorClass = "bg-button-error hover:bg-error-dark";
-      textColorClass = "text-primary-light";
-      break;
-    case "warning":
-      buttonColorClass = "bg-button-warning hover:bg-warning-dark";
-      textColorClass = "text-primary-light";
-      break;
-    case "outline":
-      buttonClass += " border";
-      buttonColorClass = "hover:bg-neutral-light";
-      textColorClass = "text-neutral-dark";
-      borderColorClass = "border-neutral-500";
-      break;
-    case "none":
-      buttonColorClass = "";
-      break;
+    case 'primary':
+      buttonColorClass = 'bg-button-primary hover:bg-primary-dark'
+      textColorClass = 'text-primary-light'
+      break
+    case 'secondary':
+      buttonColorClass = 'bg-button-secondary hover:bg-secondary-dark'
+      textColorClass = 'text-primary-light'
+      break
+    case 'success':
+      buttonColorClass = 'bg-button-success hover:bg-success-dark'
+      textColorClass = 'text-primary-light'
+      break
+    case 'error':
+      buttonColorClass = 'bg-button-error hover:bg-error-dark'
+      textColorClass = 'text-primary-light'
+      break
+    case 'warning':
+      buttonColorClass = 'bg-button-warning hover:bg-warning-dark'
+      textColorClass = 'text-primary-light'
+      break
+    case 'outline':
+      buttonClass += ' border'
+      buttonColorClass = 'hover:bg-neutral-light'
+      textColorClass = 'hover:text-black'
+      borderColorClass = 'border-neutral-500'
+      break
+    case 'none':
+      buttonColorClass = ''
+      break
     default:
-      break;
+      break
   }
 
   return (
     <button
       type="button"
-      className={`${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} ${isFullWidth ? "w-full sm:w-auto" : ""} ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} ${isFullWidth ? 'w-full sm:w-auto' : ''} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       onClick={onClick}
       disabled={isBusy || isDisabled}
-      style={{ minWidth: "6rem", minHeight: "2.5rem" }}
+      style={{ minWidth: '6rem', minHeight: '2.5rem' }}
       aria-busy={isBusy}
     >
       {isBusy ? (
@@ -111,6 +110,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         </div>
       )}
     </button>
-  );
-};
-export default CustomButton;
+  )
+}
+export default CustomButton

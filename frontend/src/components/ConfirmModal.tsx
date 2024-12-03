@@ -1,15 +1,15 @@
-import React from "react";
-import Modal from "./Modal";
-import CustomButton from "./CustomButton";
+import React from 'react'
+import Modal from './Modal'
+import CustomButton from './CustomButton'
 
 interface ConfirmModalProps {
-  title: string;
-  text: string;
-  onClose: () => void;
-  onAccept: () => void;
-  acceptText?: string;
-  closeText?: string;
-  isBusy?: boolean;
+  title: string
+  text: string
+  onClose: () => void
+  onAccept: () => void
+  acceptText?: string
+  closeText?: string
+  isBusy?: boolean
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -17,8 +17,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   text,
   onClose,
   onAccept,
-  acceptText = "Yes",
-  closeText = "No",
+  acceptText = 'Yes',
+  closeText = 'No',
   isBusy = false,
 }) => {
   return (
@@ -32,7 +32,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             label={closeText}
             variant="outline"
             onClick={onClose}
-            className="hover:text-gray-800 dark:hover:text-gray-200"
+            className="hover:text-gray-800 "
           />
           <CustomButton
             label={acceptText}
@@ -44,9 +44,9 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </>
       }
     >
-      <p className="text-gray-700 dark:text-gray-300">{text}</p>
+      <p className="text-gray-700 ">{text}</p>
     </Modal>
-  );
-};
+  )
+}
 
-export default ConfirmModal;
+export default ConfirmModal

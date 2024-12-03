@@ -9,6 +9,7 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import Accordion from '@/components/Accordion'
 import SelectInput from '@/components/SelectInput'
 import Toast from '@/components/Toast'
+import Loader from '@/components/Loader'
 
 import { TrashIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/16/solid'
 
@@ -28,7 +29,6 @@ import { User } from '@/types/user.interface'
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
-import AlertBanner from '@/components/AlertBanner'
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([])
@@ -39,7 +39,8 @@ const UsersPage = () => {
   const [isAssigningUser, setIsAssigningUser] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
   const [isDeletingUser, setIsDeletingUser] = useState(false)
-
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [isLoadingUserData, setIsLoadingUserData] = useState(false)
   //   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
 
   const [addUserModalVisible, setAddUserModalVisible] = useState(false)
@@ -89,14 +90,15 @@ const UsersPage = () => {
   }
 
   const fetchUsers = async () => {
-    setIsLoading(true)
+    setIsLoadingUserData(true)
     try {
       const usersData = await getUsers()
       setUsers(usersData)
     } catch (error) {
       console.error('Failed to fetch users:', error)
     } finally {
-      setIsLoading(false)
+      setIsLoadingUserData(false)
+      setIsInitialLoad(false)
     }
   }
 
@@ -228,13 +230,14 @@ const UsersPage = () => {
     setIsAddingUser(true)
     try {
       await createUser(emailAddress)
+      handleCloseAddUserModal()
+
       await fetchUsers()
       setIsAddingUserComplete(true)
     } catch (error) {
       console.error('Failed to add user:', error)
     } finally {
       setIsAddingUser(false)
-      handleCloseAddUserModal()
     }
   }
 
@@ -310,7 +313,7 @@ const UsersPage = () => {
 
   return (
     <>
-      {isLoading ? (
+      {isLoadingUserData && isInitialLoad ? (
         <>
           <SkeletonLoader width="142px" type="button" />
           {Array.from({ length: 8 }, (_, i) => (
@@ -319,6 +322,7 @@ const UsersPage = () => {
         </>
       ) : (
         <>
+          {/* {isLoadingUserData && <Loader loadingText="Loading user data" />} */}
           <CustomButton
             label="Invite new user"
             onClick={handleOpenAddUserModal}
@@ -340,8 +344,8 @@ const UsersPage = () => {
 
               <ButtonGroup>
                 <CustomButton
-                  className="mt-4 float-left"
-                  label="Assign role"
+                  className="mt-4"
+                  label="Assign"
                   variant="outline"
                   icon={<UserPlusIcon />}
                   onClick={() => handleOpenAssignUserModal(user.user_id)}

@@ -86,10 +86,10 @@ const CommunityPage: React.FC = () => {
     <>
       {isLoading && isInitialLoad ? (
         <>
-          {/* <SkeletonLoader width="142px" type="button" />
+          <SkeletonLoader width="142px" type="button" />
           {Array.from({ length: 8 }, (_, i) => (
             <SkeletonLoader key={i} type="card" />
-          ))} */}
+          ))}
         </>
       ) : (
         <>

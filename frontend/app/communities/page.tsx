@@ -66,13 +66,14 @@ const CommunityPage: React.FC = () => {
 
   const handleAddCommunity = async () => {
     if (communityName.trim() === '') return
+
     setIsAddingCommunity(true)
     try {
       const newCommunity = await createCommunity(communityName)
       setCommunities([...communities, newCommunity])
-
       handleCloseCommunityModal()
-      fetchCommunities()
+
+      await fetchCommunities()
       setIsAddingCommunityComplete(true)
     } catch (error) {
       setErrorMessage(String(error))

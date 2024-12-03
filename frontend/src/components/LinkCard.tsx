@@ -1,25 +1,31 @@
-import React from "react";
-import Link from "next/link"; 
+import React from 'react'
+import Link from 'next/link'
 
 interface LinkCardProps {
-  title: string;
-  className?: string;
-  href: string;
-  state?: { communityName?: string | null; teamName?: string | null };
-  children?: React.ReactNode;
+  title: string
+  className?: string
+  href: string
+  state?: { communityName?: string | null; teamName?: string | null }
+  children?: React.ReactNode
 }
 
-const LinkCard: React.FC<LinkCardProps> = ({ title, className, href, state, children }) => {
+const LinkCard: React.FC<LinkCardProps> = ({
+  title,
+  className,
+  href,
+  state,
+  children,
+}) => {
   const handleClick = () => {
     if (state) {
-      localStorage.setItem("linkCardState", JSON.stringify(state)); 
+      localStorage.setItem('linkCardState', JSON.stringify(state))
     }
-  };
+  }
 
   return (
     <Link href={href} onClick={handleClick}>
       <div
-        className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark dark:hover:bg-gray-800 transition-colors cursor-pointer`}
+        className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark transition-colors cursor-pointer`}
       >
         <h2>{title}</h2>
         <div className="flex items-center space-x-2">
@@ -42,7 +48,7 @@ const LinkCard: React.FC<LinkCardProps> = ({ title, className, href, state, chil
         </div>
       </div>
     </Link>
-  );
-};
+  )
+}
 
-export default LinkCard;
+export default LinkCard

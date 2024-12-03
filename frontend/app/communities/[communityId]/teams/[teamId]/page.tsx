@@ -1,185 +1,167 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from "react";
-import Accordion from "@/components/Accordion";
-import getTeams from "@/api/services/teams/getTeams";
-import getTeamById from "@/api/services/teams/getTeamById";
+import React, { useState, useEffect } from 'react'
+import Accordion from '@/components/Accordion'
+import getTeams from '@/api/services/teams/getTeams'
+import getTeamById from '@/api/services/teams/getTeamById'
 
-import createChild from "@/api/services/children/createChild";
-import updateChild from "@/api/services/children/updateChild";
-import deleteChild from "@/api/services/children/deleteChild";
+import createChild from '@/api/services/children/createChild'
+import updateChild from '@/api/services/children/updateChild'
+import deleteChild from '@/api/services/children/deleteChild'
 
-import SelectInput from "@/components/SelectInput";
-import CustomButton from "@/components/CustomButton";
-import Modal from "@/components/Modal";
-import TextInput from "@/components/TextInput";
-import Loader from "@/components/Loader";
-import ConfirmModal from "@/components/ConfirmModal";
-import SkeletonLoader from "@/components/SkeletonLoader";
-import ButtonGroup from "@/components/ButtonGroup";
+import Loader from '@/components/Loader'
+import SelectInput from '@/components/SelectInput'
+import CustomButton from '@/components/CustomButton'
+import Modal from '@/components/Modal'
+import TextInput from '@/components/TextInput'
+import ConfirmModal from '@/components/ConfirmModal'
+import SkeletonLoader from '@/components/SkeletonLoader'
+import ButtonGroup from '@/components/ButtonGroup'
+import Toast from '@/components/Toast'
 
+import EmptyState from '@/components/EmptyState'
 
-import EmptyState from "@/components/EmptyState";
+import { UserIcon } from '@heroicons/react/24/solid'
+import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
-import { UserIcon } from "@heroicons/react/24/solid";
-import { TrashIcon, PencilIcon } from "@heroicons/react/16/solid";
+import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
-import { TeamWithChildren } from "@/types/teamWithChildren.interface";
-
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter } from 'next/navigation'
 
 interface Team {
-  name: string;
-  id: number;
+  name: string
+  id: number
 }
 
 const TeamsDetailPage: React.FC = () => {
-  const router = useRouter();
+  const router = useRouter()
+  const params = useParams()
 
-  const params = useParams();
-  const communityId = params?.communityId as string;
-  const teamId = params?.teamId as string;
+  const communityId = params?.communityId as string
+  const teamId = params?.teamId as string
 
-  const [teams, setTeams] = useState<Team[]>([]);
+  const [teams, setTeams] = useState<Team[]>([])
   const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
-    null
-  );
-  const [modalVisible, setModalVisible] = useState(false);
+    null,
+  )
+  const [modalVisible, setModalVisible] = useState(false)
 
-  const [editChildId, setEditChildId] = useState<number | null>(null);
-  const [editFirstName, setEditFirstName] = useState("");
-  const [editLastName, setEditLastName] = useState("");
-  const [editAge, setEditAge] = useState<number | null>(null);
-  const [editGender, setEditGender] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
-  const [isLoadingChild, setIsLoadingChild] = useState(false);
-  const [isDeletingChild, setIsDeletingChild] = useState(false);
-  const [isEditingChild, setIsEditingChild] = useState(false);
-  const [isAddingChild, setIsAddingChild] = useState(false);
+  const [editChildId, setEditChildId] = useState<number | null>(null)
+  const [editFirstName, setEditFirstName] = useState('')
+  const [editLastName, setEditLastName] = useState('')
+  const [editAge, setEditAge] = useState<number | null>(null)
+  const [editGender, setEditGender] = useState<string | null>(null)
 
-  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
-  const [deleteChildModalVisible, setDeleteChildModalVisible] = useState(false);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false) // For the SelectInput
+  const [isLoadingSelectedTeam, setIsLoadingSelectedTeam] = useState(false) // For the selected team's children
 
-  // const [communityName, setCommunityName] = useState<string | null>(null);
-  // const [teamName, setTeamName] = useState<string | null>(null);
+  const [isLoadingChild, setIsLoadingChild] = useState(false)
+  const [isDeletingChild, setIsDeletingChild] = useState(false)
+  const [isEditingChild, setIsEditingChild] = useState(false)
+  const [isAddingChild, setIsAddingChild] = useState(false)
 
-  // useEffect(() => {
-  //   // Retrieve and parse state from localStorage
-  //   const storedState = localStorage.getItem("linkCardState");
-  //   if (storedState) {
-  //     const { communityName, teamName } = JSON.parse(storedState);
-  //     // setCommunityName(communityName);
-  //     setTeamName(teamName);
-  //   }
-  // }, []);
+  const [errorMessage, setErrorMessage] = useState<string>('')
+
+  const [deleteChildModalVisible, setDeleteChildModalVisible] = useState(false)
+
+  const [isAddingChildComplete, setIsAddingChildComplete] = useState(false)
+  const [isEditingChildComplete, setIsEditingChildComplete] = useState(false)
+  const [isDeletingChildComplete, setIsDeletingChildComplete] = useState(false)
+
+  const fetchTeamById = async (teamId: number) => {
+    setIsLoadingSelectedTeam(true)
+    try {
+      const numericTeamId = Number(teamId)
+      if (isNaN(numericTeamId)) {
+        throw new Error('Invalid team ID')
+      }
+      const teamDetails = await getTeamById(numericTeamId)
+      setSelectedTeam(teamDetails)
+    } catch (error) {
+      console.error('Failed to fetch team details:', error)
+    } finally {
+      setIsLoadingSelectedTeam(false)
+    }
+  }
+
+  useEffect(() => {
+    if (teamId) {
+      fetchTeamById(Number(teamId))
+    }
+  }, [teamId])
 
   // Fetch all teams on component mount
   useEffect(() => {
     const fetchTeams = async () => {
-      setIsLoading(true);
+      setIsLoadingTeams(true)
       try {
-        const fetchedTeams = await getTeams("active");
-        setTeams(fetchedTeams);
+        const fetchedTeams = await getTeams('active')
+        setTeams(fetchedTeams)
       } catch (error) {
-        console.error("Failed to fetch teams:", error);
+        console.error('Failed to fetch teams:', error)
       } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
-
-  // Fetch team details when teamId changes
-  useEffect(() => {
-    if (teamId) {
-      const fetchTeamById = async () => {
-        setIsLoadingTeam(true);
-        try {
-          const numericTeamId = Number(teamId);
-          if (isNaN(numericTeamId)) {
-            throw new Error("Invalid team ID");
-          }
-          const teamDetails = await getTeamById(numericTeamId);
-          setSelectedTeam(teamDetails);
-        } catch (error) {
-          console.error("Failed to fetch team details:", error);
-        } finally {
-          setIsLoadingTeam(false);
-        }
-      };
-
-      fetchTeamById();
-    }
-  }, [teamId]);
-
-  const handleTeamChange = async (value: string | number) => {
-    const selectedId = typeof value === "string" ? parseInt(value, 10) : value;
-    const selected = teams.find((team) => team.id === selectedId);
-
-    if (selected) {
-      // Update the URL
-      router.push(`/communities/${communityId}/teams/${selected.id}`);
-
-      // Fetch the new team details
-      setIsLoadingTeam(true);
-      try {
-        const teamDetails = await getTeamById(selected.id);
-        setSelectedTeam(teamDetails);
-      } catch (error) {
-        console.error("Failed to fetch team details:", error);
-      } finally {
-        setIsLoadingTeam(false);
+        setIsLoadingTeams(true)
+        setIsInitialLoad(false)
       }
     }
-  };
+
+    fetchTeams()
+  }, [])
+
+  const handleTeamChange = (value: string | number) => {
+    const selectedId = typeof value === 'string' ? parseInt(value, 10) : value
+    const url = `/communities/${communityId}/teams/${selectedId}`
+
+    router.replace(url)
+  }
 
   const handleAddChild = () => {
-    setIsAddingChild(true);
-    setModalVisible(true);
-  };
+    setIsAddingChild(true)
+    setModalVisible(true)
+  }
 
   const closeModal = () => {
-    setModalVisible(false);
-    setEditChildId(null);
-    setEditFirstName("");
-    setEditLastName("");
-    setEditAge(null);
-    setEditGender(null);
-    setIsAddingChild(false);
-    setIsEditingChild(false);
-  };
+    setModalVisible(false)
+    setEditChildId(null)
+    setEditFirstName('')
+    setEditLastName('')
+    setEditAge(null)
+    setEditGender(null)
+    setIsAddingChild(false)
+    setIsEditingChild(false)
+  }
 
   const handleFirstNameChange = (value: string) => {
-    setEditFirstName(value);
-  };
+    setEditFirstName(value)
+  }
 
   const handleLastNameChange = (value: string) => {
-    setEditLastName(value);
-  };
+    setEditLastName(value)
+  }
 
   const handleAgeChange = (value: string) => {
-    setEditAge(parseInt(value, 10));
-  };
+    setEditAge(parseInt(value, 10))
+  }
 
   const handleGenderChange = (value: string) => {
-    setEditGender(value);
-  };
+    setEditGender(value)
+  }
 
   const handleEditChild = (childId: number) => {
-    setIsEditingChild(true);
-    const child = selectedTeam?.children.find((c) => c.id === childId);
+    setIsEditingChild(true)
+    const child = selectedTeam?.children.find((c) => c.id === childId)
     if (child) {
-      setEditChildId(child.id);
-      setEditFirstName(child.first_name);
-      setEditLastName(child.last_name);
-      setEditAge(child.age);
-      setEditGender(child.gender);
-      setModalVisible(true);
+      setEditChildId(child.id)
+      setEditFirstName(child.first_name)
+      setEditLastName(child.last_name)
+      setEditAge(child.age)
+      setEditGender(child.gender)
+      setModalVisible(true)
     }
-  };
+  }
 
   const handleSaveChild = async () => {
     if (isEditingChild && editChildId !== null) {
@@ -188,23 +170,24 @@ const TeamsDetailPage: React.FC = () => {
           childId: editChildId,
           isActive: true,
           age: editAge || null,
-          gender: editGender || "null",
+          gender: editGender || 'null',
           firstName: editFirstName,
           lastName: editLastName,
-        };
-        setIsLoadingChild(true);
+        }
+        setIsLoadingChild(true)
         try {
-          await updateChild(updatedChild);
-          const updatedTeam = await getTeamById(selectedTeam?.id as number);
-          setSelectedTeam(updatedTeam);
-          closeModal();
+          await updateChild(updatedChild)
+          closeModal()
+
+          await fetchTeamById(Number(selectedTeam?.id))
+          setIsEditingChildComplete(true)
         } catch (error) {
-          console.error("Failed to update child:", error);
+          console.error('Failed to update child:', error)
         } finally {
-          setIsLoadingChild(false);
+          setIsLoadingChild(false)
         }
       } else {
-        console.error("Missing required fields for updating child");
+        console.error('Missing required fields for updating child')
       }
     } else if (isAddingChild) {
       if (editFirstName && editLastName && selectedTeam) {
@@ -214,53 +197,55 @@ const TeamsDetailPage: React.FC = () => {
           gender: editGender,
           firstName: editFirstName,
           lastName: editLastName,
-        };
-        setIsLoadingChild(true);
+        }
+        setIsLoadingChild(true)
         try {
-          await createChild(newChild);
-          const updatedTeam = await getTeamById(selectedTeam.id);
-          setSelectedTeam(updatedTeam);
-          closeModal();
+          await createChild(newChild)
+          closeModal()
+
+          await fetchTeamById(Number(selectedTeam.id))
+          setIsAddingChildComplete(true)
         } catch (error) {
-          setErrorMessage(String(error));
-          console.error("Failed to create child:", error);
+          setErrorMessage(String(error))
+          console.error('Failed to create child:', error)
         } finally {
-          setIsLoadingChild(false);
+          setIsLoadingChild(false)
         }
       } else {
-        console.error("Missing required fields for adding child");
+        console.error('Missing required fields for adding child')
       }
     }
-  };
+  }
 
   const openDeleteChildModal = (childId: number) => {
-    setEditChildId(childId);
-    setDeleteChildModalVisible(true);
-  };
+    setEditChildId(childId)
+    setDeleteChildModalVisible(true)
+  }
 
-  const closeDeleteChildModal = () => {
-    setDeleteChildModalVisible(false);
-  };
+  const handleCloseDeleteChildModal = () => {
+    setDeleteChildModalVisible(false)
+  }
 
   const handleDeleteChild = async () => {
-    const childId = editChildId;
+    const childId = editChildId
 
-    setIsDeletingChild(true);
+    setIsDeletingChild(true)
     try {
-      await deleteChild(childId as number, false);
-      const updatedTeam = await getTeamById(selectedTeam?.id as number);
-      setSelectedTeam(updatedTeam);
-      setDeleteChildModalVisible(false);
+      await deleteChild(childId as number, false)
+      handleCloseDeleteChildModal()
+
+      await fetchTeamById(Number(selectedTeam?.id))
+      setIsDeletingChildComplete(true)
     } catch (error) {
-      console.error("Failed to delete child:", error);
+      console.error('Failed to delete child:', error)
     } finally {
-      setIsDeletingChild(false);
+      setIsDeletingChild(false)
     }
-  };
+  }
 
   return (
     <>
-      {isLoading ? (
+      {isLoading && isInitialLoad ? (
         <>
           <SkeletonLoader type="input" />
           <SkeletonLoader width="142px" type="button" />
@@ -270,11 +255,11 @@ const TeamsDetailPage: React.FC = () => {
         </>
       ) : (
         <>
-          {isLoadingTeam && <Loader loadingText={"Loading team details"} />}
+          {isLoadingSelectedTeam && <Loader loadingText="Loading team data" />}
           <SelectInput
             className="mb-4"
-            label={"Select team"}
-            value={selectedTeam?.id || ""}
+            label="Select team"
+            value={selectedTeam?.id || ''}
             onChange={handleTeamChange}
           >
             <option value="">Select a team</option>
@@ -290,19 +275,19 @@ const TeamsDetailPage: React.FC = () => {
               label="Add child"
               onClick={handleAddChild}
               variant="outline"
-              isFullWidth={true}
+              isFullWidth
               className="mb-4"
             />
           ) : (
             <EmptyState
-              title="This team has no childs"
+              title="This team has no children"
               text="Add a child to the team to get started"
               pictogram={<UserIcon />}
               actionButton={
                 <CustomButton
                   label="Add child"
                   onClick={handleAddChild}
-                  variant={"primary"}
+                  variant="primary"
                   className="hover:bg-card-dark hover:text-white mb-4"
                 />
               }
@@ -323,9 +308,9 @@ const TeamsDetailPage: React.FC = () => {
                     <p>{`Age: ${child.age}`}</p>
                     <p>{`Gender: ${child.gender}`}</p>
                   </div>
-                  <div className="border-t mt-4 border-gray-200 dark:border-gray-600"/>
-                   <ButtonGroup> 
-                   <CustomButton
+                  <div className="border-t mt-4 border-gray-200 dark:border-gray-600" />
+                  <ButtonGroup>
+                    <CustomButton
                       className="mt-4"
                       label="Delete"
                       variant="error"
@@ -339,7 +324,7 @@ const TeamsDetailPage: React.FC = () => {
                       icon={<PencilIcon />}
                       onClick={() => handleEditChild(child.id)}
                     />
-                   </ButtonGroup>
+                  </ButtonGroup>
                 </Accordion>
               ))}
             </>
@@ -349,8 +334,8 @@ const TeamsDetailPage: React.FC = () => {
             <ConfirmModal
               title="Delete child"
               text="Are you sure you want to delete this child?"
-              onAccept={() => handleDeleteChild()}
-              onClose={() => closeDeleteChildModal()}
+              onAccept={handleDeleteChild}
+              onClose={handleCloseDeleteChildModal}
               acceptText="Delete"
               closeText="Cancel"
               isBusy={isDeletingChild}
@@ -360,61 +345,87 @@ const TeamsDetailPage: React.FC = () => {
           {modalVisible && (
             <Modal
               onClose={closeModal}
-              title={isEditingChild ? "Edit child" : "Add child"}
-              acceptText={isEditingChild ? "Edit" : "Add"}
+              title={isEditingChild ? 'Edit child' : 'Add child'}
+              acceptText={isEditingChild ? 'Edit' : 'Add'}
               onAccept={handleSaveChild}
               isBusy={isLoadingChild}
-              footer={
-                <CustomButton
-                  label="Save"
-                  variant="primary"
-                  onClick={handleSaveChild}
-                  isBusy={isLoadingChild}
-                  className="hover:text-white"
-                />
-              }
+              isDisabledButton={!editFirstName || !editLastName}
             >
-              <TextInput
-                className="mb-2"
-                label="First Name"
-                value={editFirstName}
-                onChange={handleFirstNameChange}
-                required={true}
-                errorMessage="Please enter your first name"
-              />
-              <TextInput
-                className="mb-2"
-                label="Last Name"
-                value={editLastName}
-                onChange={handleLastNameChange}
-                required={true}
-                errorMessage="Please enter your last name"
-              />
-              <TextInput
-                className="mb-2"
-                label="Age"
-                value={editAge?.toString() || ""}
-                onChange={handleAgeChange}
-              />
-              <SelectInput
-                className="mb-2"
-                label="Gender"
-                value={editGender ?? ""}
-                onChange={(value: string | number) =>
-                  handleGenderChange(String(value))
-                }
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleAddChild()
+                }}
               >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </SelectInput>
-              {errorMessage && <p className="text-error">{errorMessage}</p>}
+                <TextInput
+                  className="mb-2"
+                  label="First Name"
+                  value={editFirstName}
+                  onChange={handleFirstNameChange}
+                  required
+                  errorMessage="Please enter your first name"
+                />
+                <TextInput
+                  className="mb-2"
+                  label="Last Name"
+                  value={editLastName}
+                  onChange={handleLastNameChange}
+                  required
+                  errorMessage="Please enter your last name"
+                />
+                <TextInput
+                  className="mb-2"
+                  label="Age"
+                  value={editAge?.toString() || ''}
+                  onChange={handleAgeChange}
+                />
+                <SelectInput
+                  className="mb-2"
+                  label="Gender"
+                  value={editGender ?? ''}
+                  onChange={(value: string | number) =>
+                    handleGenderChange(String(value))
+                  }
+                >
+                  <option value="">Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </SelectInput>
+                {errorMessage && <p className="text-error">{errorMessage}</p>}
+              </form>
             </Modal>
+          )}
+
+          {isAddingChildComplete && (
+            <Toast
+              variant="success"
+              message="Child added successfully"
+              isCloseable
+              onClose={() => setIsAddingChildComplete(false)}
+            />
+          )}
+
+          {isEditingChildComplete && (
+            <Toast
+              variant="success"
+              message="Child updated successfully"
+              isCloseable
+              onClose={() => setIsEditingChildComplete(false)}
+            />
+          )}
+
+          {isDeletingChildComplete && (
+            <Toast
+              variant="success"
+              message="Child deleted successfully"
+              isCloseable
+              onClose={() => setIsDeletingChildComplete(false)}
+            />
           )}
         </>
       )}
     </>
-  );
-};
+  )
+}
 
-export default TeamsDetailPage;
+export default TeamsDetailPage

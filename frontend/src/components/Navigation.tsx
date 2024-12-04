@@ -3,21 +3,16 @@
 import React, { useState } from 'react'
 import NavLink from './NavLink'
 import { usePathname } from 'next/navigation'
-import BackButton from './BackButton'
+import NavigationButton from './NavigationButton'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import Loader from './Loader'
+import CustomButton from './CustomButton'
 
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { user } = useUser()
-
-  const logoutUrl = user?.sid
-    ? // `${process.env.NEXT_PUBLIC_AUTH0_ISSUER_BASE_URL}/oidc/logout?client_id=${process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}&logout_hint=${
-      //   user?.sid
-      // }&returnTo=${encodeURIComponent(
-      //   "http://localhost:3000/logout"
-      // )}&federated`
-      `${process.env.NEXT_PUBLIC_AUTH0_ISSUER_BASE_URL}/oidc/logout?client_id=${process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID}&logout_hint=${user?.sid}&federated`
-    : `/api/auth/logout`
 
   const toggleMenu = () => {
     setIsOpen((prevState) => !prevState)
@@ -25,6 +20,28 @@ const Navigation: React.FC = () => {
 
   const closeMenu = () => {
     setIsOpen(false)
+  }
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      window.location.href = '/api/auth/logout' // Redirect to logout
+    } catch (error) {
+      console.error('Logout failed:', error)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true)
+    try {
+      window.location.href = '/api/auth/login' // Redirect to login
+    } catch (error) {
+      console.error('Login failed:', error)
+    } finally {
+      setIsLoggingIn(false)
+    }
   }
 
   const pathname = usePathname()
@@ -41,7 +58,13 @@ const Navigation: React.FC = () => {
           >
             <>
               {/* Show Back Button on all pages except the home page (only when user is authenticated) */}
-              {user && !isHomePage && <BackButton closeMenu={closeMenu} />}
+              {user && !isHomePage && (
+                <NavigationButton
+                  closeMenu={closeMenu}
+                  useBackNavigation={true}
+                  className="text-white hover:text-gray-900"
+                />
+              )}
 
               {/* Show Logo (Always show logo but disable the click when not authenticated) */}
               {isHomePage && (
@@ -57,14 +80,13 @@ const Navigation: React.FC = () => {
 
               {/* Conditionally show login button when user is not authenticated */}
               {!user && (
-                <NavLink
-                  isExternal={true}
-                  href="/api/auth/login"
-                  onClick={toggleMenu}
-                  className="text-white"
-                >
-                  Login
-                </NavLink>
+                <CustomButton
+                  label="Login"
+                  onClick={handleLogin}
+                  variant="none"
+                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  isBusy={isLoggingIn}
+                />
               )}
             </>
           </div>
@@ -78,10 +100,13 @@ const Navigation: React.FC = () => {
                 <NavLink href="/program-tracker">Program tracker</NavLink>
                 <NavLink href="/communities">Communities / teams</NavLink>
                 <NavLink href="/users">Users</NavLink>
-
-                <NavLink isExternal={true} href={logoutUrl}>
-                  Logout
-                </NavLink>
+                <CustomButton
+                  label="Logout"
+                  onClick={handleLogout}
+                  variant="none"
+                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  isBusy={isLoggingOut}
+                />
               </>
             )}
           </div>
@@ -158,14 +183,13 @@ const Navigation: React.FC = () => {
                 >
                   Users
                 </NavLink>
-                <NavLink
-                  href={logoutUrl}
-                  isExternal={true}
-                  onClick={toggleMenu}
-                  className="text-white text-2xl py-4"
-                >
-                  Logout
-                </NavLink>
+                <CustomButton
+                  label="Logout"
+                  onClick={handleLogout}
+                  variant="none"
+                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  isBusy={isLoggingOut}
+                />
               </>
             )}
           </div>

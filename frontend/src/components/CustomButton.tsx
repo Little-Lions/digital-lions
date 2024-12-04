@@ -60,7 +60,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     case 'outline':
       buttonClass += ' border'
       buttonColorClass = 'hover:bg-neutral-light'
-      textColorClass = 'hover:text-black'
+      textColorClass = 'hover:text-gray-900'
       borderColorClass = 'border-neutral-500'
       break
     case 'none':
@@ -73,7 +73,9 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   return (
     <button
       type="button"
-      className={`${className} ${buttonClass} ${buttonColorClass} ${textColorClass} ${borderColorClass} ${isFullWidth ? 'w-full sm:w-auto' : ''} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`${buttonClass} ${buttonColorClass} ${borderColorClass} ${
+        isFullWidth ? 'w-full sm:w-auto' : ''
+      } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''} ${textColorClass} ${className}`}
       onClick={onClick}
       disabled={isBusy || isDisabled}
       style={{ minWidth: '6rem', minHeight: '2.5rem' }}
@@ -112,4 +114,5 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     </button>
   )
 }
+
 export default CustomButton

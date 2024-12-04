@@ -1,6 +1,7 @@
 import React from 'react'
 import Modal from './Modal'
 import CustomButton from './CustomButton'
+import ButtonGroup from './ButtonGroup'
 
 interface ConfirmModalProps {
   title: string
@@ -28,19 +29,19 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       isBusy={isBusy}
       footer={
         <>
-          <CustomButton
-            label={closeText}
-            variant="outline"
-            onClick={onClose}
-            className="hover:text-gray-800 "
-          />
-          <CustomButton
-            label={acceptText}
-            variant="error"
-            onClick={onAccept}
-            isBusy={isBusy}
-            className="ml-4 hover:text-white"
-          />
+          <ButtonGroup>
+            <CustomButton
+              label={closeText}
+              variant="outline"
+              onClick={onClose}
+            />
+            <CustomButton
+              label={acceptText}
+              variant="error"
+              onClick={onAccept}
+              isBusy={isBusy}
+            />
+          </ButtonGroup>
         </>
       }
     >

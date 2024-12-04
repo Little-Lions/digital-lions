@@ -24,17 +24,19 @@ const UnauthorizedPage: React.FC = () => {
         <div className="border-t border-gray-200">
           <ButtonGroup className="mt-4">
             <NavigationButton
+              label="Login"
+              href="/api/auth/login"
+              isFullWidth={true}
+              variant="secondary"
+              useBackNavigation={false}
+            />
+            <NavigationButton
               label="Go back"
               href="/"
               variant="outline"
+              isFullWidth={true}
               useBackNavigation={false}
               className="text-gray-900"
-            />
-            <NavigationButton
-              label="Login"
-              href="/api/auth/login"
-              variant="secondary"
-              useBackNavigation={false}
             />
           </ButtonGroup>
         </div>

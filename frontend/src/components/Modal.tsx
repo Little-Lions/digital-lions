@@ -66,7 +66,6 @@ const Modal: React.FC<ModalProps> = ({
                   onClick={onAccept}
                   isBusy={isBusy}
                   isDisabled={isDisabledButton}
-                  className="ml-4 hover:text-white"
                 />
               ))}
           </div>

@@ -37,17 +37,20 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
 
   const handleClick = async () => {
     closeMenu()
-    setIsBusy(true)
+
     try {
       if (useBackNavigation) {
         router.back()
       } else {
+        setIsBusy(true)
         await router.push(href)
       }
     } catch (error) {
       console.error('Navigation error:', error)
     } finally {
-      setIsBusy(true)
+      if (!useBackNavigation) {
+        setIsBusy(false)
+      }
     }
   }
 

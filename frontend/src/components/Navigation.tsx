@@ -25,10 +25,11 @@ const Navigation: React.FC = () => {
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      window.location.href = '/api/auth/logout' // Redirect to logout
+      setTimeout(() => {
+        window.location.href = '/api/auth/logout'
+      }, 10)
     } catch (error) {
       console.error('Logout failed:', error)
-    } finally {
       setIsLoggingOut(false)
     }
   }
@@ -36,10 +37,11 @@ const Navigation: React.FC = () => {
   const handleLogin = async () => {
     setIsLoggingIn(true)
     try {
-      window.location.href = '/api/auth/login' // Redirect to login
+      setTimeout(() => {
+        window.location.href = '/api/auth/login'
+      }, 10)
     } catch (error) {
       console.error('Login failed:', error)
-    } finally {
       setIsLoggingIn(false)
     }
   }

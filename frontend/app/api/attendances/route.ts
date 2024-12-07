@@ -1,35 +1,35 @@
-import { NextResponse } from "next/server";
-import { getAccessToken } from "@auth0/nextjs-auth0";
-import { apiRequest } from "@/utils/apiRequest";
+import { NextResponse } from 'next/server'
+import { getAccessToken } from '@auth0/nextjs-auth0'
+import { apiRequest } from '@/utils/apiRequest'
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
   try {
-    const { accessToken } = await getAccessToken();
+    const { accessToken } = await getAccessToken()
 
     if (!accessToken) {
-      throw new Error("Access token is undefined");
+      throw new Error('Access token is undefined')
     }
 
-    const url = new URL(request.url);
-    const childId = url.searchParams.get("child_id");
-    const communityId = url.searchParams.get("community_id");
-    const attendanceId = url.searchParams.get("attendance_id");
+    const url = new URL(request.url)
+    const childId = url.searchParams.get('child_id')
+    const communityId = url.searchParams.get('community_id')
+    const attendanceId = url.searchParams.get('attendance_id')
 
     // Determine endpoint based on query parameters
-    let endpoint = "/attendance";
+    let endpoint = '/attendance'
     if (attendanceId) {
-      endpoint = `/attendance/${attendanceId}`;
+      endpoint = `/attendance/${attendanceId}`
     } else if (childId) {
-      endpoint = `/attendance?child_id=${childId}&community_id=${communityId}`;
+      endpoint = `/attendance?child_id=${childId}&community_id=${communityId}`
     }
-    const data = await apiRequest(endpoint, "GET", accessToken);
+    const data = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(data, { status: 200 })
   } catch (error) {
-    console.error("Error in GET /api/attendance:", error);
+    console.error('Error in GET /api/attendance:', error)
     return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+      { error: 'Internal Server Error' },
+      { status: 500 },
+    )
   }
 }

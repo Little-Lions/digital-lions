@@ -31,7 +31,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onClick,
 }) => {
   let buttonClass =
-    'relative py-2 px-4 rounded-lg text-sm inline-flex items-center justify-center'
+    'relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center'
   let buttonColorClass = ''
   let textColorClass = 'text-primary'
   let borderColorClass = 'border-transparent'

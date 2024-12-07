@@ -9,7 +9,7 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import Accordion from '@/components/Accordion'
 import SelectInput from '@/components/SelectInput'
 import Toast from '@/components/Toast'
-import Loader from '@/components/Loader'
+// import Loader from '@/components/Loader'
 
 import { TrashIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/16/solid'
 
@@ -19,7 +19,7 @@ import getResources from '@/api/services/roles/getResources'
 import getUser from '@/api/services/users/getUser'
 import getUsers from '@/api/services/users/getUsers'
 import createUser from '@/api/services/users/createUser'
-import createUserInvite from '@/api/services/users/createUserInvite'
+// import createUserInvite from '@/api/services/users/createUserInvite'
 import deleteUser from '@/api/services/users/deleteUser'
 import assignRoleToUser from '@/api/services/users/assignRoleToUser'
 
@@ -30,10 +30,10 @@ import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
 
-const UsersPage = () => {
+const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   //   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false)
+  // const [isLoading, setIsLoading] = useState(false)
   const [isAddingUser, setIsAddingUser] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(false)
   const [isAssigningUser, setIsAssigningUser] = useState(false)
@@ -74,22 +74,22 @@ const UsersPage = () => {
 
   //   const [communities, setCommunities] = useState<Community[]>([]);
 
-  const handleRoleChange = (role: Role) => {
+  const handleRoleChange = (role: Role): void => {
     setSelectedRole(role)
     fetchLevels(role)
   }
 
-  const handleLevelChange = (level: Level) => {
+  const handleLevelChange = (level: Level): void => {
     setSelectedLevel(level)
     fetchResources(level)
   }
 
-  const handleResourceChange = (resource: Resource) => {
+  const handleResourceChange = (resource: Resource): void => {
     setSelectedResourceName(resource.resource_name)
     setSelectedResourceId(resource.resource_id)
   }
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (): Promise<void> => {
     setIsLoadingUserData(true)
     try {
       const usersData = await getUsers()
@@ -102,7 +102,7 @@ const UsersPage = () => {
     }
   }
 
-  const fetchUser = async (userId: string) => {
+  const fetchUser = async (userId: string): Promise<void> => {
     setIsLoadingUser(true)
     try {
       const user = await getUser(userId)
@@ -137,11 +137,11 @@ const UsersPage = () => {
   //     }
   //   };
 
-  const handleNicknameChange = (value: string) => {
+  const handleNicknameChange = (value: string): void => {
     setNickName(value)
   }
 
-  const handleEmailAddressChange = (value: string) => {
+  const handleEmailAddressChange = (value: string): void => {
     setEmailAddress(value)
   }
 
@@ -157,44 +157,44 @@ const UsersPage = () => {
   //     }
   //   }
 
-  const handleOpenAddUserModal = async () => {
+  const handleOpenAddUserModal = (): void => {
     setAddUserModalVisible(true)
   }
 
-  const handleCloseAddUserModal = () => {
+  const handleCloseAddUserModal = (): void => {
     setAddUserModalVisible(false)
   }
 
-  const handleOpenEditUserModal = (userId: string) => {
+  const handleOpenEditUserModal = async (userId: string): Promise<void> => {
     setSelectedUserId(userId)
-    fetchUser(userId)
+    await fetchUser(userId)
     setEditUserModalVisible(true)
   }
 
-  const handleCloseEditUserModal = () => {
+  const handleCloseEditUserModal = (): void => {
     setEditUserModalVisible(false)
     setSelectedUserId(null)
     setNickName('')
     setEmailAddress('')
   }
 
-  const handleOpenDeleteUserModal = (userId: string) => {
+  const handleOpenDeleteUserModal = (userId: string): void => {
     setSelectedUserId(userId)
     setDeleteUserModalVisible(true)
   }
 
-  const handleCloseDeleteUserModal = () => {
+  const handleCloseDeleteUserModal = (): void => {
     setDeleteUserModalVisible(false)
     setSelectedUserId(null)
   }
 
-  const handleOpenAssignUserModal = async (userId: string) => {
+  const handleOpenAssignUserModal = async (userId: string): Promise<void> => {
     setSelectedUserId(userId)
     setAssignUserModalVisible(true)
-    fetchRoles()
+    await fetchRoles()
   }
 
-  const handleCloseAssignUserModal = () => {
+  const handleCloseAssignUserModal = (): void => {
     setAssignUserModalVisible(false)
     setSelectedUserId(null)
     setSelectedRole(null)
@@ -203,7 +203,7 @@ const UsersPage = () => {
     setSelectedResourceId(null)
   }
 
-  const handleAssignRoleToUser = async () => {
+  const handleAssignRoleToUser = async (): Promise<void> => {
     if (!selectedUserId) return
     setIsAssigningUser(true)
 
@@ -224,7 +224,7 @@ const UsersPage = () => {
     }
   }
 
-  const handleAddUser = async () => {
+  const handleAddUser = async (): Promise<void> => {
     if (emailAddress.trim() === '') return
 
     setIsAddingUser(true)
@@ -255,7 +255,7 @@ const UsersPage = () => {
   //   }
   // };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteUser = async (): Promise<void> => {
     if (!selectedUserId) return
     setIsDeletingUser(true)
     try {
@@ -271,7 +271,7 @@ const UsersPage = () => {
     }
   }
 
-  const fetchRoles = async () => {
+  const fetchRoles = async (): Promise<void> => {
     try {
       setIsFetching(true)
       const roles = await getRoles()
@@ -283,7 +283,7 @@ const UsersPage = () => {
     }
   }
 
-  const fetchLevels = async (role: Role) => {
+  const fetchLevels = async (role: Role): Promise<void> => {
     try {
       setIsFetching(true)
       const levels = await getLevels(role)
@@ -295,7 +295,7 @@ const UsersPage = () => {
     }
   }
 
-  const fetchResources = async (level: Level) => {
+  const fetchResources = async (level: Level): Promise<void> => {
     try {
       setIsFetching(true)
       const resources = await getResources(selectedRole as Role, level)

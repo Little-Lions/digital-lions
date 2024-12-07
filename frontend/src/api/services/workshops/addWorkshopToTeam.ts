@@ -1,36 +1,36 @@
-import { Workshop } from "@/types/workshop.interface";
+import { Workshop } from '@/types/workshop.interface'
 
 interface AttendanceRecord {
-  attendance: string;
-  child_id: number;
+  attendance: string
+  child_id: number
 }
 
 export interface ApiBody {
-  date: string;
-  workshop_number: number;
-  attendance: AttendanceRecord[];
+  date: string
+  workshop_number: number
+  attendance: AttendanceRecord[]
 }
 
 const addWorkshopToTeam = async (
   teamId: number,
-  data: ApiBody
+  data: ApiBody,
 ): Promise<Workshop[]> => {
   try {
     const response = await fetch(`/api/teams/${teamId}/workshops`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const responseData: Workshop[] = await response.json();
-    return responseData;
+    const responseData: Workshop[] = await response.json()
+    return responseData
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default addWorkshopToTeam;
+export default addWorkshopToTeam

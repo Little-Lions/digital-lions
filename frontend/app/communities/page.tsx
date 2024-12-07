@@ -30,7 +30,7 @@ const CommunityPage: React.FC = () => {
 
   const [errorMessage, setErrorMessage] = useState<string>('')
 
-  const fetchCommunities = async () => {
+  const fetchCommunities = async (): Promise<void> => {
     setIsLoading(true)
     try {
       const communitiesData = await getCommunities()
@@ -47,24 +47,24 @@ const CommunityPage: React.FC = () => {
     fetchCommunities()
   }, [])
 
-  const handleOpenCommunityModal = () => {
+  const handleOpenCommunityModal = (): void => {
     setOpenAddCommunityModal(true)
   }
 
-  const handleCloseCommunityModal = () => {
+  const handleCloseCommunityModal = (): void => {
     setCommunityName('')
     setOpenAddCommunityModal(false)
   }
 
-  const handleCommunityNameChange = (value: string) => {
+  const handleCommunityNameChange = (value: string): void => {
     setCommunityName(value)
   }
 
-  const handleCommunityNameBlur = (value: string) => {
+  const handleCommunityNameBlur = (value: string): void => {
     setCommunityName(value)
   }
 
-  const handleAddCommunity = async () => {
+  const handleAddCommunity = async (): Promise<void> => {
     if (communityName.trim() === '') return
 
     setIsAddingCommunity(true)

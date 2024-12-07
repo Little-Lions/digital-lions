@@ -52,7 +52,7 @@ const TeamsDetailPage: React.FC = () => {
   const [editAge, setEditAge] = useState<number | null>(null)
   const [editGender, setEditGender] = useState<string | null>(null)
 
-  const [isLoading, setIsLoading] = useState(false)
+  // const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   const [isLoadingTeams, setIsLoadingTeams] = useState(false) // For the SelectInput
@@ -71,7 +71,7 @@ const TeamsDetailPage: React.FC = () => {
   const [isEditingChildComplete, setIsEditingChildComplete] = useState(false)
   const [isDeletingChildComplete, setIsDeletingChildComplete] = useState(false)
 
-  const fetchTeamById = async (teamId: number) => {
+  const fetchTeamById = async (teamId: number): Promise<void> => {
     setIsLoadingSelectedTeam(true)
     try {
       const numericTeamId = Number(teamId)
@@ -95,7 +95,7 @@ const TeamsDetailPage: React.FC = () => {
 
   // Fetch all teams on component mount
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchTeams = async (): Promise<void> => {
       setIsLoadingTeams(true)
       try {
         const fetchedTeams = await getTeams('active')
@@ -111,19 +111,19 @@ const TeamsDetailPage: React.FC = () => {
     fetchTeams()
   }, [])
 
-  const handleTeamChange = (value: string | number) => {
+  const handleTeamChange = (value: string | number): void => {
     const selectedId = typeof value === 'string' ? parseInt(value, 10) : value
     const url = `/communities/${communityId}/teams/${selectedId}`
 
     router.replace(url)
   }
 
-  const handleAddChild = () => {
+  const handleAddChild = (): void => {
     setIsAddingChild(true)
     setModalVisible(true)
   }
 
-  const closeModal = () => {
+  const closeModal = (): void => {
     setModalVisible(false)
     setEditChildId(null)
     setEditFirstName('')
@@ -134,23 +134,23 @@ const TeamsDetailPage: React.FC = () => {
     setIsEditingChild(false)
   }
 
-  const handleFirstNameChange = (value: string) => {
+  const handleFirstNameChange = (value: string): void => {
     setEditFirstName(value)
   }
 
-  const handleLastNameChange = (value: string) => {
+  const handleLastNameChange = (value: string): void => {
     setEditLastName(value)
   }
 
-  const handleAgeChange = (value: string) => {
+  const handleAgeChange = (value: string): void => {
     setEditAge(parseInt(value, 10))
   }
 
-  const handleGenderChange = (value: string) => {
+  const handleGenderChange = (value: string): void => {
     setEditGender(value)
   }
 
-  const handleEditChild = (childId: number) => {
+  const handleEditChild = (childId: number): void => {
     setIsEditingChild(true)
     const child = selectedTeam?.children.find((c) => c.id === childId)
     if (child) {
@@ -163,7 +163,7 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const handleSaveChild = async () => {
+  const handleSaveChild = async (): Promise<void> => {
     if (isEditingChild && editChildId !== null) {
       if (editFirstName && editLastName) {
         const updatedChild = {
@@ -217,16 +217,16 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const openDeleteChildModal = (childId: number) => {
+  const openDeleteChildModal = (childId: number): void => {
     setEditChildId(childId)
     setDeleteChildModalVisible(true)
   }
 
-  const handleCloseDeleteChildModal = () => {
+  const handleCloseDeleteChildModal = (): void => {
     setDeleteChildModalVisible(false)
   }
 
-  const handleDeleteChild = async () => {
+  const handleDeleteChild = async (): Promise<void> => {
     const childId = editChildId
 
     setIsDeletingChild(true)
@@ -245,7 +245,7 @@ const TeamsDetailPage: React.FC = () => {
 
   return (
     <>
-      {isLoading && isInitialLoad ? (
+      {isLoadingTeams && isInitialLoad ? (
         <>
           <SkeletonLoader type="input" />
           <SkeletonLoader width="142px" type="button" />

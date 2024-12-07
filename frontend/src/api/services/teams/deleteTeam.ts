@@ -1,8 +1,8 @@
-import { TeamWithChildren } from "@/types/teamWithChildren.interface";
+import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 interface ApiInput {
-  teamId: number;
-  cascade: boolean;
+  teamId: number
+  cascade: boolean
 }
 
 const deleteTeam = async ({
@@ -13,20 +13,20 @@ const deleteTeam = async ({
     const response = await fetch(
       `/api/teams?team_id=${teamId}&cascade=${cascade}`,
       {
-        method: "DELETE",
-      }
-    );
+        method: 'DELETE',
+      },
+    )
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const data: TeamWithChildren = await response.json();
-    return data;
+    const data: TeamWithChildren = await response.json()
+    return data
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default deleteTeam;
+export default deleteTeam

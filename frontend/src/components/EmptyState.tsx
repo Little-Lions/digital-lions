@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react'
 
 interface EmptyStateProps {
-  title: string;
-  text?: string;
-  pictogram?: React.ReactNode;
-  actionButton?: React.ReactNode;
+  title: string
+  text?: string
+  pictogram?: React.ReactNode
+  actionButton?: React.ReactNode
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -22,7 +22,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <p className="mt-2">{text}</p>
       <div className="mt-4">{actionButton}</div>
     </div>
-  );
-};
+  )
+}
 
-export default EmptyState;
+export default EmptyState

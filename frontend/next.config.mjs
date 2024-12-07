@@ -4,6 +4,6 @@ export default {
   },
 
   async redirects() {
-    return [];
+    return []
   },
-};
+}

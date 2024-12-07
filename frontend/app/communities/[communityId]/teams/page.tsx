@@ -71,24 +71,24 @@ const TeamsPage: React.FC = () => {
     fetchTeams()
   }, [fetchTeams])
 
-  const handleOpenTeamModal = () => {
+  const handleOpenTeamModal = (): void => {
     setOpenAddTeamModal(true)
   }
 
-  const handleCloseTeamModal = () => {
+  const handleCloseTeamModal = (): void => {
     setTeamName('')
     setOpenAddTeamModal(false)
   }
 
-  const handleTeamNameChange = (value: string) => {
+  const handleTeamNameChange = (value: string): void => {
     setTeamName(value)
   }
 
-  const handleTeamNameBlur = (value: string) => {
+  const handleTeamNameBlur = (value: string): void => {
     setTeamName(value)
   }
 
-  const handleAddTeam = async () => {
+  const handleAddTeam = async (): Promise<void> => {
     if (teamName.trim() === '') return
     setIsAddingTeam(true)
     try {
@@ -111,7 +111,7 @@ const TeamsPage: React.FC = () => {
     }
   }
 
-  const handleToggleChange = (active: boolean) => {
+  const handleToggleChange = (active: boolean): void => {
     setIsActive(active)
     if (active) {
       // Filter active teams

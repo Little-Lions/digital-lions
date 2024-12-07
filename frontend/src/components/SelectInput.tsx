@@ -27,7 +27,9 @@ const SelectInput: React.FC<SelectInputProps> = ({
     setInputValue(value)
   }, [value])
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
     const selectedValue = event.target.value
     setInputValue(selectedValue)
     if (onChange) {

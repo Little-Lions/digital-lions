@@ -3,6 +3,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Getting Started
 
 First create a copy of `.env.dist` to `.env` and populate the environment variables that are in there. After that, you can run the development server:
+
 ```bash
 npm run dev
 # or

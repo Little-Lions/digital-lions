@@ -1,28 +1,28 @@
-import { User } from "@/types/user.interface";
-import { Roles } from "@/types/role.type";
+import { User } from '@/types/user.interface'
+import { Roles } from '@/types/role.type'
 
 export interface ApiBody {
-  email: string;
-  roles: Roles[];
+  email: string
+  roles: Roles[]
 }
 
 const createUser = async (userId: string): Promise<User[]> => {
   try {
     const response = await fetch(`/api/resend-invite?user_id=${userId}`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const responseData: User[] = await response.json();
-    return responseData;
+    const responseData: User[] = await response.json()
+    return responseData
   } catch (error) {
-    console.error("Error creating user:", error);
-    throw error;
+    console.error('Error creating user:', error)
+    throw error
   }
-};
+}
 
-export default createUser;
+export default createUser

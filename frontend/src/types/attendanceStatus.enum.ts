@@ -1,5 +1,5 @@
 export enum AttendanceStatus {
-  Present = "PRESENT",
-  Absent = "ABSENT",
-  Cancelled = "CANCELLED",
+  Present = 'PRESENT',
+  Absent = 'ABSENT',
+  Cancelled = 'CANCELLED',
 }

@@ -1,19 +1,24 @@
-import React from "react";
+import React from 'react'
 
 interface AlertBannerProps {
-  message: string; 
-  variant: "info" | "error" | "success" | "warning"; 
-  isCloseable?: boolean; 
-  onClose?: () => void;
+  message: string
+  variant: 'info' | 'error' | 'success' | 'warning'
+  isCloseable?: boolean
+  onClose?: () => void
 }
 
-const AlertBanner: React.FC<AlertBannerProps> = ({ message, variant, isCloseable = true, onClose }) => {
+const AlertBanner: React.FC<AlertBannerProps> = ({
+  message,
+  variant,
+  isCloseable = true,
+  onClose,
+}) => {
   const variantClasses: Record<typeof variant, string> = {
-    info: "text-white bg-info border-info-dark",
-    error: "text-white bg-error border-error-dark",
-    success: "text-white bg-success border-success-dark",
-    warning: "text-white bg-warning border-warning-dark",
-  };
+    info: 'text-white bg-info border-info-dark',
+    error: 'text-white bg-error border-error-dark',
+    success: 'text-white bg-success border-success-dark',
+    warning: 'text-white bg-warning border-warning-dark',
+  }
 
   return (
     <div
@@ -58,7 +63,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ message, variant, isCloseable
         </button>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default AlertBanner;
+export default AlertBanner

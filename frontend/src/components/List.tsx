@@ -1,12 +1,12 @@
-import React from 'react';
+import React from 'react'
 import ListItem from './ListItem'
 
 interface ListProps {
   items: {
-    icon?: React.ReactNode;
-    label: string;
-    value: string;
-  }[];
+    icon?: React.ReactNode
+    label: string
+    value: string
+  }[]
 }
 
 const List: React.FC<ListProps> = ({ items }) => {
@@ -21,7 +21,7 @@ const List: React.FC<ListProps> = ({ items }) => {
         />
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default List;
+export default List

@@ -5,7 +5,6 @@ import NavLink from './NavLink'
 import { usePathname } from 'next/navigation'
 import NavigationButton from './NavigationButton'
 import { useUser } from '@auth0/nextjs-auth0/client'
-import Loader from './Loader'
 import CustomButton from './CustomButton'
 
 const Navigation: React.FC = () => {
@@ -14,15 +13,15 @@ const Navigation: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { user } = useUser()
 
-  const toggleMenu = () => {
+  const toggleMenu = (): void => {
     setIsOpen((prevState) => !prevState)
   }
 
-  const closeMenu = () => {
+  const closeMenu = (): void => {
     setIsOpen(false)
   }
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     setIsLoggingOut(true)
     try {
       setTimeout(() => {
@@ -34,7 +33,7 @@ const Navigation: React.FC = () => {
     }
   }
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     setIsLoggingIn(true)
     try {
       setTimeout(() => {
@@ -86,7 +85,7 @@ const Navigation: React.FC = () => {
                   label="Login"
                   onClick={handleLogin}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  className="text-white bg-gray-700 hover:bg-gray-600"
                   isBusy={isLoggingIn}
                 />
               )}
@@ -106,7 +105,7 @@ const Navigation: React.FC = () => {
                   label="Logout"
                   onClick={handleLogout}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  className="text-white bg-gray-700 hover:bg-gray-600"
                   isBusy={isLoggingOut}
                 />
               </>
@@ -153,7 +152,7 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Menu Links (Full-Screen Overlay) */}
         {isOpen && (
-          <div className="md:hidden pb-2 z-10 bg-gray-800 rounded-b-lg w-full flex left-0 flex-col absolute mt-4 space-y-2">
+          <div className="md:hidden z-10 bg-gray-800 rounded-b-lg w-full flex left-0 flex-col absolute mt-4">
             {/* Conditionally render mobile menu links if the user is authenticated */}
             {user && (
               <>
@@ -189,7 +188,7 @@ const Navigation: React.FC = () => {
                   label="Logout"
                   onClick={handleLogout}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md"
+                  className="text-white bg-gray-700 hover:bg-gray-600 rounded-b-md rounded-t-none"
                   isBusy={isLoggingOut}
                 />
               </>

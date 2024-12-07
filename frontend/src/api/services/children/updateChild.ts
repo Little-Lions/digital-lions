@@ -1,9 +1,9 @@
 interface ApiBody {
-  is_active: boolean;
-  age: number | null;
-  gender: string | null;
-  first_name: string;
-  last_name: string;
+  is_active: boolean
+  age: number | null
+  gender: string | null
+  first_name: string
+  last_name: string
 }
 
 const updateChildById = async ({
@@ -14,12 +14,12 @@ const updateChildById = async ({
   firstName,
   lastName,
 }: {
-  childId: number;
-  isActive: boolean;
-  age: number | null;
-  gender: string | null;
-  firstName: string;
-  lastName: string;
+  childId: number
+  isActive: boolean
+  age: number | null
+  gender: string | null
+  firstName: string
+  lastName: string
 }): Promise<void> => {
   try {
     const body: ApiBody = {
@@ -28,19 +28,19 @@ const updateChildById = async ({
       gender: gender,
       first_name: firstName,
       last_name: lastName,
-    };
+    }
 
     const response = await fetch(`/api/children?child_id=${childId}`, {
-      method: "PATCH",
+      method: 'PATCH',
       body: JSON.stringify(body),
-    });
+    })
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
   } catch (error) {
-    console.error("Error updating child data:", error);
-    throw error;
+    console.error('Error updating child data:', error)
+    throw error
   }
-};
+}
 
-export default updateChildById;
+export default updateChildById

@@ -68,7 +68,7 @@ const Toast: React.FC<ToastProps> = ({
       if (onClose) onClose()
     }, 4000)
 
-    return () => clearTimeout(autoClose)
+    return (): void => clearTimeout(autoClose)
   }, [onClose])
 
   if (!isVisible) return null

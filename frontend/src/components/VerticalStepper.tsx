@@ -44,7 +44,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const handleAttendanceChange = (
     childId: number,
     newAttendance: AttendanceStatus,
-  ) => {
+  ): void => {
     setAttendanceData((prevData) => {
       const updatedAttendanceData = prevData.map((entry) =>
         entry.child_id === childId
@@ -71,7 +71,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const hasAnimated = useRef(false)
 
   useEffect(() => {
-    const animateToCurrentWorkshop = () => {
+    const animateToCurrentWorkshop = (): void => {
       setChecked(0)
       setAnimatedSteps([])
       for (let i = 0; i < currentWorkshop; i++) {

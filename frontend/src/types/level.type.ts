@@ -1,1 +1,1 @@
-export type Level = "Implementing Partner" | "Community" | "Team";
+export type Level = 'Implementing Partner' | 'Community' | 'Team'

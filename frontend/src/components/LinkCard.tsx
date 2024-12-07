@@ -16,7 +16,7 @@ const LinkCard: React.FC<LinkCardProps> = ({
   state,
   children,
 }) => {
-  const handleClick = () => {
+  const handleClick = (): void => {
     if (state) {
       localStorage.setItem('linkCardState', JSON.stringify(state))
     }

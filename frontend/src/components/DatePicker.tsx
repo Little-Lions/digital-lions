@@ -11,7 +11,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
     new Date().toISOString().split('T')[0],
   )
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newDate = e.target.value
     setSelectedDate(newDate)
     onDateChange(newDate)

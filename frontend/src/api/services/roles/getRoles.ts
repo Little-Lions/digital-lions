@@ -1,21 +1,21 @@
-import { Role } from "@/types/role.type";
+import { Role } from '@/types/role.type'
 
 const getRoles = async (): Promise<Role[]> => {
   try {
-    const response = await fetch("/api/roles", {
-      method: "GET",
-    });
+    const response = await fetch('/api/roles', {
+      method: 'GET',
+    })
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const data: Role[] = await response.json();
-    return data;
+    const data: Role[] = await response.json()
+    return data
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default getRoles;
+export default getRoles

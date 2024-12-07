@@ -1,9 +1,9 @@
 interface ApiResponse {
-  team_id: number;
-  age: number | null;
-  gender: string | null;
-  first_name: string;
-  last_name: string;
+  team_id: number
+  age: number | null
+  gender: string | null
+  first_name: string
+  last_name: string
 }
 
 const createChild = async ({
@@ -13,15 +13,15 @@ const createChild = async ({
   firstName,
   lastName,
 }: {
-  teamId: number;
-  age: number | null;
-  gender: string | null;
-  firstName: string;
-  lastName: string;
+  teamId: number
+  age: number | null
+  gender: string | null
+  firstName: string
+  lastName: string
 }): Promise<ApiResponse> => {
   try {
     const response = await fetch(`/api/children`, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify({
         team_id: teamId,
         age: age,
@@ -29,24 +29,24 @@ const createChild = async ({
         first_name: firstName,
         last_name: lastName,
       }),
-    });
+    })
 
     if (response.status === 409) {
-      const errorData = await response.json();
-      throw errorData.detail;
+      const errorData = await response.json()
+      throw errorData.detail
       // throw new Error(errorData.detail || "Conflict: Child already exists");
     }
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const data: ApiResponse = await response.json();
-    return data;
+    const data: ApiResponse = await response.json()
+    return data
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default createChild;
+export default createChild

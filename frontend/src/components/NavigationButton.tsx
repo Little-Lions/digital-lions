@@ -20,7 +20,7 @@ interface NavigationButtonProps {
 }
 
 const NavigationButton: React.FC<NavigationButtonProps> = ({
-  closeMenu = () => {},
+  closeMenu,
   useBackNavigation = true,
   href = '/',
   className,
@@ -35,8 +35,10 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
     console.log('isBusy updated to:', isBusy)
   }, [isBusy])
 
-  const handleClick = async () => {
-    closeMenu()
+  const handleClick = async (): Promise<void> => {
+    if (closeMenu) {
+      closeMenu()
+    }
 
     try {
       if (useBackNavigation) {

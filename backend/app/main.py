@@ -18,7 +18,7 @@ def setup_logger(settings):
     logging.config.fileConfig(logging_conf, disable_existing_loggers=False)  # type: ignore
     logger = logging.getLogger(__name__)
     logger.info("Logging configuration: %s", logging_conf)
-    logger.info(f"OAuth authorization enabled: {settings.FEATURE_OAUTH}")
+    logger.info(f"OAuth authorization enabled: {settings.FEATURE_AUTH0}")
     logger.info(f"API-Key authentication enabled: {settings.FEATURE_API_KEY}")
 
 

@@ -2,18 +2,18 @@
 # utility script that gets bearer token from auth server,
 # copies it to your clipboard, and prints the decoded
 # token to the console
-URL=https://${OAUTH_DOMAIN}/oauth/token
+URL=https://${AUTH0_SERVER}/oauth/token
 
 TOKEN=$(curl \
   --request POST \
   --url ${URL} \
   --header 'content-type: application/x-www-form-urlencoded' \
   --data "grant_type=password" \
-  --data "client_id=${OAUTH_CLIENT_ID}" \
-  --data "client_secret=${OAUTH_CLIENT_SECRET}" \
-  --data "audience=${OAUTH_AUDIENCE}" \
+  --data "client_id=${AUTH0_CLIENT_ID}" \
+  --data "client_secret=${AUTH0_CLIENT_SECRET}" \
+  --data "audience=${AUTH0_AUDIENCE}" \
   --data "username=${USERNAME}" \
-  --data "password=${PASSWORD}" )
+  --data "password=${PASSWORD}")
 
 printf "Response: \n $TOKEN \n"
 
@@ -32,4 +32,3 @@ printf "JWT decoded: \n $JWT_DECODED\n"
 
 printf "Copying token to clipboard"
 echo $JWT | pbcopy
-

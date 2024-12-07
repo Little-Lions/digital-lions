@@ -71,7 +71,7 @@ class Scopes(str, Enum):
 
 class BearerTokenHandler(HTTPBearer):
     """FastAPI dependency for JWT token. Requirement of this token
-    is enabled/disabled in the backend via environment variable `FEATURE_OAUTH`.
+    is enabled/disabled in the backend via environment variable `FEATURE_AUTH0`.
 
     Headers to be sent in the request:
     ```
@@ -105,7 +105,7 @@ class BearerTokenHandler(HTTPBearer):
     ) -> Any:
         """Verify the bearer token and optionally the scopes,
         and return the decoded token."""
-        if not settings.FEATURE_OAUTH:
+        if not settings.FEATURE_AUTH0:
             return
 
         credentials: HTTPAuthorizationCredentials = await super().__call__(request)
@@ -126,7 +126,7 @@ class BearerTokenHandler(HTTPBearer):
             pub_key = self._get_public_key(
                 token=credentials.credentials,
                 kid=token_headers["kid"],
-                pub_key_url=self.PUBLIC_KEY_URL.format(settings.OAUTH_DOMAIN),
+                pub_key_url=self.PUBLIC_KEY_URL.format(settings.AUTH0_SERVER),
             )
             if pub_key is None:
                 raise HTTPException(
@@ -137,7 +137,7 @@ class BearerTokenHandler(HTTPBearer):
                 token=credentials.credentials,
                 pub_key=pub_key,
                 algorithm=self.ALGORITHM,
-                audience=settings.OAUTH_AUDIENCE,
+                audience=settings.AUTH0_AUDIENCE,
             )
             if not jwt_token_decoded:
                 raise HTTPException(

@@ -18,11 +18,11 @@ class Auth0Repository:
     handling user management, roles, and authentication operations.
 
     Required settings:
-        OAUTH_DOMAIN: Auth0 domain
-        OAUTH_CLIENT_ID: Client ID
-        OAUTH_CLIENT_SECRET: Client secret
-        OAUTH_CONNECTION_ID: Database connection ID
-        OAUTH_PWD_TICKET_RESULT_URL: Password reset URL
+        AUTH0_SERVER: Auth0 server
+        AUTH0_CLIENT_ID: Client ID
+        AUTH0_CLIENT_SECRET: Client secret
+        AUTH0_CONNECTION_ID: Database connection ID
+        AUTH0_PWD_TICKET_RESULT_URL: Password reset URL
 
     Note:
         Uses @convert_auth0_error to transform silent Auth0 exceptions into
@@ -31,11 +31,9 @@ class Auth0Repository:
 
     MGMT_API = "https://{}/api/v2/"
 
-    def __init__(self):
-        self.settings = get_settings()
-        self.domain = self.settings.OAUTH_DOMAIN
-        self._auth0_client: Auth0 = None
-        self._token_expiry: datetime = None
+    def __init__(self, settings):
+        self.settings = settings
+        self.domain = self.settings.AUTH0_SERVER
 
     @property
     def auth0(self) -> Auth0:
@@ -57,8 +55,8 @@ class Auth0Repository:
         """
         Get the management token for the authorization server.
         """
-        client_id = self.settings.OAUTH_CLIENT_ID
-        client_secret = self.settings.OAUTH_CLIENT_SECRET
+        client_id = self.settings.AUTH0_CLIENT_ID
+        client_secret = self.settings.AUTH0_CLIENT_SECRET
         get_token = GetToken(
             domain=self.domain, client_id=client_id, client_secret=client_secret
         )
@@ -195,8 +193,8 @@ class Auth0Repository:
         """
         body = {
             "email": email,
-            "connection_id": self.settings.OAUTH_CONNECTION_ID,
-            "result_url": self.settings.OAUTH_PWD_TICKET_RESULT_URL,
+            "connection_id": self.settings.AUTH0_CONNECTION_ID,
+            "client_id": self.settings.AUTH0_CLIENT_ID,
         }
         return self.auth0.tickets.create_pswd_change(body=body)["ticket"]
 

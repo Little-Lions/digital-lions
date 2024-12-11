@@ -1,15 +1,15 @@
-import React from "react";
-import CustomButton from "./CustomButton";
-import ReactDOM from "react-dom";
+import React from 'react'
+import CustomButton from './CustomButton'
+import ReactDOM from 'react-dom'
 interface ModalProps {
-  children: React.ReactNode;
-  onClose?: () => void;
-  onAccept?: () => void;
-  title: string;
-  acceptText?: string;
-  isBusy?: boolean;
-  footer?: React.ReactNode;
-  isDisabledButton?: boolean;
+  children: React.ReactNode
+  onClose?: () => void
+  onAccept?: () => void
+  title: string
+  acceptText?: string
+  isBusy?: boolean
+  footer?: React.ReactNode
+  isDisabledButton?: boolean
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -17,12 +17,11 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   onAccept,
   title,
-  acceptText = "Ok",
+  acceptText = 'Ok',
   isBusy = false,
   footer,
   isDisabledButton = false,
 }) => {
-  
   const modalContent = (
     <div
       id="default-modal"
@@ -30,15 +29,13 @@ const Modal: React.FC<ModalProps> = ({
       className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50"
     >
       <div className="relative p-4 w-full max-w-2xl max-h-full">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {title}
-            </h3>
+        <div className="relative bg-white rounded-lg shadow">
+          <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
+            <h3 className="text-xl font-semibold text-gray-900 ">{title}</h3>
             {onClose && (
               <button
                 type="button"
-                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center  "
                 onClick={onClose}
               >
                 <svg
@@ -59,10 +56,8 @@ const Modal: React.FC<ModalProps> = ({
               </button>
             )}
           </div>
-          <div className="p-4 md:p-5 space-y-4">
-            {children}
-          </div>
-          <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <div className="p-4 md:p-5 space-y-4">{children}</div>
+          <div className="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b">
             {footer ||
               (onAccept && (
                 <CustomButton
@@ -71,16 +66,15 @@ const Modal: React.FC<ModalProps> = ({
                   onClick={onAccept}
                   isBusy={isBusy}
                   isDisabled={isDisabledButton}
-                  className="ml-4 hover:text-white"
                 />
               ))}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 
-  return ReactDOM.createPortal(modalContent, document.body);
-};
+  return ReactDOM.createPortal(modalContent, document.body)
+}
 
-export default Modal;
+export default Modal

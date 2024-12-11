@@ -1,7 +1,6 @@
 from functools import lru_cache
-from typing import Annotated, Any, Generic
+from typing import Any
 
-from fastapi import Depends
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -17,18 +16,15 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE_URL: str
 
     # feature flags
-    FEATURE_OAUTH: bool | None = True
+    FEATURE_AUTH0: bool | None = True
     FEATURE_API_KEY: bool | None = True
 
-    # user management
-    OAUTH_DOMAIN: str
-    OAUTH_AUDIENCE: str
-    OAUTH_CLIENT_ID: str
-    OAUTH_CLIENT_SECRET: str
-    OAUTH_CONNECTION_ID: str
-
-    # redirect URL for password reset
-    OAUTH_PWD_TICKET_RESULT_URL: str
+    # Auth0
+    AUTH0_SERVER: str
+    AUTH0_AUDIENCE: str
+    AUTH0_CLIENT_ID: str
+    AUTH0_CLIENT_SECRET: str
+    AUTH0_CONNECTION_ID: str
 
     # networking and security
     ALLOWED_ORIGINS: str
@@ -51,10 +47,10 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_oauth_settings(self) -> Any:
         """Validate the OAuth settings."""
-        if self.FEATURE_OAUTH and not self.OAUTH_DOMAIN:
-            raise ValueError("FEATURE_OAUTH is True but OAUTH_DOMAIN is not set")
-        if self.FEATURE_OAUTH and not self.OAUTH_AUDIENCE:
-            raise ValueError("FEATURE_OAUTH is True but AUTH0_AUDIENCE is not set")
+        if self.FEATURE_AUTH0 and not self.AUTH0_SERVER:
+            raise ValueError("FEATURE_AUTH0 is True but AUTH0_SERVER is not set")
+        if self.FEATURE_AUTH0 and not self.AUTH0_AUDIENCE:
+            raise ValueError("FEATURE_AUTH0 is True but AUTH0_AUDIENCE is not set")
         return
 
 

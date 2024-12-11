@@ -1,15 +1,16 @@
-import React from "react";
-import Modal from "./Modal";
-import CustomButton from "./CustomButton";
+import React from 'react'
+import Modal from './Modal'
+import CustomButton from './CustomButton'
+import ButtonGroup from './ButtonGroup'
 
 interface ConfirmModalProps {
-  title: string;
-  text: string;
-  onClose: () => void;
-  onAccept: () => void;
-  acceptText?: string;
-  closeText?: string;
-  isBusy?: boolean;
+  title: string
+  text: string
+  onClose: () => void
+  onAccept: () => void
+  acceptText?: string
+  closeText?: string
+  isBusy?: boolean
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -17,8 +18,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   text,
   onClose,
   onAccept,
-  acceptText = "Yes",
-  closeText = "No",
+  acceptText = 'Yes',
+  closeText = 'No',
   isBusy = false,
 }) => {
   return (
@@ -28,25 +29,25 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       isBusy={isBusy}
       footer={
         <>
-          <CustomButton
-            label={closeText}
-            variant="outline"
-            onClick={onClose}
-            className="hover:text-gray-800 dark:hover:text-gray-200"
-          />
-          <CustomButton
-            label={acceptText}
-            variant="error"
-            onClick={onAccept}
-            isBusy={isBusy}
-            className="ml-4 hover:text-white"
-          />
+          <ButtonGroup>
+            <CustomButton
+              label={closeText}
+              variant="outline"
+              onClick={onClose}
+            />
+            <CustomButton
+              label={acceptText}
+              variant="error"
+              onClick={onAccept}
+              isBusy={isBusy}
+            />
+          </ButtonGroup>
         </>
       }
     >
-      <p className="text-gray-700 dark:text-gray-300">{text}</p>
+      <p className="text-gray-700 ">{text}</p>
     </Modal>
-  );
-};
+  )
+}
 
-export default ConfirmModal;
+export default ConfirmModal

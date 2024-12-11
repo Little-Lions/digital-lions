@@ -75,7 +75,7 @@ class Scopes(str, Enum):
 
 class BearerTokenHandler(HTTPBearer):
     """FastAPI dependency for JWT token. Requirement of this token
-    is enabled/disabled in the backend via environment variable `FEATURE_OAUTH`.
+    is enabled/disabled in the backend via environment variable `FEATURE_AUTH0`.
 
     Headers to be sent in the request:
     ```
@@ -112,9 +112,8 @@ class BearerTokenHandler(HTTPBearer):
     ) -> Any:
         """Verify the bearer token and optionally the scopes,
         and return the decoded token."""
-        self.settings = settings
-        if not self.settings.FEATURE_OAUTH:
-            return None
+        if not settings.FEATURE_AUTH0:
+            return
 
         token, kid = await self._verify_request(request)
         current_user = self._verify_token(token=token, kid=kid)
@@ -148,7 +147,35 @@ class BearerTokenHandler(HTTPBearer):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Bearer token is no valid JWT.",
                 )
-            return credentials.credentials, token_headers["kid"]
+
+            pub_key = self._get_public_key(
+                token=credentials.credentials,
+                kid=token_headers["kid"],
+                pub_key_url=self.PUBLIC_KEY_URL.format(settings.AUTH0_SERVER),
+            )
+            if pub_key is None:
+                raise HTTPException(
+                    status_code=403, detail="Could not get public key for token"
+                )
+
+            jwt_token_decoded = self._verify_jwt(
+                token=credentials.credentials,
+                pub_key=pub_key,
+                algorithm=self.ALGORITHM,
+                audience=settings.AUTH0_AUDIENCE,
+            )
+            if not jwt_token_decoded:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired token.",
+                )
+
+            if not self._verify_required_scopes(jwt_token_decoded["permissions"]):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="User does not have required permission.",
+                )
+            return jwt_token_decoded
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

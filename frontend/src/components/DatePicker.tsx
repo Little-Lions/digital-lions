@@ -1,27 +1,27 @@
-import React, { useState } from "react";
+import React, { useState } from 'react'
 
 interface DatePickerProps {
-  onDateChange: (date: string) => void;
+  onDateChange: (date: string) => void
 }
 
-const today = new Date().toISOString().split("T")[0];
+const today = new Date().toISOString().split('T')[0]
 
 const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+    new Date().toISOString().split('T')[0],
+  )
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
-    setSelectedDate(newDate);
-    onDateChange(newDate);
-  };
+    const newDate = e.target.value
+    setSelectedDate(newDate)
+    onDateChange(newDate)
+  }
 
   return (
     <div className="relative">
       <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
         <svg
-          className="w-4 h-4 text-gray-500 dark:text-gray-400"
+          className="w-4 h-4 text-gray-500 "
           aria-hidden="true"
           xmlns="http://www.w3.org/2000/svg"
           fill="currentColor"
@@ -36,11 +36,11 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
         value={selectedDate}
         onChange={handleDateChange}
         max={today}
-        className="w-36 sm:w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        className="w-36 sm:w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-1"
         placeholder="Select date"
       />
     </div>
-  );
-};
+  )
+}
 
-export default DatePicker;
+export default DatePicker

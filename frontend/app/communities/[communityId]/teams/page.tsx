@@ -1,123 +1,129 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from 'react'
 
-import LinkCard from "@/components/LinkCard";
-import TextInput from "@/components/TextInput";
-import CustomButton from "@/components/CustomButton";
-import Modal from "@/components/Modal";
-import SkeletonLoader from "@/components/SkeletonLoader";
-import EmptyState from "@/components/EmptyState";
-import ToggleSwitch from "@/components/ToggleSwitch";
+import LinkCard from '@/components/LinkCard'
+import TextInput from '@/components/TextInput'
+import CustomButton from '@/components/CustomButton'
+import Modal from '@/components/Modal'
+import SkeletonLoader from '@/components/SkeletonLoader'
+import EmptyState from '@/components/EmptyState'
+import ToggleSwitch from '@/components/ToggleSwitch'
+import Toast from '@/components/Toast'
 
-import { UsersIcon } from "@heroicons/react/24/solid";
+import { UsersIcon } from '@heroicons/react/24/solid'
 
-import createTeam from "@/api/services/teams/createTeam";
-import getTeamsOfCommunity from "@/api/services/teams/getTeamsOfCommunity";
+import createTeam from '@/api/services/teams/createTeam'
+import getTeamsOfCommunity from '@/api/services/teams/getTeamsOfCommunity'
 
-import { TeamInCommunity } from "@/types/teamInCommunity.interface";
+import { TeamInCommunity } from '@/types/teamInCommunity.interface'
 
-import { useParams } from "next/navigation";
-import { Team } from "@/types/team.interface";
+import { useParams } from 'next/navigation'
+import { Team } from '@/types/team.interface'
 
 const TeamsPage: React.FC = () => {
-  const params = useParams();
-  const communityId = params?.communityId as string;
-  const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([]);
+  const params = useParams()
+  const communityId = params?.communityId as string
+  const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([])
   const [filteredTeams, setFilteredTeams] = useState<
     TeamInCommunity[] | Team[]
-  >([]);
-  const [isActive, setIsActive] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [teamName, setTeamName] = useState("");
-  const [communityName, setCommunityName] = useState<string | null>(null);
-  const [isAddingTeam, setIsAddingTeam] = useState(false);
-  const [openAddTeamModal, setOpenAddTeamModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
+  >([])
+  const [teamName, setTeamName] = useState('')
+  const [communityName, setCommunityName] = useState<string | null>(null)
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [isActive, setIsActive] = useState(true)
+
+  const [isAddingTeam, setIsAddingTeam] = useState(false)
+  const [openAddTeamModal, setOpenAddTeamModal] = useState(false)
+  const [isAddingTeamComplete, setIsAddingTeamComplete] = useState(false)
+
+  const [errorMessage, setErrorMessage] = useState<string>('')
 
   useEffect(() => {
-    const storedState = localStorage.getItem("linkCardState");
+    const storedState = localStorage.getItem('linkCardState')
     if (storedState) {
-      const { communityName } = JSON.parse(storedState);
-      setCommunityName(communityName);
+      const { communityName } = JSON.parse(storedState)
+      setCommunityName(communityName)
     }
-  }, []);
+  }, [])
 
   const fetchTeams = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const fetchedTeams = await getTeamsOfCommunity(Number(communityId));
-      setTeams(fetchedTeams);
+      const fetchedTeams = await getTeamsOfCommunity(Number(communityId))
+      setTeams(fetchedTeams)
       if (isActive) {
-        setFilteredTeams(fetchedTeams.filter((team) => team.is_active));
+        setFilteredTeams(fetchedTeams.filter((team) => team.is_active))
       } else {
-        setFilteredTeams(fetchedTeams);
+        setFilteredTeams(fetchedTeams)
       }
-      setHasLoadedInitially(true);
     } catch (error) {
-      console.error("Failed to fetch teams:", error);
+      console.error('Failed to fetch teams:', error)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
+      setIsInitialLoad(false)
     }
-  }, [isActive, communityId]);
+  }, [isActive, communityId])
 
   useEffect(() => {
-    fetchTeams();
-  }, [fetchTeams]);
+    fetchTeams()
+  }, [fetchTeams])
 
   const handleOpenTeamModal = () => {
-    setOpenAddTeamModal(true);
-  };
+    setOpenAddTeamModal(true)
+  }
 
   const handleCloseTeamModal = () => {
-    setOpenAddTeamModal(false);
-  };
+    setTeamName('')
+    setOpenAddTeamModal(false)
+  }
 
   const handleTeamNameChange = (value: string) => {
-    setTeamName(value);
-  };
+    setTeamName(value)
+  }
 
   const handleTeamNameBlur = (value: string) => {
-    setTeamName(value);
-  };
+    setTeamName(value)
+  }
 
   const handleAddTeam = async () => {
-    if (teamName.trim() === "") return;
-    setIsAddingTeam(true);
+    if (teamName.trim() === '') return
+    setIsAddingTeam(true)
     try {
       const newTeam = await createTeam({
         name: teamName,
         communityId: Number(communityId),
-      });
+      })
       setTeams((prevTeams) => [
         ...prevTeams,
         { name: teamName, id: newTeam.id } as Team,
-      ]);
-      setTeamName("");
-      setIsAddingTeam(false);
-      setOpenAddTeamModal(false);
-      await fetchTeams();
+      ])
+      handleCloseTeamModal()
+      await fetchTeams()
+      setIsAddingTeamComplete(true)
     } catch (error) {
-      setIsAddingTeam(false);
-      setErrorMessage(String(error));
-      console.error("Error adding team:", error);
+      setErrorMessage(String(error))
+      console.error('Error adding team:', error)
+    } finally {
+      setIsAddingTeam(false)
     }
-  };
+  }
 
   const handleToggleChange = (active: boolean) => {
-    setIsActive(active);
+    setIsActive(active)
     if (active) {
       // Filter active teams
-      setFilteredTeams(teams.filter((team) => team.is_active));
+      setFilteredTeams(teams.filter((team) => team.is_active))
     } else {
       // Show all teams
-      setFilteredTeams(teams);
+      setFilteredTeams(teams)
     }
-  };
+  }
   return (
     <>
-      {isLoading && !hasLoadedInitially ? (
+      {isLoading && isInitialLoad ? (
         <>
           <SkeletonLoader width="142px" type="button" />
           <div className="flex justify-between">
@@ -130,7 +136,7 @@ const TeamsPage: React.FC = () => {
         </>
       ) : (
         <>
-          {teams.length > 0 ? (
+          {teams.length ? (
             <>
               <CustomButton
                 label="Add team"
@@ -140,9 +146,7 @@ const TeamsPage: React.FC = () => {
                 className="hover:bg-card-dark hover:text-white mb-4"
               />
               <div className="flex justify-between mb-2">
-                <h1 className="text-xl font-bold">
-                  Teams in {communityName}
-                </h1>
+                <h1 className="text-xl font-bold">Teams in {communityName}</h1>
                 <ToggleSwitch onChange={handleToggleChange} />
               </div>
               {filteredTeams.map((team) => (
@@ -182,8 +186,8 @@ const TeamsPage: React.FC = () => {
             >
               <form
                 onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddTeam();
+                  e.preventDefault()
+                  handleAddTeam()
                 }}
               >
                 <TextInput
@@ -198,10 +202,19 @@ const TeamsPage: React.FC = () => {
               </form>
             </Modal>
           )}
+
+          {isAddingTeamComplete && (
+            <Toast
+              variant="success"
+              message="Community added successfully"
+              isCloseable
+              onClose={() => setIsAddingTeamComplete(false)}
+            />
+          )}
         </>
       )}
     </>
-  );
-};
+  )
+}
 
-export default TeamsPage;
+export default TeamsPage

@@ -32,7 +32,8 @@ class Auth0Repository:
 
     def __init__(self, settings):
         self.settings = settings
-        self.domain = self.settings.AUTH0_SERVER
+        self._domain: str = self.settings.AUTH0_SERVER
+        self._auth0_client: Auth0 = None
 
     @property
     def auth0(self) -> Auth0:
@@ -44,7 +45,7 @@ class Auth0Repository:
             self._token_expiry and datetime.now() >= self._token_expiry
         ):
             token = self._get_mgmt_token()
-            self._auth0_client = Auth0(domain=self.domain, token=token)
+            self._auth0_client = Auth0(domain=self._domain, token=token)
             # Auth0 management tokens typically expire in 24 hours
             self._token_expiry = datetime.now() + timedelta(hours=23)
 
@@ -57,10 +58,10 @@ class Auth0Repository:
         client_id = self.settings.AUTH0_CLIENT_ID
         client_secret = self.settings.AUTH0_CLIENT_SECRET
         get_token = GetToken(
-            domain=self.domain, client_id=client_id, client_secret=client_secret
+            domain=self._domain, client_id=client_id, client_secret=client_secret
         )
 
-        token = get_token.client_credentials(self.MGMT_API.format(self.domain))
+        token = get_token.client_credentials(self.MGMT_API.format(self._domain))
         return token["access_token"]
 
     def convert_auth0_error(func) -> Callable:

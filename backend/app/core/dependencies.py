@@ -26,10 +26,16 @@ class ServiceProvider:
         self.service = service
         self.required_scopes = required_scopes
 
-    async def __call__(self, request: Request, session: SessionDependency):
+    async def __call__(
+        self,
+        request: Request,
+        session: SessionDependency,
+        current_user: Annotated[
+            BearerTokenHandler,
+            Depends(BearerTokenHandler()),
+        ],
+    ):
         """Callable required for dependency injection."""
-        # TODO: this current user should be a depend such that we can overwrite it in tests
-        current_user = BearerTokenHandler(required_scopes=self.required_scopes)
         return self.service(session=session, current_user=current_user)
 
 

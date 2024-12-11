@@ -1,35 +1,12 @@
 from datetime import datetime
-from typing import Any
 
+from core.context import CurrentUser
 from models._metadata import _UpdatePropertiesIn
 from models.role import Level, Role
 from pydantic import BaseModel, EmailStr, Field
 
 
-class CurrentUser(BaseModel):
-    """Model to represent the current user."""
-
-    sub: str
-    permissions: list[str]
-    roles: list[Any]
-    misc: Any
-
-    @classmethod
-    def from_jwt(cls, jwt_token: dict, misc, roles: list[dict] = None):
-        """Create a CurrentUser object from a decoded JWT token."""
-        return cls(
-            sub=jwt_token["sub"],
-            permissions=jwt_token.get("permissions", []),
-            roles=roles,
-            misc=misc,
-        )
-
-    def verify_scope(self, required_scope: str) -> bool:
-        """Check if the user has the required scope."""
-        return required_scope in self.permissions
-
-
-class UserCurrentGetOut(CurrentUser):
+class UserCurrentGetOut(BaseModel):
     """API response model for GET /users/me."""
 
     pass

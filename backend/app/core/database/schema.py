@@ -138,7 +138,7 @@ DefaultProgram = [
 ]
 
 
-class Roles(SQLModel, table=True):
+class Role(SQLModel, table=True):
     """Data model for user roles in the app."""
 
     __tablename__ = "roles"

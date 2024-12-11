@@ -30,10 +30,10 @@ class ProgramRepository(BaseRepository[schema.Program]):
     _model = schema.Program
 
 
-class RoleRepository(BaseRepository[schema.Roles]):
+class RoleRepository(BaseRepository[schema.Role]):
     """Repository to interact with Roles table."""
 
-    _model = schema.Roles
+    _model = schema.Role
 
 
 class TeamRepository(BaseRepository[schema.Team]):

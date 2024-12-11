@@ -49,6 +49,7 @@ class BaseService(ABC):
         self.email_service = EmailService(settings=self.settings)
         self.database = DatabaseRepositories(session=self._session)
         self.current_user = current_user
+        print(current_user)
 
     @abstractmethod
     def create(self, obj: Model):

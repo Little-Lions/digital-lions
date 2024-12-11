@@ -116,8 +116,6 @@ class BearerTokenHandler(HTTPBearer):
         if not self.settings.FEATURE_OAUTH:
             return None
 
-        self.roles = RoleRepository(session=session)
-
         token, kid = await self._verify_request(request)
         current_user = self._verify_token(token=token, kid=kid)
 
@@ -129,6 +127,7 @@ class BearerTokenHandler(HTTPBearer):
             )
 
         # add roles to current user
+        self.roles = RoleRepository(session=session)
         roles = self.roles.where([("user_id", current_user["sub"])])
 
         return CurrentUser.from_jwt(current_user, roles=roles)

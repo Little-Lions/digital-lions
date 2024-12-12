@@ -2,8 +2,8 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.auth import BearerTokenHandler, Scopes
-from core.dependencies import TeamServiceDependency
+from core.auth import Scopes
+from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated

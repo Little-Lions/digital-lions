@@ -14,7 +14,7 @@ logger = logging.getLogger()
 
 router = APIRouter(prefix="/roles")
 
-
+# TODO: this entire modules requires a service (e.g. PermissionService) and proper Python
 SCOPES = {
     models.Role.admin: [models.Level.implementing_partner],
     models.Role.coach: [models.Level.community, models.Level.team],

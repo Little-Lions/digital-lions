@@ -1,8 +1,10 @@
 import logging
+from typing import Annotated
 
 from core import exceptions
-from core.auth import BearerTokenHandler, Scopes
-from core.dependencies import TeamServiceDependency
+from core.auth import Scopes
+from core.dependencies import ServiceProvider
+from services import TeamService
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
@@ -21,11 +23,15 @@ router = APIRouter(prefix="/teams")
     responses=with_default_responses(),
 )
 async def get_workshops(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(
+                service=TeamService, required_scopes=[Scopes.workshops_read]
+            )
+        ),
+    ],
     team_id: int,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.workshops_read])
-    ),
 ):
     """
     Get all workshops completed by the team.
@@ -54,12 +60,16 @@ async def get_workshops(
     ),
 )
 async def get_workshop_by_number(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(
+                service=TeamService, required_scopes=[Scopes.workshops_read]
+            )
+        ),
+    ],
     team_id: int,
     workshop_number: int,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.workshops_read])
-    ),
 ):
     """
     Get one of the workshops completed by the team, by number
@@ -96,12 +106,16 @@ async def get_workshop_by_number(
     ),
 )
 async def post_workshop(
-    team_service: TeamServiceDependency,
+    team_service: Annotated[
+        TeamService,
+        Depends(
+            ServiceProvider(
+                service=TeamService, required_scopes=[Scopes.workshops_write]
+            )
+        ),
+    ],
     team_id: int,
     workshop: models.TeamPostWorkshopIn,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.workshops_write])
-    ),
 ):
     """
     Add a workshop to a team.

@@ -217,6 +217,10 @@ class TeamService(BaseService):
             object_id (int): Team ID to get Team for.
         """
         team = self._validate_team_exists(object_id)
+        import pdb
+
+        pdb.set_trace()
+
         teams_progresses = self.database.workshops.get_last_workshop_per_team(
             team_ids=[team.id]
         )

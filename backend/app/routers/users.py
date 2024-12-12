@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler, Scopes
 from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import user as models

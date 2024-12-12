@@ -41,6 +41,10 @@ class InternalServerError(Exception):
     pass
 
 
+class InsufficientPermissionsError(Exception):
+    pass
+
+
 class ItemAlreadyExistsError(Exception):
     pass
 

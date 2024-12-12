@@ -1,32 +1,15 @@
 import logging
-from enum import Enum
-from typing import Annotated, Any
+from typing import Any
 
 import jwt
 import requests
 from core.context import CurrentUser
 from core.database.session import SessionDependency
-from core.settings import Settings, get_settings
+from core.settings import SettingsDependency
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
-
-
-class Scopes(str, Enum):
-    """OAuth scopes that can be assigned to roles."""
-
-    children_read: str = "children:read"
-    children_write: str = "children:write"
-    communities_read: str = "communities:read"
-    communities_write: str = "communities:write"
-    teams_read: str = "teams:read"
-    teams_write: str = "teams:write"
-    users_read: str = "users:read"
-    users_write: str = "users:write"
-    roles_read: str = "roles:read"
-    workshops_read: str = "workshops:read"
-    workshops_write: str = "workshops:write"
 
 
 class BearerTokenHandler(HTTPBearer):
@@ -53,17 +36,14 @@ class BearerTokenHandler(HTTPBearer):
 
         Args:
             auto_error bool: Raise HTTPException if token is invalid.
-            required_scopes list[str]: List of scopes user
-                should have to call the endpoint.
 
         """
         super().__init__(auto_error=auto_error)
-        self.required_scopes = required_scopes
 
     async def __call__(
         self,
         request: Request,
-        settings: Annotated[Settings, Depends(get_settings)],
+        settings: SettingsDependency,
         session: SessionDependency,
     ) -> Any:
         """Verify the bearer token and optionally the scopes,
@@ -74,13 +54,6 @@ class BearerTokenHandler(HTTPBearer):
 
         token, kid = await self._verify_request(request)
         verified_token = self._verify_token(token=token, kid=kid)
-
-        # TODO: scope validation should be moved to the repository calls
-        if not self._verify_required_scopes(verified_token["permissions"]):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User does not have required permission.",
-            )
 
         return CurrentUser.from_token(
             verified_token, settings=self.settings, session=session
@@ -139,17 +112,6 @@ class BearerTokenHandler(HTTPBearer):
             )
 
         return jwt_token_decoded
-
-    def _verify_required_scopes(self, token_scopes: list[str]) -> bool:
-        """
-        Verify that token has the required scopes.
-
-        Args:
-            decoded_token dict: decoded token containing scopes.
-        """
-        if not self.required_scopes:
-            return True
-        return all(scope in token_scopes for scope in self.required_scopes)
 
     def _verify_jwt(
         self, token: str, pub_key: str, algorithm: str, audience: str

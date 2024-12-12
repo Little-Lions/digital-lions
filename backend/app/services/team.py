@@ -217,9 +217,15 @@ class TeamService(BaseService):
             object_id (int): Team ID to get Team for.
         """
         team = self._validate_team_exists(object_id)
-        import pdb
+        from core.context import Permission
 
-        pdb.set_trace()
+        permission = Permission.teams_read
+        if not self.current_user.has_permission_on_resource(
+            permission=permission, resource=team
+        ):
+            msg = f"User {self.current_user.user_id} does not have permission to view team {team.id}"
+            logger.debug(msg)
+            raise exceptions.InsufficientPermissionsError(msg)
 
         teams_progresses = self.database.workshops.get_last_workshop_per_team(
             team_ids=[team.id]

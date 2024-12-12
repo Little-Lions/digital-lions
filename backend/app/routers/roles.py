@@ -1,6 +1,7 @@
 import logging
 
-from core.auth import BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler
+from core.context import Permission as Scopes
 from core.dependencies import (
     CommunityServiceDependency,
     TeamServiceDependency,

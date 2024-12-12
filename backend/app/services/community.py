@@ -34,7 +34,6 @@ class CommunityService(BaseService):
         """Get an object from the table by id."""
         self._validate_community_exists(object_id)
         community = self.database.communities.read(object_id=object_id)
-        print(community)
         return community
 
     def update(self, object_id: int, obj):

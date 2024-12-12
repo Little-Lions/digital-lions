@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from core import exceptions
-from core.auth import Scopes
+from core.context import Permission as Scopes
 from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import child as models

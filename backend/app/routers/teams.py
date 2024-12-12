@@ -2,7 +2,7 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.auth import Scopes
+from core.context import Permission as Scopes
 from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
@@ -121,6 +121,8 @@ async def get_team(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         )
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.delete(

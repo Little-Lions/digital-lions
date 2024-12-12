@@ -51,6 +51,41 @@ class Team(SQLModel, _MetadataPropertiesOut, table=True):
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
     )
 
+    @property
+    def parent(self):
+        """Return the parent community of the team, required for RBAC."""
+        return self.community
+
+    @property
+    def resource_type(self):
+        return "Team"
+
+
+class ImplementingPartner(SQLModel, table=False):
+    """Data model for implementing partners. An implementing partner is an organization
+    that implements the Little Lions program in a community."""
+
+    __tablename__ = "implementing_partners"
+    id: int = Field(default=None, primary_key=True)
+    name: str
+    communities: list["Community"] = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"},
+        back_populates="implementing_partner",
+    )
+
+    @property
+    def parent(self):
+        """Implementing partner is the top level of the hierarchy."""
+        return None
+
+    @property
+    def resource_type(self):
+        return "Implementing Partner"
+
+
+# TODO: until we support multiple implementing parnters we will hardcode 1
+LittleLions = ImplementingPartner(id=1, name="Little Lions")
+
 
 class Community(SQLModel, _MetadataPropertiesOut, table=True):
     """Schema for community in database."""
@@ -62,6 +97,15 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
     teams: list["Team"] = Relationship(
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="community"
     )
+
+    @property
+    def parent(self):
+        """Return the parent community of the community, useful for RBAC."""
+        return LittleLions
+
+    @property
+    def resource_type(self):
+        return "Community"
 
 
 class Attendance(SQLModel, table=True):

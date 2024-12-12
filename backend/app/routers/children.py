@@ -1,13 +1,13 @@
 from typing import Any
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler, Scopes
 from core.dependencies import ChildServiceDependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import child as models
 from models.generic import Message, RecordCreated
 
-router = APIRouter(prefix="/children", dependencies=[APIKeyDependency])
+router = APIRouter(prefix="/children")
 
 
 @router.get(

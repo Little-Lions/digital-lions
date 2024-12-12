@@ -15,11 +15,10 @@ logger = logging.getLogger(__name__)
 
 def setup_logger(settings):
     logging_conf = "logging.conf"
-    logging.config.fileConfig(logging_conf, disable_existing_loggers=False)  # type: ignore
+    logging.config.fileConfig(logging_conf, disable_existing_loggers=False)
     logger = logging.getLogger(__name__)
     logger.info("Logging configuration: %s", logging_conf)
     logger.info(f"OAuth authorization enabled: {settings.FEATURE_AUTH0}")
-    logger.info(f"API-Key authentication enabled: {settings.FEATURE_API_KEY}")
 
 
 @asynccontextmanager
@@ -61,7 +60,7 @@ app.add_middleware(
     # while the middleware is added before, not sure how to fix this
     allow_origins=os.environ.get("ALLOWED_ORIGINS").split(","),
     allow_methods=["*"],
-    allow_headers=["API-Key", "Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 # app.middleware("http")(catch_any_exception)
 app.include_router(health.router, tags=["health"])

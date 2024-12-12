@@ -1,13 +1,13 @@
 from typing import Any
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler, Scopes
 from core.dependencies import CommunityServiceDependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import community as models
 from models.generic import Message, RecordCreated
 
-router = APIRouter(prefix="/communities", dependencies=[APIKeyDependency])
+router = APIRouter(prefix="/communities")
 
 
 @router.get(

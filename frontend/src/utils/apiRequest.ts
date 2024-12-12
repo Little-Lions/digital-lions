@@ -10,7 +10,6 @@ export const apiRequest = async (
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${accessToken}`,
-    'API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
   }
 
   const options: RequestInit = {
@@ -20,7 +19,6 @@ export const apiRequest = async (
   }
 
   const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`
-  console.log('fullURL', fullUrl)
   const response = await fetch(fullUrl, options)
 
   if (!response.ok) {

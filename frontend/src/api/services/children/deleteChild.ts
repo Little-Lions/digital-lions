@@ -1,15 +1,15 @@
 const deleteChild = async (
   childId: number,
-  cascade: boolean
+  cascade: boolean,
 ): Promise<void> => {
   try {
     await fetch(`/api/children?child_id=${childId}&cascade=${cascade}`, {
-      method: "DELETE",
-    });
+      method: 'DELETE',
+    })
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default deleteChild;
+export default deleteChild

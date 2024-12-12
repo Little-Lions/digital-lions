@@ -1,6 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 
+import Heading from './Heading'
+
 interface LinkCardProps {
   title: string
   className?: string
@@ -16,7 +18,7 @@ const LinkCard: React.FC<LinkCardProps> = ({
   state,
   children,
 }) => {
-  const handleClick = () => {
+  const handleClick = (): void => {
     if (state) {
       localStorage.setItem('linkCardState', JSON.stringify(state))
     }
@@ -25,27 +27,39 @@ const LinkCard: React.FC<LinkCardProps> = ({
   return (
     <Link href={href} onClick={handleClick}>
       <div
-        className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark transition-colors cursor-pointer`}
+        className={`${className} rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors cursor-pointer`}
       >
-        <h2>{title}</h2>
-        <div className="flex items-center space-x-2">
-          {children && <div className="flex gap-2">{children}</div>}
-          <svg
-            className="w-3 h-3 transition-transform"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 6 10"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 1l4 4-4 4"
-            />
-          </svg>
+        {/* Title Section */}
+        <div className="flex-grow">
+          <Heading level="h6" hasNoMargin={true}>
+            {title}
+          </Heading>
         </div>
+
+        {/* Divider */}
+        {children && (
+          <div className="border-l border-gray-300 h-auto min-h-[50px]"></div>
+        )}
+
+        {/* Children Section */}
+        <div className="flex flex-col items-start gap-2">{children}</div>
+
+        {/* Right Arrow */}
+        <svg
+          className="w-3 h-3 ml-auto transition-transform"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 6 10"
+        >
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M1 1l4 4-4 4"
+          />
+        </svg>
       </div>
     </Link>
   )

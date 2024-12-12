@@ -1,7 +1,7 @@
 import logging
 
 from core import exceptions
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler, Scopes
 from core.dependencies import TeamServiceDependency
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
@@ -10,7 +10,7 @@ from routers._responses import with_default_responses
 
 logger = logging.getLogger()
 
-router = APIRouter(prefix="/teams", dependencies=[APIKeyDependency])
+router = APIRouter(prefix="/teams")
 
 
 @router.get(

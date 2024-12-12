@@ -1,29 +1,29 @@
 interface ApiResponse {
-  name: string;
-  id: number;
+  name: string
+  id: number
 }
 
 const getCommunitiesById = async (
-  communityId: string
+  communityId: string,
 ): Promise<ApiResponse[]> => {
   try {
     const response = await fetch(
       `/api/communities?community_id=${communityId}`,
       {
-        method: "GET",
-      }
-    );
+        method: 'GET',
+      },
+    )
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      throw new Error(`Error: ${response.statusText}`)
     }
 
-    const data: ApiResponse[] = await response.json();
-    return data;
+    const data: ApiResponse[] = await response.json()
+    return data
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw error;
+    console.error('Error fetching data:', error)
+    throw error
   }
-};
+}
 
-export default getCommunitiesById;
+export default getCommunitiesById

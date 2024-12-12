@@ -9,14 +9,12 @@ from sqlmodel.pool import StaticPool
 DefaultTestSettings = Settings(
     POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digitallions",
     FEATURE_AUTH0=False,
-    FEATURE_API_KEY=False,
-    AUTH0_SERVER="digitallions.eu.auth0.com",
+    AUTH0_SERVER="https://digitallions.eu.auth0.com",
     AUTH0_AUDIENCE="https://digitallions.eu.auth0.com/api/v2/",
     AUTH0_CLIENT_ID="mock-client-id",
     AUTH0_CLIENT_SECRET="mock-client-secret",
     AUTH0_CONNECTION_ID="mock-connection-id",
     ALLOWED_ORIGINS="http://localhost:8000,http://digitallions.com",
-    API_KEY="test-api-key",
     RESEND_API_KEY="test-resend-api-key",
 )
 

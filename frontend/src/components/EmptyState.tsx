@@ -1,10 +1,12 @@
-import React from "react";
+import React from 'react'
+
+import Heading from './Heading'
 
 interface EmptyStateProps {
-  title: string;
-  text?: string;
-  pictogram?: React.ReactNode;
-  actionButton?: React.ReactNode;
+  title: string
+  text?: string
+  pictogram?: React.ReactNode
+  actionButton?: React.ReactNode
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({
@@ -18,11 +20,11 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="w-24 h-24 mb-4 flex items-center justify-center text-gray-300">
         {pictogram}
       </div>
-      <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      <Heading level="h4">{title}</Heading>
       <p className="mt-2">{text}</p>
       <div className="mt-4">{actionButton}</div>
     </div>
-  );
-};
+  )
+}
 
-export default EmptyState;
+export default EmptyState

@@ -1,6 +1,6 @@
 import logging
 
-from core.auth import APIKeyDependency, BearerTokenHandler, Scopes
+from core.auth import BearerTokenHandler, Scopes
 from core.dependencies import (
     CommunityServiceDependency,
     TeamServiceDependency,
@@ -12,7 +12,7 @@ from routers._responses import with_default_responses
 
 logger = logging.getLogger()
 
-router = APIRouter(prefix="/roles", dependencies=[APIKeyDependency])
+router = APIRouter(prefix="/roles")
 
 
 SCOPES = {

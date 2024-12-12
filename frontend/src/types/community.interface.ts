@@ -1,4 +1,4 @@
 export interface Community {
-  name: string;
-  id: number;
+  name: string
+  id: number
 }

@@ -17,7 +17,6 @@ class Settings(BaseSettings):
 
     # feature flags
     FEATURE_AUTH0: bool | None = True
-    FEATURE_API_KEY: bool | None = True
 
     # Auth0
     AUTH0_SERVER: str
@@ -28,7 +27,6 @@ class Settings(BaseSettings):
 
     # networking and security
     ALLOWED_ORIGINS: str
-    API_KEY: str | None = None
 
     # emails
     RESEND_API_KEY: str | None = None
@@ -36,13 +34,6 @@ class Settings(BaseSettings):
     def model_post_init(self, __context) -> None:
         """Post init hook."""
         self.ALLOWED_ORIGINS = self.ALLOWED_ORIGINS.split(",")
-
-    @model_validator(mode="after")
-    def validate_api_key_settings(self) -> Any:
-        """Validate the API key settings."""
-        if self.FEATURE_API_KEY and not self.API_KEY:
-            raise ValueError("FEATURE_API_KEY is True but API_KEY is not set")
-        return self
 
     @model_validator(mode="after")
     def validate_oauth_settings(self) -> Any:

@@ -1,13 +1,19 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-import CustomButton from '@/components/CustomButton'
-// import Badge from '@/components/Badge';
+
+import { useRouter, useParams } from 'next/navigation'
+
+import CustomButton from './CustomButton'
+import DatePicker from './DatePicker'
+import EmptyState from './EmptyState'
+
+import { UsersIcon } from '@heroicons/react/20/solid'
+
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
 import { AttendanceRecord } from '@/types/workshopAttendance.interface'
 import { AttendanceStatus } from '@/types/attendanceStatus.enum'
 import { Child } from '@/types/child.interface'
-import DatePicker from './DatePicker'
 
 interface VerticalStepperProps {
   workshops: string[]
@@ -35,6 +41,11 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   isSavingAttendance,
   isSaved,
 }) => {
+  const router = useRouter()
+  const params = useParams()
+  const communityId = params?.communityId as string
+  const teamId = params?.teamId as string
+
   const [checked, setChecked] = useState(1)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
@@ -44,7 +55,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const handleAttendanceChange = (
     childId: number,
     newAttendance: AttendanceStatus,
-  ) => {
+  ): void => {
     setAttendanceData((prevData) => {
       const updatedAttendanceData = prevData.map((entry) =>
         entry.child_id === childId
@@ -71,7 +82,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const hasAnimated = useRef(false)
 
   useEffect(() => {
-    const animateToCurrentWorkshop = () => {
+    const animateToCurrentWorkshop = (): void => {
       setChecked(0)
       setAnimatedSteps([])
       for (let i = 0; i < currentWorkshop; i++) {
@@ -154,112 +165,123 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   return (
     <div className="w-full mx-auto">
-      {workshops.map((workshop, index) => {
-        const isCurrent =
-          index === currentWorkshop && checked === currentWorkshop
-        const isPrevious = index < currentWorkshop
-        const isOpen = index === openIndex && isCurrent
+      {childs.length === 0 ? (
+        <EmptyState
+          title="No children in current workshop"
+          pictogram={<UsersIcon />}
+          actionButton={
+            <CustomButton
+              label="Add child"
+              onClick={() =>
+                router.push(`/communities/${communityId}/teams/${teamId}`)
+              }
+              variant="primary"
+              className="hover:bg-card-dark hover:text-white mb-4"
+            />
+          }
+        />
+      ) : (
+        workshops.map((workshop, index) => {
+          const isCurrent =
+            index === currentWorkshop && checked === currentWorkshop
+          const isPrevious = index < currentWorkshop
+          const isOpen = index === openIndex && isCurrent
 
-        return (
-          <div key={index} className="relative pb-2 pl-7">
-            <div
-              // onClick={
-              //   isCurrent ? () => handleAccordionToggle(index) : undefined
-              // }
-              className={`bg-card flex items-center justify-between w-full p-5 font-medium text-white transition-colors ${
-                isCurrent ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'
-              } ${isCurrent && 'cursor-pointer hover:bg-card-dark '}`}
-            >
-              {/* Draw circle for each step */}
-              <span
-                className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
-                  isCurrent
-                    ? 'bg-blue-500 border-blue-500' // Adjusted: Current step with blue border and white background
-                    : isPrevious && animatedSteps.includes(index)
-                      ? 'bg-green-500 border-green-500' // Completed step
-                      : 'bg-gray-300 border-gray-300' // Uncompleted step
-                }`}
+          return (
+            <div key={index} className="relative pb-2 pl-7">
+              <div
+                // onClick={
+                //   isCurrent ? () => handleAccordionToggle(index) : undefined
+                // }
+                className={`bg-card flex items-center justify-between w-full p-5 font-medium text-white transition-colors ${
+                  isCurrent ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'
+                } ${isCurrent && 'cursor-pointer hover:bg-card-dark '}`}
               >
-                {isPrevious && animatedSteps.includes(index) ? (
-                  <svg
-                    className="h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                ) : isCurrent ? (
-                  // Ensure the white dot is shown for the current step
-                  <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
-                ) : (
-                  <span
-                    className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
-                      animatedSteps.includes(index)
-                        ? 'opacity-0'
-                        : 'opacity-100'
-                    }`}
-                  ></span>
-                )}
-              </span>
-              {/* Draw line between steps */}
-              {index < workshops.length - 1 && (
+                {/* Draw circle for each step */}
                 <span
-                  className={`absolute left-[9px] top-[2.7rem] bottom-[-25px] w-[2px] ${
-                    index < checked
-                      ? 'bg-green-500'
-                      : index === checked
-                        ? 'bg-blue-500'
-                        : 'bg-gray-300'
-                  } `}
-                />
-              )}
-
-              <div className={`${isCurrent ? 'font-bold' : ''}`}>
-                {workshop}
-              </div>
-
-              {isCurrent && <DatePicker onDateChange={onDateChange} />}
-
-              {/* <div
-                className={`flex items-center space-x-2 ${
-                  isCurrent ? "font-bold" : ""
-                }`}
-              >
-                {isPrevious && workshopDetails[index]?.attendance && (
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Badge variant="success">
-                      Present: {workshopDetails[index].attendance.present || 0}
-                    </Badge>
-                    <Badge variant="warning">
-                      Absent: {workshopDetails[index].attendance.absent || 0}
-                    </Badge>
-                    <Badge variant="error">
-                      Cancelled: {workshopDetails[index].attendance.cancelled || 0}
-                    </Badge>
-                  </div>
-                )}
-              </div> */}
-            </div>
-            <div
-              className={`card-content ${
-                isOpen && isCurrent ? 'open' : 'closed'
-              }`}
-              ref={stepRefs.current[index]}
-            >
-              {isOpen && isCurrent && (
-                <div className="p-4 rounded-b-lg bg-card transition-all duration-300 ease-in-out">
-                  {childs.length === 0 ? (
-                    <h3 className="text-lg font-semibold">
-                      No children in current workshop
-                    </h3>
+                  className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
+                    isCurrent
+                      ? 'bg-blue-500 border-blue-500' // Adjusted: Current step with blue border and white background
+                      : isPrevious && animatedSteps.includes(index)
+                        ? 'bg-green-500 border-green-500' // Completed step
+                        : 'bg-gray-300 border-gray-300' // Uncompleted step
+                  }`}
+                >
+                  {isPrevious && animatedSteps.includes(index) ? (
+                    <svg
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  ) : isCurrent ? (
+                    // Ensure the white dot is shown for the current step
+                    <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
                   ) : (
-                    childs.map((entry: Child) => {
+                    <span
+                      className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
+                        animatedSteps.includes(index)
+                          ? 'opacity-0'
+                          : 'opacity-100'
+                      }`}
+                    ></span>
+                  )}
+                </span>
+                {/* Draw line between steps */}
+                {index < workshops.length - 1 && (
+                  <span
+                    className={`absolute left-[9px] top-[2.7rem] bottom-[-25px] w-[2px] ${
+                      index < checked
+                        ? 'bg-green-500'
+                        : index === checked
+                          ? 'bg-blue-500'
+                          : 'bg-gray-300'
+                    } `}
+                  />
+                )}
+
+                <div className={`${isCurrent ? 'font-bold' : ''}`}>
+                  {workshop}
+                </div>
+
+                {isCurrent && <DatePicker onDateChange={onDateChange} />}
+
+                {/* <div
+                    className={`flex items-center space-x-2 ${
+                      isCurrent ? "font-bold" : ""
+                    }`}
+                  >
+                    {isPrevious && workshopDetails[index]?.attendance && (
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Badge variant="success">
+                          Present: {workshopDetails[index].attendance.present || 0}
+                        </Badge>
+                        <Badge variant="warning">
+                          Absent: {workshopDetails[index].attendance.absent || 0}
+                        </Badge>
+                        <Badge variant="error">
+                          Cancelled: {workshopDetails[index].attendance.cancelled || 0}
+                        </Badge>
+                      </div>
+                    )}
+                  </div> */}
+              </div>
+              <div
+                className={`card-content ${
+                  isOpen && isCurrent ? 'open' : 'closed'
+                }`}
+                ref={stepRefs.current[index]}
+              >
+                {isOpen && isCurrent && (
+                  <div className="p-4 rounded-b-lg bg-card transition-all duration-300 ease-in-out">
+                    {childs.map((entry: Child) => {
                       const { id, first_name, last_name } = entry
                       const attendanceEntry = attendanceData.find(
                         (e) => e.child_id === id,
@@ -307,35 +329,35 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                           </div>
                         </div>
                       )
-                    })
-                  )}
-                  {
-                    <div className="flex items-center justify-end border-t mt-4 border-gray-200 rounded-b ">
-                      <CustomButton
-                        className="mt-4"
-                        label="Save Attendance"
-                        variant="secondary"
-                        onClick={onSaveAttendance}
-                        isBusy={isSavingAttendance}
-                        // disabled when there are no childs or if attendnance is not checked fo all childs
-                        isDisabled={
-                          childs.length === 0 ||
-                          attendanceData.length === 0 || // If there's no attendance data, disable the button
-                          !attendanceData.every(
-                            (entry) =>
-                              entry.attendance !== '' &&
-                              entry.attendance !== null,
-                          )
-                        }
-                      />
-                    </div>
-                  }
-                </div>
-              )}
+                    })}
+                    {
+                      <div className="flex items-center justify-end border-t mt-4 border-gray-200 rounded-b ">
+                        <CustomButton
+                          className="mt-4"
+                          label="Save Attendance"
+                          variant="secondary"
+                          onClick={onSaveAttendance}
+                          isBusy={isSavingAttendance}
+                          // disabled when there are no childs or if attendnance is not checked fo all childs
+                          isDisabled={
+                            childs.length === 0 ||
+                            attendanceData.length === 0 || // If there's no attendance data, disable the button
+                            !attendanceData.every(
+                              (entry) =>
+                                entry.attendance !== '' &&
+                                entry.attendance !== null,
+                            )
+                          }
+                        />
+                      </div>
+                    }
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )
-      })}
+          )
+        })
+      )}
     </div>
   )
 }

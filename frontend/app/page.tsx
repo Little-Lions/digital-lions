@@ -1,24 +1,25 @@
-"use client";
+'use client'
 
-import React from "react";
-import Card from "@/components/Card";
-import List from "@/components/List";
+import React from 'react'
+import Card from '@/components/Card'
+import List from '@/components/List'
+import Heading from '@/components/Heading'
 
 const Home: React.FC = () => {
   return (
     <>
-      <Card className="mb-2">
-        <h1 className="text-2xl font-semibold">Little Lions Impact</h1>
+      <Card>
+        <Heading level="h2">Little Lions Impact</Heading>
         <List
           items={[
-            { label: "Townships", value: "6" },
-            { label: "Workshops", value: "1300" },
-            { label: "Children", value: "2000" },
+            { label: 'Townships', value: '6' },
+            { label: 'Workshops', value: '1300' },
+            { label: 'Children', value: '2000' },
           ]}
         />
       </Card>
     </>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

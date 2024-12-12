@@ -34,14 +34,16 @@ const TextInput: React.FC<TextInputProps> = ({
     setInputValue(value)
   }, [value])
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
     setInputValue(event.target.value)
     if (onChange) {
       onChange(event.target.value)
     }
   }
 
-  const handleBlur = () => {
+  const handleBlur = (): void => {
     setIsTouched(true)
     if (onBlur) {
       onBlur(inputValue)

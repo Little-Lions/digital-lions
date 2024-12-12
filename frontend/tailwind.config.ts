@@ -12,6 +12,15 @@ const config: Config = {
       sans: ['Work Sans', 'sans-serif'],
     },
     extend: {
+      spacing: {
+        'page-x': '2rem',
+        'page-y': '4rem',
+        'gap-large': '3rem',
+        'gap-medium': '2rem',
+        'gap-small': '1rem',
+        'page-margin': '4rem',
+        'page-padding': '2rem',
+      },
       colors: {
         /* Button Background Colors */
         'button-primary': 'var(--color-button-primary)',

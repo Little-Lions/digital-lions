@@ -1,6 +1,8 @@
 'use client'
 import React, { useState } from 'react'
 
+import Heading from './Heading'
+
 interface AccordionProps {
   title: string
   description?: string
@@ -17,7 +19,7 @@ const Accordion: React.FC<AccordionProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const toggleAccordion = () => {
+  const toggleAccordion = (): void => {
     setIsOpen(!isOpen)
   }
 
@@ -27,40 +29,39 @@ const Accordion: React.FC<AccordionProps> = ({
       data-accordion="open"
       className={`${className} rounded-lg`}
     >
-      <h2 id="accordion-open-heading-1">
-        <button
-          onClick={toggleAccordion}
-          type="button"
-          className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark`}
-          data-accordion-target="#accordion-open-body-1"
-          aria-expanded={isOpen}
-          aria-controls="accordion-open-body-1"
+      <button
+        onClick={toggleAccordion}
+        type="button"
+        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark`}
+        data-accordion-target="#accordion-open-body-1"
+        aria-expanded={isOpen}
+        aria-controls="accordion-open-body-1"
+      >
+        <Heading level="h6" hasNoMargin={true} className="flex items-center">
+          {title}
+        </Heading>
+        <svg
+          data-accordion-icon
+          className={`w-3 h-3 ${!isOpen ? 'rotate-180' : ''} transition-transform`}
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 10 6"
         >
-          <span className="flex items-center">{title}</span>
-          <svg
-            data-accordion-icon
-            className={`w-3 h-3 ${!isOpen ? 'rotate-180' : ''} transition-transform`}
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 10 6"
-          >
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 5 5 1 1 5"
-            />
-          </svg>
-        </button>
-      </h2>
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 5 5 1 1 5"
+          />
+        </svg>
+      </button>
       <div
         id="accordion-open-body-1"
         className={`transition-max-height duration-50 ease-in-out ${
           isOpen ? 'max-h-screen' : 'max-h-0'
         }`}
-        aria-labelledby="accordion-open-heading-1"
         style={{
           overflow: isOpen ? 'visible' : 'hidden',
         }}

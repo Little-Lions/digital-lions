@@ -12,7 +12,7 @@ from services import UserService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/users", dependencies=[APIKeyDependency])
+router = APIRouter(prefix="/users")
 
 
 @router.get(

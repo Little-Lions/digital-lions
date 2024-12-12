@@ -41,8 +41,8 @@ const SelectInput: React.FC<SelectInputProps> = ({
     <div className={className}>
       {label && (
         <label
-          htmlFor="default-select-input"
-          className="mb-2 text-sm font-medium text-gray-900 "
+          htmlFor="select-input"
+          className="mb-2 text-sm font-medium text-gray-900"
         >
           {label}
         </label>
@@ -51,7 +51,7 @@ const SelectInput: React.FC<SelectInputProps> = ({
         <select
           disabled={disabled}
           className="appearance-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 pr-10"
-          id="default-select-input"
+          id="select-input"
           value={inputValue}
           onChange={handleInputChange}
           autoFocus={autoFocus}

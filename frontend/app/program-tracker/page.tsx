@@ -5,6 +5,7 @@ import getCommunities from '@/api/services/communities/getCommunities'
 import LinkCard from '@/components/LinkCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Badge from '@/components/Badge'
+import Heading from '@/components/Heading'
 interface Community {
   name: string
   id: number
@@ -34,13 +35,14 @@ const ProgramTrackerCommunityPage: React.FC = () => {
     <>
       {isLoading ? (
         <>
+          <SkeletonLoader width="211px" height="36px" type="title" level="h3" />
           {Array.from({ length: 8 }, (_, i) => (
             <SkeletonLoader key={i} height="104px" type="card" />
           ))}
         </>
       ) : (
         <>
-          <h1>Communities</h1>
+          <Heading level="h3">Communities</Heading>
           {communities.map((community) => (
             <LinkCard
               key={community.id}

@@ -13,6 +13,7 @@ interface TitleSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   height: string
   totalItems?: never
   index?: never
+  level: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
 }
 
 // Props for 'text' type
@@ -22,6 +23,7 @@ interface TextSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   height: string
   totalItems?: never
   index?: never
+  level?: never
 }
 
 // Props for 'button' type
@@ -31,6 +33,7 @@ interface ButtonSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   height?: never
   totalItems?: never
   index?: never
+  level?: never
 }
 
 // Props for 'card' type
@@ -40,6 +43,7 @@ interface CardSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   height?: string
   totalItems?: never
   index?: never
+  level?: never
 }
 
 interface InputSkeletonLoaderProps extends BaseSkeletonLoaderProps {
@@ -48,6 +52,7 @@ interface InputSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   height?: never
   totalItems?: never
   index?: never
+  level?: never
 }
 
 interface StepperSkeletonLoaderProps extends BaseSkeletonLoaderProps {
@@ -56,6 +61,7 @@ interface StepperSkeletonLoaderProps extends BaseSkeletonLoaderProps {
   index: number
   width?: never
   height?: never
+  level?: never
 }
 
 // Union of all specific props
@@ -73,11 +79,21 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   type,
   index,
   totalItems,
+  level,
 }) => {
   const baseClasses = 'bg-gray-300 animate-pulse rounded-lg'
 
+  const headingMargins = {
+    h1: 'mb-6',
+    h2: 'mb-5',
+    h3: 'mb-4',
+    h4: 'mb-3',
+    h5: 'mb-2',
+    h6: 'mb-1',
+  }
+
   const typeClasses = {
-    title: 'mb-2',
+    title: headingMargins[level || 'h1'],
     text: 'mb-4 rounded-none',
     button: 'mb-4 h-[40px]',
     card: 'h-[64px] mb-2 w-full',

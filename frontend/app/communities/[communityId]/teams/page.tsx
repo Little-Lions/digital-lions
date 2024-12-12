@@ -10,6 +10,7 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import EmptyState from '@/components/EmptyState'
 import ToggleSwitch from '@/components/ToggleSwitch'
 import Toast from '@/components/Toast'
+import Heading from '@/components/Heading'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -128,7 +129,7 @@ const TeamsPage: React.FC = () => {
           <SkeletonLoader width="142px" type="button" />
           <div className="flex justify-between">
             <SkeletonLoader width="189px" height="40px" type="text" />
-            <SkeletonLoader width="142px" type="button" />
+            {/* <SkeletonLoader width="142px" type="button" /> */}
           </div>
           {Array.from({ length: 5 }, (_, i) => (
             <SkeletonLoader key={i} type="card" />
@@ -146,8 +147,10 @@ const TeamsPage: React.FC = () => {
                 className="hover:bg-card-dark hover:text-white mb-4"
               />
               <div className="flex justify-between mb-2">
-                <h1 className="text-xl font-bold">Teams in {communityName}</h1>
-                <ToggleSwitch onChange={handleToggleChange} />
+                <Heading level="h3" hasNoMargin={true}>
+                  Teams in {communityName}
+                </Heading>
+                {/* <ToggleSwitch onChange={handleToggleChange} /> */}
               </div>
               {filteredTeams.map((team) => (
                 <LinkCard

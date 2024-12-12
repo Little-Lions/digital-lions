@@ -3,12 +3,13 @@
 import React from 'react'
 import Card from '@/components/Card'
 import List from '@/components/List'
+import Heading from '@/components/Heading'
 
 const Home: React.FC = () => {
   return (
     <>
-      <Card className="mb-2">
-        <h1 className="text-2xl font-semibold">Little Lions Impact</h1>
+      <Card>
+        <Heading level="h2">Little Lions Impact</Heading>
         <List
           items={[
             { label: 'Townships', value: '6' },

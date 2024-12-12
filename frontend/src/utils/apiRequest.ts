@@ -20,8 +20,6 @@ export const apiRequest = async (
 
   const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`
 
-  console.log('public base url', process.env.NEXT_PUBLIC_API_URL)
-
   const response = await fetch(fullUrl, options)
 
   if (!response.ok) {
@@ -32,7 +30,7 @@ export const apiRequest = async (
   }
 
   if (response.status === 204) {
-    return null
+    return
   }
 
   return await response.json()

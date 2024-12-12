@@ -1,5 +1,5 @@
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import CustomButton from './CustomButton'
 
 interface NavigationButtonProps {
@@ -30,10 +30,6 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
 }) => {
   const router = useRouter()
   const [isBusy, setIsBusy] = useState(false)
-
-  useEffect(() => {
-    console.log('isBusy updated to:', isBusy)
-  }, [isBusy])
 
   const handleClick = async (): Promise<void> => {
     if (closeMenu) {

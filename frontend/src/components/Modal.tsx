@@ -1,6 +1,7 @@
 import React from 'react'
 import CustomButton from './CustomButton'
 import ReactDOM from 'react-dom'
+import Heading from './Heading'
 interface ModalProps {
   children: React.ReactNode
   onClose?: () => void
@@ -31,7 +32,9 @@ const Modal: React.FC<ModalProps> = ({
       <div className="relative p-4 w-full max-w-2xl max-h-full">
         <div className="relative bg-white rounded-lg shadow">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
-            <h3 className="text-xl font-semibold text-gray-900 ">{title}</h3>
+            <Heading level="h3" hasNoMargin={true}>
+              {title}
+            </Heading>
             {onClose && (
               <button
                 type="button"

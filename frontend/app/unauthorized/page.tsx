@@ -5,15 +5,13 @@ import React from 'react'
 import Card from '@/components/Card'
 import NavigationButton from '@/components/NavigationButton'
 import ButtonGroup from '@/components/ButtonGroup'
+import Heading from '@/components/Heading'
 
 const UnauthorizedPage: React.FC = () => {
   return (
     <Card className="bg-white">
       <div className="mx-auto max-w-screen-sm text-center">
-        <h1 className="mb-4 text-2xl tracking-tight font-extrabold text-gray-900">
-          401
-        </h1>
-
+        <Heading level="h2">401</Heading>
         <p className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
           Unauthorized Access
         </p>

@@ -1,13 +1,17 @@
 import React from 'react'
 import Link from 'next/link'
 
+import { useRouter } from 'next/navigation'
+
+import { useTransitions } from '@/hooks/UseTransitions'
+
 import Heading from './Heading'
 
 interface LinkCardProps {
   title: string
   className?: string
   href: string
-  state?: { communityName?: string | null; teamName?: string | null }
+  onClick?: () => void
   children?: React.ReactNode
 }
 
@@ -15,18 +19,28 @@ const LinkCard: React.FC<LinkCardProps> = ({
   title,
   className,
   href,
-  state,
   children,
+  onClick,
 }) => {
-  const handleClick = (): void => {
-    if (state) {
-      localStorage.setItem('linkCardState', JSON.stringify(state))
+  const router = useRouter()
+  const { slideLeft, slideIntoViewport } = useTransitions()
+
+  const handleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault()
+
+    if (onClick) {
+      onClick()
     }
+    await slideLeft()
+
+    slideIntoViewport()
+    router.push(href)
   }
 
   return (
-    <Link href={href} onClick={handleClick}>
+    <Link href={href}>
       <div
+        onClick={handleClick}
         className={`${className} rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors cursor-pointer`}
       >
         {/* Title Section */}

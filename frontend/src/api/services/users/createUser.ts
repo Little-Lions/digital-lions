@@ -7,18 +7,25 @@ export interface ApiResponse {
   message: string
 }
 
-const createUser = async (email: string): Promise<ApiResponse> => {
+export interface ApiError {
+  detail: string
+}
+
+const createUser = async (email: string): Promise<ApiResponse | ApiError> => {
   try {
     const response = await fetch(`/api/users`, {
       method: 'POST',
       body: JSON.stringify({ email: email }),
     })
 
+    const responseData: ApiResponse | ApiError = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      throw new Error(
+        (responseData as ApiError).detail || `Error: ${response.statusText}`,
+      )
     }
 
-    const responseData: ApiResponse = await response.json()
     return responseData
   } catch (error) {
     console.error('Error creating user:', error)

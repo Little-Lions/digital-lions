@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 
+import { useParams } from 'next/navigation'
+
+import { useCommunity } from '@/context/CommunityContext'
+
 import LinkCard from '@/components/LinkCard'
 import TextInput from '@/components/TextInput'
 import CustomButton from '@/components/CustomButton'
@@ -18,8 +22,6 @@ import createTeam from '@/api/services/teams/createTeam'
 import getTeamsOfCommunity from '@/api/services/teams/getTeamsOfCommunity'
 
 import { TeamInCommunity } from '@/types/teamInCommunity.interface'
-
-import { useParams } from 'next/navigation'
 import { Team } from '@/types/team.interface'
 
 const TeamsPage: React.FC = () => {
@@ -30,7 +32,6 @@ const TeamsPage: React.FC = () => {
     TeamInCommunity[] | Team[]
   >([])
   const [teamName, setTeamName] = useState('')
-  const [communityName, setCommunityName] = useState<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
@@ -42,13 +43,7 @@ const TeamsPage: React.FC = () => {
 
   const [errorMessage, setErrorMessage] = useState<string>('')
 
-  useEffect(() => {
-    const storedState = localStorage.getItem('linkCardState')
-    if (storedState) {
-      const { communityName } = JSON.parse(storedState)
-      setCommunityName(communityName)
-    }
-  }, [])
+  const { communityName } = useCommunity()
 
   const fetchTeams = useCallback(async () => {
     setIsLoading(true)
@@ -157,7 +152,6 @@ const TeamsPage: React.FC = () => {
                   key={team.id}
                   title={team.name}
                   href={`/communities/${communityId}/teams/${team.id}`}
-                  state={{ communityName, teamName: team.name }}
                   className="mb-2"
                 />
               ))}

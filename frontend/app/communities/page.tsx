@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 
+import { useCommunity } from '@/context/CommunityContext'
+
 import getCommunities from '@/api/services/communities/getCommunities'
 import createCommunity from '@/api/services/communities/createCommunity'
 
@@ -11,13 +13,14 @@ import LinkCard from '@/components/LinkCard'
 import Modal from '@/components/Modal'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Toast from '@/components/Toast'
+
 interface Community {
   name: string
   id: number
 }
 
 const CommunityPage: React.FC = () => {
-  const [communityName, setCommunityName] = useState('')
+  const { communityName, setCommunityName } = useCommunity()
   const [communities, setCommunities] = useState<Community[]>([])
 
   const [isLoading, setIsLoading] = useState(false)
@@ -65,15 +68,16 @@ const CommunityPage: React.FC = () => {
   }
 
   const handleAddCommunity = async (): Promise<void> => {
-    if (communityName.trim() === '') return
+    if (!communityName || communityName.trim() === '') return
 
     setIsAddingCommunity(true)
     try {
       const newCommunity = await createCommunity(communityName)
-      setCommunities([...communities, newCommunity])
+      setCommunities([...communities, newCommunity]) // Update the local list
+      // setCommunityName(newCommunity.name) // Update the context value
       handleCloseCommunityModal()
 
-      await fetchCommunities()
+      await fetchCommunities() // Refetch the communities
       setIsAddingCommunityComplete(true)
     } catch (error) {
       setErrorMessage(String(error))
@@ -106,7 +110,7 @@ const CommunityPage: React.FC = () => {
               key={community.id}
               title={community.name}
               href={`/communities/${community.id}/teams`}
-              state={{ communityName: community.name }}
+              onClick={() => setCommunityName(community.name)}
               className="mb-2"
             />
           ))}
@@ -128,7 +132,7 @@ const CommunityPage: React.FC = () => {
                 <TextInput
                   className="mb-2"
                   label="Community name"
-                  value={communityName}
+                  value={communityName || ''} // Controlled input
                   onChange={handleCommunityNameChange}
                   onBlur={handleCommunityNameBlur}
                   autoFocus

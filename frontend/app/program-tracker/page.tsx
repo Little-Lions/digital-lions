@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 
 import { useCommunity } from '@/context/CommunityContext'
-import { useTransitions } from '@/hooks/UseTransitions'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 
@@ -17,7 +16,6 @@ interface Community {
 }
 
 const ProgramTrackerCommunityPage: React.FC = () => {
-  const transitions = useTransitions()
   const [communities, setCommunities] = useState<Community[]>([])
   const [isLoading, setIsLoading] = useState(false)
 

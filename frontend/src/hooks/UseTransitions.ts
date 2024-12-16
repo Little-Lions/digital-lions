@@ -13,16 +13,17 @@ export function useTransitions() {
     throw new Error('useTransitions must be used within a TransitionProvider')
   }
 
-  const { animation, setClassName } = context
+  const { animation, setClassName, isTransitioning, setIsTransitioning } =
+    context
 
   /** Triggers the 'Slide Left - Out' animation. */
   function slideLeft() {
-    return animate('slide-left', animation, setClassName)
+    return animate('slide-left', animation, setClassName, setIsTransitioning)
   }
 
   /** Triggers the 'Slide Right - Out' animation. */
   function slideRight() {
-    return animate('slide-right', animation, setClassName)
+    return animate('slide-right', animation, setClassName, setIsTransitioning)
   }
 
   /** Resets the animation to bring content into view. */
@@ -34,7 +35,13 @@ export function useTransitions() {
     }
   }
 
-  return { slideLeft, slideRight, slideIntoViewport }
+  return {
+    slideLeft,
+    slideRight,
+    slideIntoViewport,
+    isTransitioning,
+    setIsTransitioning, // Expose setIsTransitioning explicitly
+  }
 }
 
 // Helper Functions
@@ -58,15 +65,18 @@ function animate(
   animationType: Animation,
   animationRef: React.MutableRefObject<Animation>,
   setClassName: React.Dispatch<string>,
+  setIsTransitioning: React.Dispatch<React.SetStateAction<boolean>>, // Added to manage transitioning state
 ) {
   return new Promise<void>((resolve) => {
     const className = getOutAnimation(animationType)
     setClassName(className)
     animationRef.current = animationType
+    setIsTransitioning(true) // Start transition
 
     // Wait for the animation duration to complete
     setTimeout(() => {
       setClassName('') // Reset the animation class
+      setIsTransitioning(false) // End transition
       resolve()
     }, ANIMATION_DURATION)
   })

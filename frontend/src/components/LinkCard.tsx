@@ -3,8 +3,6 @@ import Link from 'next/link'
 
 import { useRouter } from 'next/navigation'
 
-import { useTransitions } from '@/hooks/UseTransitions'
-
 import Heading from './Heading'
 
 interface LinkCardProps {
@@ -23,17 +21,13 @@ const LinkCard: React.FC<LinkCardProps> = ({
   onClick,
 }) => {
   const router = useRouter()
-  const { slideLeft, slideIntoViewport } = useTransitions()
 
-  const handleClick = async (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = async (
+    event: React.MouseEvent<HTMLDivElement>,
+  ): Promise<void> => {
     event.preventDefault()
+    if (onClick) onClick()
 
-    if (onClick) {
-      onClick()
-    }
-    await slideLeft()
-
-    slideIntoViewport()
     router.push(href)
   }
 

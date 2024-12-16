@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import CustomButton from './CustomButton'
 
-import { useTransitions } from '@/hooks/UseTransitions'
+// import { useTransitions } from '@/hooks/UseTransitions'
 interface NavigationButtonProps {
   className?: string
   closeMenu?: () => void
@@ -29,7 +29,7 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
   variant = 'outline',
   isFullWidth = false,
 }) => {
-  const { slideRight, slideIntoViewport } = useTransitions()
+  // const { slideRight, slideIntoViewport } = useTransitions()
 
   const router = useRouter()
   const [isBusy, setIsBusy] = useState(false)
@@ -45,8 +45,8 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
       if (useBackNavigation) {
         event.preventDefault()
 
-        await slideRight()
-        slideIntoViewport()
+        // await slideRight()
+        // slideIntoViewport()
 
         router.back()
       } else {

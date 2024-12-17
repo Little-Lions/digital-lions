@@ -3,7 +3,7 @@ export
 .PHONY: shell build run app tests lint format 
 
 SERVICE=backend
-POETRY=/opt/homebrew/bin/poetry
+POETRY := $(shell which poetry)
 
 shell: 
 	poetry shell

@@ -1,10 +1,8 @@
 from enum import Enum
-from typing import Annotated
 
 from core.database.schema import Community, Role, Team
 from core.database.session import SessionDependency
-from core.settings import Settings, get_settings
-from fastapi import Depends
+from core.settings import SettingsDependency
 from repositories.database import RoleRepository
 
 
@@ -113,7 +111,7 @@ class CurrentUser:
         user_id: str,
         permissions: list[str],
         session: SessionDependency,
-        settings: Annotated[Settings, Depends(get_settings)],
+        settings: SettingsDependency,
     ):
         """Initialize the user context with a decoded token."""
         self._user_id = user_id
@@ -137,6 +135,14 @@ class CurrentUser:
     def permissions(self):
         """Get the permissions assigned to the user."""
         return self._permissions
+
+    def has_permission(self, permission: Permission):
+        """Verify user has permission (in general,
+        no resource filtering yet)."""
+        for role in self.roles:
+            if role.has_permission(permission):
+                return True
+        return False
 
     def has_permission_on_resource(
         self, permission: Permission, resource: Community | Team

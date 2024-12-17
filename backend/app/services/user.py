@@ -3,6 +3,7 @@ import uuid
 
 from core import exceptions
 from core.database.session import SessionDependency
+from core.settings import SettingsDependency
 from models import generic
 from models import user as models
 from repositories.auth0 import Auth0Repository
@@ -21,8 +22,10 @@ class UserService(BaseService):
 
     AUTH0_USER_CONNECTION = "Username-Password-Authentication"
 
-    def __init__(self, session: SessionDependency, current_user) -> None:
-        super().__init__(session=session, current_user=current_user)
+    def __init__(
+        self, session: SessionDependency, settings: SettingsDependency, current_user
+    ) -> None:
+        super().__init__(session=session, settings=settings, current_user=current_user)
         self.auth0 = Auth0Repository(settings=self.settings)
 
     def create(self, obj: models.UserPostIn) -> str:

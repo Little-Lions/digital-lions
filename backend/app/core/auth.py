@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Annotated, Any
 
 import jwt
 import requests
@@ -148,4 +148,5 @@ class BearerTokenHandler(HTTPBearer):
         return pub_key
 
 
-BearerTokenDependency = Depends(BearerTokenHandler())
+BearerTokenHandlerInst = BearerTokenHandler()
+BearerTokenDependency = Annotated[CurrentUser, Depends(BearerTokenHandler())]

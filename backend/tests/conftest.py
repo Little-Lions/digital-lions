@@ -5,10 +5,18 @@ from fastapi.testclient import TestClient
 from main import app
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
+from core.auth import BearerTokenHandler, BearerTokenHandlerInst
+from core.context import CurrentUser
+
+
+from core.dependencies import ServiceProvider
+from services.team import TeamService
+from services.child import ChildService
+from core.context import Permission as Scopes
 
 DefaultTestSettings = Settings(
     POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digitallions",
-    FEATURE_AUTH0=False,
+    FEATURE_AUTH0=True,
     AUTH0_SERVER="digitallions.eu.auth0.com",
     AUTH0_AUDIENCE="https://digitallions.eu.auth0.com/api/v2/",
     AUTH0_CLIENT_ID="mock-client-id",
@@ -33,30 +41,16 @@ def session_fixture():
         yield session
 
 
-@pytest.fixture(autouse=True)
-def mock_settings(mocker):
-    # TODO: get_settings should be a dependency
-    with (
-        mocker.patch("core.auth.get_settings", return_value=DefaultTestSettings),
-        mocker.patch(
-            "core.database.session.get_settings", return_value=DefaultTestSettings
-        ),
-        mocker.patch("services._base.get_settings", return_value=DefaultTestSettings),
-        mocker.patch("main.get_settings", return_value=DefaultTestSettings),
-        # this should be moved to proper fixture
-        mocker.patch("core.auth.Auth0Repository"),
-    ):
-        yield
-
-
 @pytest.fixture
 def client(mocker, session):
     """Create a FastAPI test client."""
-
+    mock_user = mocker.MagicMock(userid="something")
+    # app.dependency_overrides[dep] = mock_user
     app.dependency_overrides[get_settings] = lambda: DefaultTestSettings
-
-    # overwrite the session dependency with the session fixture
+    # current_user_mock = AsyncMock(spec=current_user)
+    app.dependency_overrides[BearerTokenHandlerInst] = CurrentUser
     app.dependency_overrides[get_session] = lambda: session
+    # app.dependency_overrides[ChildService] = ChildService
 
     client = TestClient(app)
     yield client

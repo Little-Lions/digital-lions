@@ -10,6 +10,8 @@ from services import ChildService
 
 router = APIRouter(prefix="/children")
 
+# ChildServiceDef = ServiceProvider(service=ChildService)
+
 
 @router.get(
     "/{child_id}",
@@ -23,15 +25,7 @@ router = APIRouter(prefix="/children")
     },
 )
 async def get_child(
-    child_id: int,
-    child_service: Annotated[
-        ChildService,
-        Depends(
-            ServiceProvider(
-                service=ChildService, required_scopes=[Scopes.children_read]
-            )
-        ),
-    ],
+    child_id: int, child_service: Annotated[ChildService, Depends(ChildService)]
 ):
     """
     Get a child by ID.
@@ -84,11 +78,7 @@ async def get_children(
 async def add_child(
     child_service: Annotated[
         ChildService,
-        Depends(
-            ServiceProvider(
-                service=ChildService, required_scopes=[Scopes.children_write]
-            )
-        ),
+        Depends(ServiceProvider(service=ChildService)),
     ],
     child: models.ChildPostIn,
 ):

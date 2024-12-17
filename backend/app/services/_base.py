@@ -1,10 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Annotated, TypeVar
 
+from core.auth import BearerTokenHandlerInst
 from core.database.session import SessionDependency
 from core.email import EmailService
-from core.settings import get_settings
+from core.settings import SettingsDependency
+from fastapi import Depends, Request
 from models.user import CurrentUser
 from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
@@ -32,7 +34,14 @@ class BaseService(ABC):
 
     """
 
-    def __init__(self, session: SessionDependency, current_user: CurrentUser) -> None:
+    def __init__(
+        self,
+        session: SessionDependency,
+        settings: SettingsDependency,
+        current_user: Annotated[
+            BearerTokenHandlerInst, Depends(BearerTokenHandlerInst)
+        ],
+    ) -> None:
         """Initialize service with database session and instantiate dependencies.
 
         Sets up all repository instances, email service, and loads application
@@ -43,12 +52,10 @@ class BaseService(ABC):
             session: SQLAlchemy database session for transaction management
         """
         self._session: SessionDependency = session
-        self.settings = get_settings()
+        self.settings: SettingsDependency = settings
         self.email_service = EmailService(settings=self.settings)
         self.database = DatabaseRepositories(session=self._session)
         self.current_user = current_user
-        print(current_user.user_id)
-        print(current_user.roles)
 
     @abstractmethod
     def create(self, obj: Model):

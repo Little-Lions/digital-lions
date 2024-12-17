@@ -3,10 +3,13 @@
 from collections.abc import Callable
 from typing import Annotated
 
-from core.auth import BearerTokenHandler
+from core.auth import BearerTokenDependency
 from core.database.session import SessionDependency
+from core.settings import SettingsDependency
 from fastapi import Depends, Request
 from services import ChildService, CommunityService, TeamService, UserService
+
+from app.core.auth import BearerTokenDependency
 
 
 class ServiceProvider:
@@ -30,13 +33,13 @@ class ServiceProvider:
         self,
         request: Request,
         session: SessionDependency,
-        current_user: Annotated[
-            BearerTokenHandler,
-            Depends(BearerTokenHandler()),
-        ],
+        settings: SettingsDependency,
+        current_user: BearerTokenDependency,
     ):
         """Callable required for dependency injection."""
-        return self.service(session=session, current_user=current_user)
+        return self.service(
+            session=session, settings=settings, current_user=current_user
+        )
 
 
 ChildServiceDependency = Annotated[

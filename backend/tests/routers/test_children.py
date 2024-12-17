@@ -8,6 +8,9 @@ def test_get_child_not_found(client):
     # assert that a 404 is raised when child is not found
     non_existing_id = 0
     response = client.get(f"{ENDPOINT}/{non_existing_id}")
+    # import pdb
+    #
+    # pdb.set_trace()
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text
 
 

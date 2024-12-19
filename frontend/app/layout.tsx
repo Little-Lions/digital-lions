@@ -28,7 +28,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <html lang="en" className={poppins.className}>
       <head>
+        <title>Digital Lions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" href="/icon.ico" />
+        <meta
+          name="description"
+          content="Private web application of Little Lions Child Coaching"
+        />
       </head>
       <body className="flex flex-col min-h-screen bg-background text-background-text">
         <UserProvider>

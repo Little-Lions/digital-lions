@@ -1,5 +1,6 @@
 from enum import Enum
 
+from core import exceptions
 from core.database.schema import Community, Role, Team
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
@@ -114,6 +115,7 @@ class CurrentUser:
         settings: SettingsDependency,
     ):
         """Initialize the user context with a decoded token."""
+        self.settings = settings
         self._user_id = user_id
         self._permissions = permissions
         self._role_repository = RoleRepository(session=session)
@@ -137,12 +139,20 @@ class CurrentUser:
         return self._permissions
 
     def has_permission(self, permission: Permission):
-        """Verify user has permission (in general,
+        """Check if user has permission (in general,
         no resource filtering yet)."""
         for role in self.roles:
             if role.has_permission(permission):
                 return True
         return False
+
+    def verify_permission(self, permission: Permission):
+        """Verify that a user has a permissio. If not
+        an error is raised."""
+        if self.settings.FEATURE_VERIFY_PERMISSIONS:
+            if not self.has_permission(permission):
+                msg = f"User {self.user_id} does not have required permission {permission.value}"
+                raise exceptions.InsufficientPermissionsError(msg)
 
     def has_permission_on_resource(
         self, permission: Permission, resource: Community | Team

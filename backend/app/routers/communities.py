@@ -1,8 +1,6 @@
 from typing import Annotated
 
 from core import exceptions
-from core.context import Permission as Scopes
-from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import community as models
 from models.generic import Message, RecordCreated
@@ -25,14 +23,7 @@ router = APIRouter(prefix="/communities")
 )
 async def get_community(
     community_id: int,
-    service: Annotated[
-        CommunityService,
-        Depends(
-            ServiceProvider(
-                service=CommunityService, required_scopes=[Scopes.communities_read]
-            )
-        ),
-    ],
+    service: Annotated[CommunityService, Depends(CommunityService)],
 ):
     """
     Get a community by ID.
@@ -45,6 +36,8 @@ async def get_community(
         return service.get(community_id)
     except exceptions.CommunityNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -54,14 +47,7 @@ async def get_community(
     response_model=list[models.CommunityGetOut] | None,
 )
 async def get_communities(
-    service: Annotated[
-        CommunityService,
-        Depends(
-            ServiceProvider(
-                service=CommunityService, required_scopes=[Scopes.communities_read]
-            )
-        ),
-    ],
+    service: Annotated[CommunityService, Depends(CommunityService)],
 ):
     """
     List all communities that a user has access to.
@@ -70,7 +56,10 @@ async def get_communities(
     - `communities:read`
 
     """
-    return service.get_all()
+    try:
+        return service.get_all()
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.post(
@@ -87,14 +76,7 @@ async def get_communities(
 )
 async def post_community(
     community: models.CommunityPostIn,
-    service: Annotated[
-        CommunityService,
-        Depends(
-            ServiceProvider(
-                service=CommunityService, required_scopes=[Scopes.communities_write]
-            )
-        ),
-    ],
+    service: Annotated[CommunityService, Depends(CommunityService)],
 ):
     """
     Add a community.
@@ -107,6 +89,8 @@ async def post_community(
         return service.create(community)
     except exceptions.CommunityAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.patch(
@@ -124,14 +108,7 @@ async def post_community(
 async def update_community(
     community_id: int,
     community: models.CommunityPatchIn,
-    service: Annotated[
-        CommunityService,
-        Depends(
-            ServiceProvider(
-                service=CommunityService, required_scopes=[Scopes.communities_write]
-            )
-        ),
-    ],
+    service: Annotated[CommunityService, Depends(CommunityService)],
 ):
     """
     Update a community.
@@ -144,6 +121,8 @@ async def update_community(
         return service.update(community_id, community)
     except exceptions.CommunityNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 # TODO: add option to archive workshops and attendances
@@ -165,14 +144,7 @@ async def update_community(
 )
 async def delete_community(
     community_id: int,
-    service: Annotated[
-        CommunityService,
-        Depends(
-            ServiceProvider(
-                service=CommunityService, required_scopes=[Scopes.communities_write]
-            )
-        ),
-    ],
+    service: Annotated[CommunityService, Depends(CommunityService)],
     cascade: bool = False,
 ):
     """
@@ -194,3 +166,5 @@ async def delete_community(
             status_code=status.HTTP_409_CONFLICT,
             detail=str(exc),
         )
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

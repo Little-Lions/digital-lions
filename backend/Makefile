@@ -28,7 +28,7 @@ testpdb:
 	env -i $(POETRY) run python -m pytest -vvv --pdb
 
 lint: format
-	poetry run ruff check app
+	poetry run ruff check app tests
 
 format:
 	poetry run isort app tests

@@ -1,3 +1,5 @@
+import pdb
+
 import pytest
 from fastapi import status
 
@@ -8,9 +10,6 @@ def test_get_child_not_found(client):
     # assert that a 404 is raised when child is not found
     non_existing_id = 0
     response = client.get(f"{ENDPOINT}/{non_existing_id}")
-    # import pdb
-    #
-    # pdb.set_trace()
     assert response.status_code == status.HTTP_404_NOT_FOUND, response.text
 
 
@@ -40,6 +39,7 @@ def client_with_community_and_team(client):
 def test_post_child_success(client):
     # test successfull creation of a child
     child_name = "Firstname"
+    # team id should not be hardcoded
     data = {"first_name": child_name, "last_name": "Lastname", "team_id": 1}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED, response.text

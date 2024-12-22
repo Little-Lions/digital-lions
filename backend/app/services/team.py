@@ -29,6 +29,8 @@ class TeamService(BaseService):
     def create(self, team: TeamPostIn):
         """Create a new team."""
 
+        self.current_user.verify_permission(self.permissions.teams_write)
+
         self._validate_team_unique(team)
 
         try:
@@ -67,6 +69,8 @@ class TeamService(BaseService):
         Returns:
             dict: Workshop object created.
         """
+        self.current_user.verify_permission(self.permissions.workshops_write)
+
         self._validate_team_exists(team_id)
 
         # validate that workshop does not exist yet for the team
@@ -78,7 +82,7 @@ class TeamService(BaseService):
         ):
             error_msg = (
                 f"Workshop {workshop.workshop_number} for team "
-                "{team_id} already exists."
+                f"{team_id} already exists."
             )
             logger.error(error_msg)
             raise exceptions.WorkshopExistsError(error_msg)
@@ -170,6 +174,7 @@ class TeamService(BaseService):
         Returns:
             list: List of teams.
         """
+        self.current_user.verify_permission(self.permissions.teams_read)
 
         filters = []
         if community_id:
@@ -216,16 +221,8 @@ class TeamService(BaseService):
         Args:
             object_id (int): Team ID to get Team for.
         """
+        self.current_user.verify_permission(self.permissions.teams_read)
         team = self._validate_team_exists(object_id)
-        from core.context import Permission
-
-        permission = Permission.teams_read
-        if not self.current_user.has_permission_on_resource(
-            permission=permission, resource=team
-        ):
-            msg = f"User {self.current_user.user_id} does not have permission to view team {team.id}"
-            logger.debug(msg)
-            raise exceptions.InsufficientPermissionsError(msg)
 
         teams_progresses = self.database.workshops.get_last_workshop_per_team(
             team_ids=[team.id]
@@ -241,6 +238,7 @@ class TeamService(BaseService):
         )
 
     def update(self, object_id: int, obj):
+        self.current_user.verify_permission(self.permissions.teams_write)
         return self.database.teams.update(object_id=object_id, obj=obj)
 
     def delete(self, object_id: int, cascade: bool = False):
@@ -252,6 +250,7 @@ class TeamService(BaseService):
             cascade (bool, optional): Delete children and attendances if
                 present. Defaults to False.
         """
+        self.current_user.verify_permission(self.permissions.teams_write)
         self._validate_team_exists(object_id)
 
         deleted_children = False
@@ -278,6 +277,8 @@ class TeamService(BaseService):
 
     def get_workshops(self, team_id: int) -> list | None:
         """Get all workshops for a team."""
+
+        self.current_user.verify_permission(self.permissions.workshops_read)
         self._validate_team_exists(team_id)
 
         workshops = self.database.workshops.where([("team_id", team_id)])
@@ -309,6 +310,8 @@ class TeamService(BaseService):
             team_id (int): Team ID to get workshop for.
             workshop_number (int): Workshop number to get.
         """
+        self.current_user.verify_permission(self.permissions.workshops_read)
+
         self._validate_team_exists(team_id)
 
         workshop = self.database.workshops.where(

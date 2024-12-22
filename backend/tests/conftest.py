@@ -1,22 +1,16 @@
 import pytest
+from core.auth import BearerTokenHandlerInst
 from core.database.session import get_session
 from core.settings import Settings, get_settings
 from fastapi.testclient import TestClient
 from main import app
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
-from core.auth import BearerTokenHandler, BearerTokenHandlerInst
-from core.context import CurrentUser
-
-
-from core.dependencies import ServiceProvider
-from services.team import TeamService
-from services.child import ChildService
-from core.context import Permission as Scopes
 
 DefaultTestSettings = Settings(
     POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digitallions",
-    FEATURE_AUTH0=True,
+    FEATURE_AUTH0=False,
+    FEATURE_VERIFY_PERMISSIONS=False,
     AUTH0_SERVER="digitallions.eu.auth0.com",
     AUTH0_AUDIENCE="https://digitallions.eu.auth0.com/api/v2/",
     AUTH0_CLIENT_ID="mock-client-id",
@@ -44,13 +38,12 @@ def session_fixture():
 @pytest.fixture
 def client(mocker, session):
     """Create a FastAPI test client."""
-    mock_user = mocker.MagicMock(userid="something")
-    # app.dependency_overrides[dep] = mock_user
+
+    # TODO move this mock user to context for test
+    mock_user = mocker.MagicMock(user_id="something")
     app.dependency_overrides[get_settings] = lambda: DefaultTestSettings
-    # current_user_mock = AsyncMock(spec=current_user)
-    app.dependency_overrides[BearerTokenHandlerInst] = CurrentUser
+    app.dependency_overrides[BearerTokenHandlerInst] = lambda: mock_user
     app.dependency_overrides[get_session] = lambda: session
-    # app.dependency_overrides[ChildService] = ChildService
 
     client = TestClient(app)
     yield client

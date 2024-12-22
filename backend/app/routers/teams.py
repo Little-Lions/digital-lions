@@ -2,8 +2,6 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.context import Permission as Scopes
-from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
@@ -36,9 +34,7 @@ router = APIRouter(prefix="/teams")
 async def post_team(
     team_service: Annotated[
         TeamService,
-        Depends(
-            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_write])
-        ),
+        Depends(TeamService),
     ],
     team: models.TeamPostIn,
 ):
@@ -55,6 +51,8 @@ async def post_team(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except exceptions.TeamAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPexception(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -65,12 +63,7 @@ async def post_team(
     responses=with_default_responses(),
 )
 async def get_teams(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_read])
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     community_id: int = None,
     status: models.TeamStatus = models.TeamStatus.active,
 ):
@@ -81,7 +74,10 @@ async def get_teams(
     - `teams:read`
 
     """
-    return team_service.get_all(community_id=community_id, status=status)
+    try:
+        return team_service.get_all(community_id=community_id, status=status)
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -99,12 +95,7 @@ async def get_teams(
     ),
 )
 async def get_team(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_read])
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
 ):
     """
@@ -144,12 +135,7 @@ async def get_team(
     ),
 )
 async def delete_team(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(service=TeamService, required_scopes=[Scopes.teams_write])
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
     cascade: bool = False,
 ):
@@ -172,3 +158,5 @@ async def delete_team(
         )
     except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

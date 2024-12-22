@@ -1,7 +1,8 @@
+from app.services.community import CommunityService
+from typing import Annotated
 from datetime import UTC, datetime
 
-from core.dependencies import CommunityServiceDependency
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/health")
@@ -13,7 +14,9 @@ router = APIRouter(prefix="/health")
     summary="Health check",
     status_code=200,
 )
-async def get_health(community_service: CommunityServiceDependency):
+async def get_health(
+    community_service: Annotated[CommunityService, Depends(CommunityService)]
+):
     """Health endpoint to ping database."""
     try:
         # TODO use db.ping() to check for connection instead of relying on service

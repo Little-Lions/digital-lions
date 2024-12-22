@@ -1,16 +1,12 @@
 from typing import Annotated
 
 from core import exceptions
-from core.context import Permission as Scopes
-from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import child as models
 from models.generic import Message, RecordCreated
 from services import ChildService
 
 router = APIRouter(prefix="/children")
-
-# ChildServiceDef = ServiceProvider(service=ChildService)
 
 
 @router.get(
@@ -38,6 +34,8 @@ async def get_child(
         return child_service.get(child_id)
     except exceptions.ChildNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -47,14 +45,7 @@ async def get_child(
     status_code=status.HTTP_200_OK,
 )
 async def get_children(
-    child_service: Annotated[
-        ChildService,
-        Depends(
-            ServiceProvider(
-                service=ChildService, required_scopes=[Scopes.children_read]
-            )
-        ),
-    ],
+    child_service: Annotated[ChildService, Depends(ChildService)],
     community_id: int = None,
 ):
     """
@@ -64,9 +55,12 @@ async def get_children(
     - `children:read`
 
     """
-    if community_id:
-        raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
-    return child_service.get_all()
+    try:
+        if community_id:
+            raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
+        return child_service.get_all()
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.post(
@@ -76,10 +70,7 @@ async def get_children(
     response_model=RecordCreated,
 )
 async def add_child(
-    child_service: Annotated[
-        ChildService,
-        Depends(ServiceProvider(service=ChildService)),
-    ],
+    child_service: Annotated[ChildService, Depends(ChildService)],
     child: models.ChildPostIn,
 ):
     """
@@ -95,6 +86,8 @@ async def add_child(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
     except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.patch(
@@ -104,14 +97,7 @@ async def add_child(
     status_code=status.HTTP_200_OK,
 )
 async def update_child(
-    child_service: Annotated[
-        ChildService,
-        Depends(
-            ServiceProvider(
-                service=ChildService, required_scopes=[Scopes.children_write]
-            )
-        ),
-    ],
+    child_service: Annotated[ChildService, Depends(ChildService)],
     child_id: int,
     child: models.ChildPatchIn,
 ):
@@ -126,6 +112,8 @@ async def update_child(
         return child_service.update(object_id=child_id, obj=child)
     except exceptions.ChildNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.delete(
@@ -135,14 +123,7 @@ async def update_child(
 )
 async def delete_child(
     child_id: int,
-    child_service: Annotated[
-        ChildService,
-        Depends(
-            ServiceProvider(
-                service=ChildService, required_scopes=[Scopes.children_write]
-            )
-        ),
-    ],
+    child_service: Annotated[ChildService, Depends(ChildService)],
     cascade: bool = False,
 ):
     """
@@ -163,3 +144,5 @@ async def delete_child(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         )
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

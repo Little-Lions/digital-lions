@@ -3,8 +3,6 @@ from typing import Annotated
 
 from core import exceptions
 from core.auth import BearerTokenHandler
-from core.context import Permission as Scopes
-from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import user as models
 from models.generic import Message
@@ -42,14 +40,7 @@ async def get_me(
     summary="List all users",
     responses=with_default_responses(),
 )
-async def get_users(
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_read])
-        ),
-    ],
-):
+async def get_users(user_service: Annotated[UserService, Depends(UserService)]):
     """
     Get a list of all users.
 
@@ -57,7 +48,10 @@ async def get_users(
     - `users:read`
 
     """
-    return user_service.get_all()
+    try:
+        return user_service.get_all()
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -77,12 +71,7 @@ async def get_users(
 )
 async def get_user_by_id(
     user_id: str,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_read])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     Get a user by ID.
@@ -95,6 +84,8 @@ async def get_user_by_id(
         return user_service.get(user_id=user_id)
     except exceptions.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.post(
@@ -118,12 +109,7 @@ async def get_user_by_id(
 )
 async def create_user(
     user: models.UserPostIn,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     Invite a new user to the platform. This will trigger creation
@@ -138,6 +124,8 @@ async def create_user(
         return user_service.create(user)
     except exceptions.UserEmailExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.post(
@@ -156,12 +144,7 @@ async def create_user(
     ),
 )
 async def resend_invite(
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
     user_id: str = None,
 ):
     """
@@ -196,12 +179,7 @@ async def resend_invite(
 )
 async def delete_user(
     user_id: str,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     Delete a user by ID.
@@ -238,12 +216,7 @@ async def delete_user(
 async def add_role_to_user(
     user_id: str,
     role: models.UserRolePostIn,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     Digital Lions has the following hiearchicy between entities:
@@ -283,6 +256,8 @@ async def add_role_to_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except exceptions.RoleAlreadyExistsError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -302,12 +277,7 @@ async def add_role_to_user(
 )
 async def get_roles_of_user(
     user_id: str,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     List all scoped roles of an existing user.
@@ -345,12 +315,7 @@ async def get_roles_of_user(
 async def remove_role_from_user(
     user_id: str,
     role_id: int,
-    user_service: Annotated[
-        UserService,
-        Depends(
-            ServiceProvider(service=UserService, required_scopes=[Scopes.users_write])
-        ),
-    ],
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     Remove a scoped role from an existing user. The `role_id` corresponds to the
@@ -364,3 +329,5 @@ async def remove_role_from_user(
         return user_service.delete_role(user_id=user_id, role_id=role_id)
     except (exceptions.UserNotFoundError, exceptions.RoleNotFoundForUserError) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

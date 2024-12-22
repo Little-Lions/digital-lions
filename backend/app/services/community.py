@@ -17,6 +17,8 @@ class CommunityService(BaseService):
         Args:
             obj (CommunityPostIn): Community object to create.
         """
+        self.current_user.verify_permission(self.permissions.communities_write)
+
         if self.database.communities.where([("name", obj.name)]):
             raise exceptions.CommunityAlreadyExistsError(
                 f"Community with name {obj.name} already exists."
@@ -28,15 +30,21 @@ class CommunityService(BaseService):
 
     def get_all(self):
         """Get all objects from the table."""
+        self.current_user.verify_permission(self.permissions.communities_read)
+
         return self.database.communities.read_all()
 
     def get(self, object_id):
         """Get an object from the table by id."""
+        self.current_user.verify_permission(self.permissions.communities_read)
+
         self._validate_community_exists(object_id)
         community = self.database.communities.read(object_id=object_id)
         return community
 
     def update(self, object_id: int, obj):
+        self.current_user.verify_permission(self.permissions.communities_write)
+
         self._validate_community_exists(object_id)
         updated_community = self.database.communities.update(
             object_id=object_id, obj=obj
@@ -46,6 +54,9 @@ class CommunityService(BaseService):
 
     def delete(self, object_id: int, cascade: bool = False):
         """Delete an object from the table by id."""
+
+        self.current_user.verify_permission(self.permissions.communities_write)
+
         self._validate_community_exists(object_id)
 
         if self.database.teams.where([("community_id", object_id)]):

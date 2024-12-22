@@ -25,6 +25,7 @@ class ChildService(BaseService):
             TeamNotFoundError: If team doesn't exist
             ChildAlreadyExistsError: If name exists in team
         """
+        self.current_user.verify_permission(self.permissions.children_write)
         self._validate_team_exists(child.team_id)
         self._validate_child_unique(child)
 
@@ -68,6 +69,7 @@ class ChildService(BaseService):
             ChildNotFoundError: If child not found
             ChildHasAttendanceError: If has attendance and cascade=False
         """
+        self.current_user.verify_permission(self.permissions.children_write)
 
         # check if child has attendance records
         if self.database.attendances.where([("child_id", object_id)]):
@@ -95,6 +97,8 @@ class ChildService(BaseService):
         Returns:
             list[Child]: All child records
         """
+        self.current_user.verify_permission(self.permissions.children_read)
+
         return self.database.children.read_all()
 
     def get(self, object_id):
@@ -106,6 +110,8 @@ class ChildService(BaseService):
         Raises:
             ChildNotFoundError: If child not found
         """
+        self.current_user.verify_permission(self.permissions.children_read)
+
         try:
             return self.database.children.read(object_id=object_id)
         except exceptions.ItemNotFoundError:
@@ -121,6 +127,8 @@ class ChildService(BaseService):
         Raises:
             ChildNotFoundError: If child not found
         """
+        self.current_user.verify_permission(self.permissions.children_read)
+
         child = self.database.children.update(object_id=object_id, obj=obj)
         self.commit()
         logger.info(f"Updated child with ID {object_id}: {obj}")

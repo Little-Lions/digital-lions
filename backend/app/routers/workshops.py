@@ -2,8 +2,6 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.context import Permission as Scopes
-from core.dependencies import ServiceProvider
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
@@ -23,14 +21,7 @@ router = APIRouter(prefix="/teams")
     responses=with_default_responses(),
 )
 async def get_workshops(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(
-                service=TeamService, required_scopes=[Scopes.workshops_read]
-            )
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
 ):
     """
@@ -44,6 +35,8 @@ async def get_workshops(
         return team_service.get_workshops(team_id)
     except exceptions.TeamNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -60,14 +53,7 @@ async def get_workshops(
     ),
 )
 async def get_workshop_by_number(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(
-                service=TeamService, required_scopes=[Scopes.workshops_read]
-            )
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
     workshop_number: int,
 ):
@@ -86,6 +72,8 @@ async def get_workshop_by_number(
         exceptions.WorkshopNotFoundError,
     ) as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.post(
@@ -106,14 +94,7 @@ async def get_workshop_by_number(
     ),
 )
 async def post_workshop(
-    team_service: Annotated[
-        TeamService,
-        Depends(
-            ServiceProvider(
-                service=TeamService, required_scopes=[Scopes.workshops_write]
-            )
-        ),
-    ],
+    team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
     workshop: models.TeamPostWorkshopIn,
 ):
@@ -142,3 +123,5 @@ async def post_workshop(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(exc),
         )
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

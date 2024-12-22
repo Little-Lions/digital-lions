@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # feature flags
     FEATURE_AUTH0: bool | None = True
+    FEATURE_VERIFY_PERMISSIONS: bool | None = True
 
     # Auth0
     AUTH0_SERVER: str

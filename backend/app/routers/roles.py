@@ -1,15 +1,12 @@
 import logging
+from typing import Annotated
 
 from core.auth import BearerTokenHandler
 from core.context import Permission as Scopes
-from core.dependencies import (
-    CommunityServiceDependency,
-    TeamServiceDependency,
-    UserServiceDependency,
-)
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import role as models
 from routers._responses import with_default_responses
+from services import UserService, CommunityService, TeamService
 
 logger = logging.getLogger()
 
@@ -74,12 +71,9 @@ async def list_levels(
 async def list_resources(
     role: models.Role,
     level: models.Level,
-    user_service: UserServiceDependency,
-    community_service: CommunityServiceDependency,
-    team_service: TeamServiceDependency,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.users_read])
-    ),
+    user_service: Annotated[UserService, Depends(UserService)],
+    community_service: Annotated[CommunityService, Depends(CommunityService)],
+    team_service: Annotated[TeamService, Depends(TeamService)],
 ):
     """
     List the available resources for a given scoped role, i.e. all resources

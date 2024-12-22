@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Annotated, TypeVar
 
 from core.auth import BearerTokenHandlerInst
+from core.context import Permission
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import SettingsDependency
@@ -33,6 +34,8 @@ class BaseService(ABC):
     and will automatically gain access to all repositories and shared functionality.
 
     """
+
+    permissions = Permission
 
     def __init__(
         self,

@@ -99,7 +99,7 @@ const Navigation: React.FC = () => {
               <>
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/program-tracker">Program tracker</NavLink>
-                <NavLink href="/communities">Communities / teams</NavLink>
+                <NavLink href="/communities">Communities</NavLink>
                 <NavLink href="/users">Users</NavLink>
                 <CustomButton
                   label="Logout"
@@ -152,7 +152,7 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Menu Links (Full-Screen Overlay) */}
         {isOpen && (
-          <div className="md:hidden z-10 bg-gray-800 rounded-b-lg w-full flex left-0 flex-col absolute mt-4">
+          <div className="md:hidden z-10 bg-gray-800 rounded-b-lg w-full flex flex-col items-start mt-4">
             {/* Conditionally render mobile menu links if the user is authenticated */}
             {user && (
               <>
@@ -175,7 +175,7 @@ const Navigation: React.FC = () => {
                   onClick={toggleMenu}
                   className="text-white text-2xl py-4"
                 >
-                  Communities / teams
+                  Communities
                 </NavLink>
                 <NavLink
                   href="/users"
@@ -188,7 +188,7 @@ const Navigation: React.FC = () => {
                   label="Logout"
                   onClick={handleLogout}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600 rounded-b-md rounded-t-none"
+                  className="text-white bg-gray-700 hover:bg-gray-600 rounded-md"
                   isBusy={isLoggingOut}
                 />
               </>

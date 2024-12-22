@@ -2,6 +2,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import CustomButton from './CustomButton'
 
+// import { useTransitions } from '@/hooks/UseTransitions'
 interface NavigationButtonProps {
   className?: string
   closeMenu?: () => void
@@ -28,16 +29,25 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
   variant = 'outline',
   isFullWidth = false,
 }) => {
+  // const { slideRight, slideIntoViewport } = useTransitions()
+
   const router = useRouter()
   const [isBusy, setIsBusy] = useState(false)
 
-  const handleClick = async (): Promise<void> => {
+  const handleClick = async (
+    event: React.MouseEvent<HTMLDivElement>,
+  ): Promise<void> => {
     if (closeMenu) {
       closeMenu()
     }
 
     try {
       if (useBackNavigation) {
+        event.preventDefault()
+
+        // await slideRight()
+        // slideIntoViewport()
+
         router.back()
       } else {
         setIsBusy(true)
@@ -57,7 +67,13 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
       label={useBackNavigation ? '← Back' : label}
       variant={useBackNavigation ? 'outline' : variant}
       className={className}
-      onClick={handleClick}
+      onClick={() =>
+        handleClick(
+          new MouseEvent(
+            'click',
+          ) as unknown as React.MouseEvent<HTMLDivElement>,
+        )
+      }
       isFullWidth={isFullWidth}
       isBusy={isBusy}
     />

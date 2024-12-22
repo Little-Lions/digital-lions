@@ -29,6 +29,7 @@ import { User } from '@/types/user.interface'
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
+import AlertBanner from '@/components/AlertBanner'
 
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
@@ -53,6 +54,8 @@ const UsersPage: React.FC = () => {
   const [isAddingUserComplete, setIsAddingUserComplete] = useState(false)
   const [isDeletingUserComplete, setIsDeletingUserComplete] = useState(false)
   // const [isEditingUserComplete, setIsEditingUserComplete] = useState(false);
+
+  const [addUserError, setAddUserError] = useState<string | null>(null)
 
   const [nickName, setNickName] = useState<string>('')
   const [emailAddress, setEmailAddress] = useState<string>('')
@@ -234,8 +237,10 @@ const UsersPage: React.FC = () => {
 
       await fetchUsers()
       setIsAddingUserComplete(true)
-    } catch (error) {
-      console.error('Failed to add user:', error)
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'An unexpected error occurred'
+      setAddUserError(errorMessage)
     } finally {
       setIsAddingUser(false)
     }
@@ -490,6 +495,7 @@ const UsersPage: React.FC = () => {
                     </option>
                   ))}
               </SelectInput>
+              {addUserError && <AlertBanner variant="error" message="" />}
             </Modal>
           )}
 

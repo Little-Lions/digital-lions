@@ -12,6 +12,30 @@ const config: Config = {
       sans: ['Work Sans', 'sans-serif'],
     },
     extend: {
+      animation: {
+        'slide-left-out': '0.4s ease-in forwards slide-left-out',
+        'slide-left-in': '0.4s ease-out slide-left-in',
+        'slide-right-out': '0.4s ease-in forwards slide-right-out',
+        'slide-right-in': '0.4s ease-out slide-right-in',
+      },
+      keyframes: {
+        'slide-left-out': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-100%)' },
+        },
+        'slide-left-in': {
+          from: { transform: 'translateX(100%)' },
+          to: { transform: 'translateX(0)' },
+        },
+        'slide-right-out': {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(100%)' },
+        },
+        'slide-right-in': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(0)' },
+        },
+      },
       spacing: {
         'page-x': '2rem',
         'page-y': '4rem',

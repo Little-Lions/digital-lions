@@ -1,7 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+
+import { useCommunity } from '@/context/CommunityContext'
+
 import getCommunities from '@/api/services/communities/getCommunities'
+
 import LinkCard from '@/components/LinkCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Badge from '@/components/Badge'
@@ -14,6 +18,8 @@ interface Community {
 const ProgramTrackerCommunityPage: React.FC = () => {
   const [communities, setCommunities] = useState<Community[]>([])
   const [isLoading, setIsLoading] = useState(false)
+
+  const { setCommunityName } = useCommunity()
 
   const fetchCommunities = async (): Promise<void> => {
     setIsLoading(true)
@@ -48,7 +54,7 @@ const ProgramTrackerCommunityPage: React.FC = () => {
               key={community.id}
               title={community.name}
               href={`/program-tracker/${community.id}/teams`}
-              state={{ communityName: community.name }}
+              onClick={() => setCommunityName(community.name)}
               className="mb-2"
             >
               <div className="flex flex-col gap-2">

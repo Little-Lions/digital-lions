@@ -54,6 +54,7 @@ async def get_workshops(
 )
 async def get_workshop_by_number(
     team_service: Annotated[TeamService, Depends(TeamService)],
+<<<<<<< HEAD
     team_id: int,
     workshop_number: int,
 ):
@@ -81,6 +82,30 @@ async def get_workshop_by_number(
     status_code=status.HTTP_201_CREATED,
     summary="Add workshop to team",
     response_model=RecordCreated,
+=======
+    async def get_workshop_by_number(
+        team_service: Annotated[TeamService, Depends(TeamService)],
+        team_id: int,
+        workshop_number: int,
+    ):
+        """
+        Get one of the workshops completed by the team, by number
+        of the workshop (i.e. number 1 to 12 for the default program).
+    
+        **Required scopes**
+        - `workshops:read`
+    
+        """
+        try:
+            return team_service.get_workshop_by_number(team_id, workshop_number)
+        except (
+            exceptions.TeamNotFoundError,
+            exceptions.WorkshopNotFoundError,
+        ) as exc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        except exceptions.InsufficientPermissionsError as exc:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+>>>>>>> Snippet
     responses=with_default_responses(
         {
             400: {
@@ -93,6 +118,40 @@ async def get_workshop_by_number(
         }
     ),
 )
+async def post_workshop(
+    team_service: Annotated[TeamService, Depends(TeamService)],
+    team_id: int,
+    workshop: models.TeamPostWorkshopIn,
+):
+    """
+    Add a workshop to a team.
+<<<<<<< HEAD
+
+    **Required scopes**
+    - `workshops:write`
+
+    """
+    try:
+        return team_service.create_workshop(team_id, workshop)
+    except exceptions.TeamNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    except exceptions.WorkshopExistsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )
+    except (
+        exceptions.ChildNotInTeam,
+        exceptions.WorkshopIncompleteAttendance,
+        exceptions.WorkshopNumberInvalidError,
+    ) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+=======
 async def post_workshop(
     team_service: Annotated[TeamService, Depends(TeamService)],
     team_id: int,
@@ -125,3 +184,4 @@ async def post_workshop(
         )
     except exceptions.InsufficientPermissionsError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+>>>>>>> Snippet

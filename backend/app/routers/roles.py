@@ -1,22 +1,15 @@
 import logging
 from typing import Annotated
 
-from core.auth import BearerTokenHandler
-from core.context import Permission as Scopes
+from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import role as models
 from routers._responses import with_default_responses
-from services import UserService, CommunityService, TeamService
+from services import CommunityService, TeamService, UserService
 
 logger = logging.getLogger()
 
 router = APIRouter(prefix="/roles")
-
-# TODO: this entire modules requires a service (e.g. PermissionService) and proper Python
-SCOPES = {
-    models.Role.admin: [models.Level.implementing_partner],
-    models.Role.coach: [models.Level.community, models.Level.team],
-}
 
 
 @router.get(
@@ -28,14 +21,15 @@ SCOPES = {
     responses=with_default_responses(),
 )
 async def list_roles(
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.roles_read])
-    ),
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     List the roles that can be assigned to a user.
     """
-    return [e.value for e in models.Role]
+    try:
+        return user_service.get_platform_roles()
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -48,16 +42,17 @@ async def list_roles(
 )
 async def list_levels(
     role: models.Role,
-    current_user: BearerTokenHandler = Depends(
-        BearerTokenHandler(required_scopes=[Scopes.roles_read])
-    ),
+    user_service: Annotated[UserService, Depends(UserService)],
 ):
     """
     List the levels at which a role can be assigned. The available roles
     can be found at `/roles`.
 
     """
-    return SCOPES.get(role)
+    try:
+        return user_service.get_role_levels(role)
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(
@@ -87,7 +82,7 @@ async def list_resources(
     - `teams:read`
 
     """
-    if level not in SCOPES.get(role):
+    if level not in user_service.get_role_levels(role=role):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Role and level combination not supported.",

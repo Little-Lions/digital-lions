@@ -7,8 +7,7 @@ from core.context import Permission
 from core.database.session import SessionDependency
 from core.email import EmailService
 from core.settings import SettingsDependency
-from fastapi import Depends, Request
-from models.user import CurrentUser
+from fastapi import Depends
 from repositories.database import DatabaseRepositories
 from sqlmodel import SQLModel
 

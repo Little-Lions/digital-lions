@@ -1,11 +1,13 @@
 import logging
 import uuid
+from typing import Annotated
 
+import models
 from core import exceptions
+from core.auth import BearerTokenHandlerInst
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
-from models import generic
-from models import user as models
+from fastapi import Depends
 from repositories.auth0 import Auth0Repository
 from services._base import BaseService
 
@@ -21,14 +23,23 @@ class UserService(BaseService):
     """
 
     AUTH0_USER_CONNECTION = "Username-Password-Authentication"
+    SCOPES = {
+        models.role.Role.admin: [models.role.Level.implementing_partner],
+        models.role.Role.coach: [models.role.Level.community, models.role.Level.team],
+    }
 
     def __init__(
-        self, session: SessionDependency, settings: SettingsDependency, current_user
+        self,
+        session: SessionDependency,
+        settings: SettingsDependency,
+        current_user: Annotated[
+            BearerTokenHandlerInst, Depends(BearerTokenHandlerInst)
+        ],
     ) -> None:
         super().__init__(session=session, settings=settings, current_user=current_user)
         self.auth0 = Auth0Repository(settings=self.settings)
 
-    def create(self, obj: models.UserPostIn) -> str:
+    def create(self, obj: models.user.UserPostIn) -> str:
         """Invite new user to the system, by first creating,
         and then triggering a password reset.
 
@@ -60,14 +71,14 @@ class UserService(BaseService):
 
         self.commit()
         msg = self._send_invite_by_email(obj.email)
-        return models.UserPostOut(user_id=user_id, message=msg)
+        return models.user.UserPostOut(user_id=user_id, message=msg)
 
-    def get_all(self) -> list[models.UserGetOut] | None:
+    def get_all(self) -> list[models.user.UserGetOut] | None:
         """Get all users from the table."""
         users = self.auth0.list_users()["users"]
-        return [models.UserGetOut(**u) for u in users]
+        return [models.user.UserGetOut(**u) for u in users]
 
-    def get(self, user_id: str = None) -> models.UserGetOut | None:
+    def get(self, user_id: str = None) -> models.user.UserGetOut | None:
         """Get a user.
 
         In Auth0 user ID is of format Auth0 | <user_id > .
@@ -83,20 +94,20 @@ class UserService(BaseService):
             logger.error(msg)
             raise exceptions.UserNotFoundError(msg)
 
-        return models.UserGetByIdOut(**user_obj)
+        return models.user.UserGetByIdOut(**user_obj)
 
     def update(self, user_id: str):
         """Update a user by ID."""
         raise NotImplementedError()
 
-    def delete(self, user_id: str) -> generic.Message:
+    def delete(self, user_id: str) -> models.generic.Message:
         """Delete a user by ID.
 
         Args:
             user_id: str: user ID, including 'Auth0|' prefix.
 
         Returns:
-            generic.Message: info message in case successfull.
+            models.generic.Message: info message in case successfull.
 
         Raises:
             UserNotFoundError: If user is not found.
@@ -119,9 +130,11 @@ class UserService(BaseService):
         self.commit()
         msg = f"User with ID {user_id} deleted."
         logger.info(msg)
-        return generic.Message(detail=msg)
+        return models.generic.Message(detail=msg)
 
-    def add_role(self, user_id: str, role: models.UserRolePostIn) -> generic.Message:
+    def add_role(
+        self, user_id: str, role: models.user.UserRolePostIn
+    ) -> models.generic.Message:
         """
         Add role to an existing user.
 
@@ -130,7 +143,7 @@ class UserService(BaseService):
             role: user.RolePostIn: Role to add to the user.
 
         Returns:
-            generic.Message
+            models.generic.Message
 
         Raises:
             ResourceNotFoundError: If resource ID is not found.
@@ -173,7 +186,7 @@ class UserService(BaseService):
         )
         logger.info(msg)
         self.commit()
-        return generic.Message(detail=msg)
+        return models.generic.Message(detail=msg)
 
     def get_roles(self, user_id: str) -> list:
         """
@@ -188,13 +201,13 @@ class UserService(BaseService):
         """
         roles = self.database.roles.where(filters=[("user_id", user_id)])
         return [
-            models.UserRoleGetOut(
+            models.user.UserRoleGetOut(
                 id=v.id, level=v.level, resource_id=v.resource_id, role=v.role
             )
             for v in roles
         ]
 
-    def delete_role(self, user_id: str, role_id: str) -> generic.Message:
+    def delete_role(self, user_id: str, role_id: str) -> models.generic.Message:
         """
         Delete a role from a user.
 
@@ -203,7 +216,7 @@ class UserService(BaseService):
             role: user.RolePostIn: Role to delete.
 
         Returns:
-            generic.Message: info message in case successfull.
+            models.generic.Message: info message in case successfull.
 
         Raises:
             UserNotFoundError: If user is not found.
@@ -241,20 +254,20 @@ class UserService(BaseService):
             f"{role.resource_id} deleted from user {user_id}"
         )
         logger.info(msg)
-        return generic.Message(detail=msg)
+        return models.generic.Message(detail=msg)
 
     def _get_auth0_roles(self, user_id: str) -> list | None:
         """Get all roles of a user in Auth0."""
         return self.auth0.get_roles(user_id=user_id)
 
     def _validate_user_has_auth0_roles(
-        self, user_id: str, role: models.UserRolePostIn
+        self, user_id: str, role: models.user.UserRolePostIn
     ) -> bool:
         """Check if user has a role in Auth0."""
         roles = self._get_auth0_roles(user_id=user_id)
         return any(r["name"] == role.role for r in roles)
 
-    def _validate_role_resource_id(self, role: models.UserRolePostIn):
+    def _validate_role_resource_id(self, role: models.user.UserRolePostIn):
         """
         Validate the resource ID of the role. That is:
         - if the role is assigned on Implementing Partner level,
@@ -273,13 +286,13 @@ class UserService(BaseService):
             ResourceNotFoundError: If resource ID is not found.
 
         """
-        if role.level == models.Level.implementing_partner:
+        if role.level == models.role.Level.implementing_partner:
             if not role.resource_id == 1:
                 raise exceptions.BadRequestError(
                     "Resource ID must be 1 for role level Implementing Partner."
                 )
             return
-        elif role.level == models.Level.community:
+        elif role.level == models.role.Level.community:
             try:
                 self.database.communities.read(role.resource_id)
                 return
@@ -287,7 +300,7 @@ class UserService(BaseService):
                 raise exceptions.ResourceNotFoundError(
                     f"Community with ID {role.resource_id} not found."
                 )
-        elif role.level == models.Level.team:
+        elif role.level == models.role.Level.team:
             try:
                 self.database.teams.read(role.resource_id)
                 return
@@ -297,16 +310,16 @@ class UserService(BaseService):
                 )
         raise exceptions.BadRequestError("Invalid role level.")
 
-    def send_invite(self, user_id: str = None) -> generic.Message:
+    def send_invite(self, user_id: str = None) -> models.generic.Message:
         """Send an invitation link to the user.
 
         Args:
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
         user = self.get(user_id=user_id)
-        return generic.Message(detail=self._send_invite_by_email(user.email))
+        return models.generic.Message(detail=self._send_invite_by_email(user.email))
 
-    def _send_invite_by_email(self, email: str) -> generic.Message:
+    def _send_invite_by_email(self, email: str) -> models.generic.Message:
         """Send an invitation link to user. This method assumes the user exists."""
         link = self.auth0.get_password_change_ticket(email=email)
         self.email_service.send_invite_link(email=email, link=link)
@@ -314,7 +327,7 @@ class UserService(BaseService):
         logger.info(msg)
         return msg
 
-    def _get_roles(self, user_id: str) -> list[models.Role] | None:
+    def _get_roles(self, user_id: str) -> list[models.role.Role] | None:
         """
         Get all roles of a user in the db.
 
@@ -322,3 +335,13 @@ class UserService(BaseService):
             user_id: str: Auth0 user ID with the 'Auth0|' prefix.
         """
         return self.database.roles.where(filters=[("user_id", user_id)])
+
+    def get_platform_roles(self) -> list[str]:
+        """Get all platform roles."""
+        self.current_user.verify_permission(self.permissions.roles_read)
+        return [r.value for r in models.role.Role]
+
+    def get_role_levels(self, role: models.role.Role) -> list[str]:
+        """Get all levels at which a role can be assigned."""
+        self.current_user.verify_permission(self.permissions.roles_read)
+        return self.SCOPES.get(role)

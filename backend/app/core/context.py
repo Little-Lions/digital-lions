@@ -58,7 +58,7 @@ class CoachRole(RoleWithPermissions):
         )
 
 
-class AdminRole(Role):
+class AdminRole(RoleWithPermissions):
     """Role with permissions for an admin."""
 
     def __init__(self, *args, **kwargs):
@@ -200,6 +200,7 @@ class CurrentUser:
     def _get_roles_with_permissions(self, user_id: str) -> list[dict]:
         """Get the roles assigned to a user."""
         records = self._role_repository.where([("user_id", self.user_id)])
+
         return [RoleFactory.get_role_with_permissions(record) for record in records]
 
     @classmethod

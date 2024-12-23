@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from core.context import CurrentUser
 from models._metadata import _UpdatePropertiesIn
 from models.role import Level, Role
 from pydantic import BaseModel, EmailStr, Field
@@ -9,7 +8,10 @@ from pydantic import BaseModel, EmailStr, Field
 class UserCurrentGetOut(BaseModel):
     """API response model for GET /users/me."""
 
-    pass
+    user_id: str
+
+    class Config:
+        extra = "ignore"  # Ignore fields not defined in the model
 
 
 class UserRolePostIn(BaseModel):

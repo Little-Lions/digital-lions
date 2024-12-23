@@ -1,9 +1,10 @@
-from app.services.community import CommunityService
-from typing import Annotated
 from datetime import UTC, datetime
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
+
+from app.services.community import CommunityService
 
 router = APIRouter(prefix="/health")
 

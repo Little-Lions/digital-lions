@@ -2,7 +2,8 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from core.auth import BearerTokenHandler
+from core.auth import BearerTokenHandlerInst
+from core.context import CurrentUser
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import user as models
 from models.generic import Message
@@ -16,14 +17,12 @@ router = APIRouter(prefix="/users")
 
 @router.get(
     "/me",
-    # response_model=models.CurrentUser,
+    response_model=models.UserCurrentGetOut,
     tags=["users"],
     status_code=status.HTTP_200_OK,
     summary="Get information about the current user",
 )
-async def get_me(
-    current_user: BearerTokenHandler = Depends(BearerTokenHandler()),
-):
+async def me(current_user: Annotated[CurrentUser, Depends(BearerTokenHandlerInst)]):
     """
     Get the current user.
 

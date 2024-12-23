@@ -29,7 +29,7 @@ services:
     build:
       context: ./backend
     environment:
-      POSTGRES_DATABASE_URL: ${POSTGRES_DATABASE_URL}
+      POSTGRES_DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       FEATURE_AUTH0: ${FEATURE_AUTH0}
       AUTH0_SERVER: ${AUTH0_SERVER}

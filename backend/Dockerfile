@@ -6,7 +6,7 @@ WORKDIR /home
 
 COPY pyproject.toml poetry.lock /home/
 
-RUN pip install poetry==$POETRY_VERSION
+RUN pip3 install poetry==$POETRY_VERSION
 RUN poetry config virtualenvs.create false \
     && poetry install --without dev --no-root --no-interaction
 

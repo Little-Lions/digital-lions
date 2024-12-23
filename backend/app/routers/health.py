@@ -3,8 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-
-from app.services.community import CommunityService
+from services.community import CommunityService
 
 router = APIRouter(prefix="/health")
 

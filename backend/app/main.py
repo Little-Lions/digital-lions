@@ -8,7 +8,16 @@ from core.database.session import init_db
 from core.settings import get_settings
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from routers import children, communities, health, roles, teams, users, workshops
+from routers import (
+    children,
+    communities,
+    health,
+    implementing_partners,
+    roles,
+    teams,
+    users,
+    workshops,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +73,10 @@ app.add_middleware(
 )
 # app.middleware("http")(catch_any_exception)
 app.include_router(health.router, tags=["health"])
+app.include_router(implementing_partners.router, tags=["implementing partners"])
 app.include_router(communities.router, tags=["communities"])
 app.include_router(teams.router, tags=["teams"])
+app.include_router(workshops.router, tags=["workshops"])
 app.include_router(children.router, tags=["children"])
 app.include_router(users.router)
 app.include_router(roles.router)
-app.include_router(workshops.router, tags=["workshops"])

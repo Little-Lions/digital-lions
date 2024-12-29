@@ -18,6 +18,7 @@ DefaultTestSettings = Settings(
     AUTH0_CONNECTION_ID="mock-connection-id",
     ALLOWED_ORIGINS="http://localhost:8000,http://digitallions.com",
     RESEND_API_KEY="test-resend-api-key",
+    RESEND_SENDER="From <your@app.com>",
 )
 
 

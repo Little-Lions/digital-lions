@@ -61,7 +61,7 @@ class Team(SQLModel, _MetadataPropertiesOut, table=True):
         return "Team"
 
 
-class ImplementingPartner(SQLModel, table=False):
+class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
     """Data model for implementing partners. An implementing partner is an organization
     that implements the Little Lions program in a community."""
 
@@ -83,10 +83,6 @@ class ImplementingPartner(SQLModel, table=False):
         return "Implementing Partner"
 
 
-# TODO: until we support multiple implementing parnters we will hardcode 1
-LittleLions = ImplementingPartner(id=1, name="Little Lions")
-
-
 class Community(SQLModel, _MetadataPropertiesOut, table=True):
     """Schema for community in database."""
 
@@ -98,10 +94,19 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="community"
     )
 
+    implementing_partner_id: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("implementing_partners.id", ondelete="CASCADE")
+        )
+    )
+    implementing_partner: "ImplementingPartner" = Relationship(
+        back_populates="communities"
+    )
+
     @property
-    def parent(self):
+    def parent(self) -> ImplementingPartner:
         """Return the parent community of the community, useful for RBAC."""
-        return LittleLions
+        return self.implementing_partner
 
     @property
     def resource_type(self):

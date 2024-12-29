@@ -24,6 +24,12 @@ class CommunityRepository(BaseRepository[schema.Community]):
     _model = schema.Community
 
 
+class ImplementingPartnerRepository(BaseRepository[schema.ImplementingPartner]):
+    """Repository to interact with Implementing Partner tables."""
+
+    _model = schema.ImplementingPartner
+
+
 class ProgramRepository(BaseRepository[schema.Program]):
     """Repository to interact with Program table."""
 

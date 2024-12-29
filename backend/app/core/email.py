@@ -22,8 +22,7 @@ class EmailService:
             self.template_dir, "reset_password.html"
         )
         self.reset_password_subject = "Digital Lions Password Reset"
-
-        self.sender = "Digital Lions <digitallions@annelohmeijer.com>"
+        self.sender = self.settings.RESEND_SENDER
 
     def send_reset_password_link(self, email: str, link: str):
         """Reset user pass."""

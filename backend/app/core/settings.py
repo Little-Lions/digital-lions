@@ -31,7 +31,8 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str
 
     # emails
-    RESEND_API_KEY: str | None = None
+    RESEND_API_KEY: str
+    RESEND_SENDER: str
 
     def model_post_init(self, __context) -> None:
         """Post init hook."""

@@ -149,4 +149,3 @@ class BearerTokenHandler(HTTPBearer):
 
 
 BearerTokenHandlerInst = BearerTokenHandler()
-BearerTokenDependency = Annotated[CurrentUser, Depends(BearerTokenHandler())]

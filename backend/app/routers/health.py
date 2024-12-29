@@ -1,9 +1,8 @@
 from datetime import UTC, datetime
-from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from core.database.session import SessionDependency
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
-from services.community import CommunityService
 
 router = APIRouter(prefix="/health")
 
@@ -15,12 +14,11 @@ router = APIRouter(prefix="/health")
     status_code=200,
 )
 async def get_health(
-    community_service: Annotated[CommunityService, Depends(CommunityService)]
+    session: SessionDependency,
 ):
     """Health endpoint to ping database."""
     try:
-        # TODO use db.ping() to check for connection instead of relying on service
-        community_service.get_all()
+        session.connection()
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={"status": "ok", "datetime": str(datetime.now(UTC))},

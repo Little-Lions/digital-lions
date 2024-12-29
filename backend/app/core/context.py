@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 
 from core import exceptions
@@ -5,6 +6,8 @@ from core.database.schema import Community, Role, Team
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
 from repositories.database import RoleRepository
+
+logger = logging.getLogger(__name__)
 
 
 class Permission(str, Enum):
@@ -141,18 +144,15 @@ class CurrentUser:
     def has_permission(self, permission: Permission):
         """Check if user has permission (in general,
         no resource filtering yet)."""
-        for role in self.roles:
-            if role.has_permission(permission):
-                return True
-        return False
+        return permission in self.permissions
 
     def verify_permission(self, permission: Permission):
-        """Verify that a user has a permissio. If not
+        """Verify that a user has a permission. If not
         an error is raised."""
-        if self.settings.FEATURE_VERIFY_PERMISSIONS:
-            if not self.has_permission(permission):
-                msg = f"User {self.user_id} does not have required permission {permission.value}"
-                raise exceptions.InsufficientPermissionsError(msg)
+        if not self.has_permission(permission):
+            msg = f"User {self.user_id} does not have required permission {permission.value}"
+            logger.info(msg)
+            raise exceptions.InsufficientPermissionsError(msg)
 
     def has_permission_on_resource(
         self, permission: Permission, resource: Community | Team

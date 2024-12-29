@@ -132,12 +132,11 @@ def client_with_community_and_team(client):
         # add children to team
         for child in children:
             client.post("/children", json={**child, "team_id": id_})
-    yield client
+    return client
 
 
 def test_add_workshop_with_attendance(client_with_team):
     # test that we can add a workshop to a team
-
     team_id = 1
     attendance = [
         {"attendance": "present", "child_id": 1},

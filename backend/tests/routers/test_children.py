@@ -1,5 +1,3 @@
-import pdb
-
 import pytest
 from fastapi import status
 
@@ -39,7 +37,6 @@ def client_with_community_and_team(client):
 def test_post_child_success(client):
     # test successfull creation of a child
     child_name = "Firstname"
-    # team id should not be hardcoded
     data = {"first_name": child_name, "last_name": "Lastname", "team_id": 1}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED, response.text

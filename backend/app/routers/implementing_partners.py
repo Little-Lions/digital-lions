@@ -1,9 +1,9 @@
 from typing import Annotated
 
 from core import exceptions
+from core.auth import BearerTokenHandler, CurrentUser
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import implementing_partner as models
-from core.auth import CurrentUser, BearerTokenHandler
 from repositories.database import ImplementingPartnerRepository
 
 router = APIRouter(prefix="/implementing_partners")

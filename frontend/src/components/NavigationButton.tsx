@@ -22,15 +22,13 @@ interface NavigationButtonProps {
 
 const NavigationButton: React.FC<NavigationButtonProps> = ({
   closeMenu,
-  useBackNavigation = true,
+  useBackNavigation = false,
   href = '/',
   className,
   label = '',
   variant = 'outline',
   isFullWidth = false,
 }) => {
-  // const { slideRight, slideIntoViewport } = useTransitions()
-
   const router = useRouter()
   const [isBusy, setIsBusy] = useState(false)
 
@@ -44,10 +42,6 @@ const NavigationButton: React.FC<NavigationButtonProps> = ({
     try {
       if (useBackNavigation) {
         event.preventDefault()
-
-        // await slideRight()
-        // slideIntoViewport()
-
         router.back()
       } else {
         setIsBusy(true)

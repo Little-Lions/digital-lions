@@ -2,17 +2,23 @@
 
 import React, { useState, useEffect } from 'react'
 
+import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
+
 import { useCommunity } from '@/context/CommunityContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 import createCommunity from '@/api/services/communities/createCommunity'
+import deleteCommunity from '@/api/services/communities/deleteCommunity'
+import updateCommunity from '@/api/services/communities/updateCommunity'
 
 import TextInput from '@/components/TextInput'
+import ButtonGroup from '@/components/ButtonGroup'
 import CustomButton from '@/components/CustomButton'
 import LinkCard from '@/components/LinkCard'
 import Modal from '@/components/Modal'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Toast from '@/components/Toast'
+import ConfirmModal from '@/components/ConfirmModal'
 
 interface Community {
   name: string
@@ -26,10 +32,21 @@ const CommunityPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
+  const [communityId, setCommunityId] = useState<number | null>(null)
+
+  const [isDeletingCommunity, setIsDeletingCommunity] = useState(false)
+  const [isEditingCommunity, setIsEditingCommunity] = useState(false)
+  const [isDeletingCommunityComplete, setIsDeletingCommunityComplete] =
+    useState(false)
+
   const [isAddingCommunity, setIsAddingCommunity] = useState(false)
   const [isAddingCommunityComplete, setIsAddingCommunityComplete] =
     useState(false)
   const [openAddCommunityModal, setOpenAddCommunityModal] = useState(false)
+  const [openEditCommunityModal, setOpenEditCommunityModal] = useState(false)
+
+  const [deleteCommunityModalVisible, setDeleteCommunityModalVisible] =
+    useState(false)
 
   const [errorMessage, setErrorMessage] = useState<string>('')
 
@@ -87,6 +104,62 @@ const CommunityPage: React.FC = () => {
     }
   }
 
+  const handleOpenDeleteCommunityModal = (CommunityId: number): void => {
+    setCommunityId(CommunityId)
+    setDeleteCommunityModalVisible(true)
+  }
+
+  const handleCloseDeleteCommunityModal = (): void => {
+    setDeleteCommunityModalVisible(false)
+  }
+
+  const handleDeleteCommunity = async (): Promise<void> => {
+    if (!communityId) return
+
+    setIsDeletingCommunity(true)
+    try {
+      await deleteCommunity(communityId, false)
+      handleCloseDeleteCommunityModal()
+
+      await fetchCommunities()
+      setIsDeletingCommunityComplete(true)
+    } catch (error) {
+      console.error('Failed to delete Community:', error)
+    } finally {
+      setIsDeletingCommunity(false)
+    }
+  }
+
+  const handleOpenEditCommunityModal = (CommunityId: number): void => {
+    setCommunityId(CommunityId)
+    setOpenEditCommunityModal(true)
+  }
+
+  const handleCloseEditCommunityModal = (): void => {
+    setOpenEditCommunityModal(false)
+  }
+
+  const handleEditCommunity = async (): Promise<void> => {
+    if (!communityName || communityName.trim() === '') return
+    if (!communityId) return
+
+    setIsEditingCommunity(true)
+    try {
+      await updateCommunity(communityId, communityName)
+      await createCommunity(communityName)
+
+      handleCloseEditCommunityModal()
+
+      await fetchCommunities()
+      setIsAddingCommunityComplete(true)
+    } catch (error) {
+      setErrorMessage(String(error))
+      console.error('Error adding community:', error)
+    } finally {
+      setIsEditingCommunity(false)
+    }
+  }
+
   return (
     <>
       {isLoading && isInitialLoad ? (
@@ -112,8 +185,27 @@ const CommunityPage: React.FC = () => {
               href={`/communities/${community.id}/teams`}
               onClick={() => setCommunityName(community.name)}
               className="mb-2"
-            />
+            >
+              {/* Edit and Delete Buttons */}
+              <ButtonGroup>
+                <CustomButton
+                  label="Edit"
+                  variant="secondary"
+                  icon={<PencilIcon />}
+                  onClick={() => {
+                    handleOpenEditCommunityModal(community.id)
+                  }}
+                />
+                <CustomButton
+                  label="Delete"
+                  variant="error"
+                  icon={<TrashIcon />}
+                  onClick={() => handleOpenDeleteCommunityModal(community.id)}
+                />
+              </ButtonGroup>
+            </LinkCard>
           ))}
+
           {openAddCommunityModal && (
             <Modal
               onClose={handleCloseCommunityModal}
@@ -142,12 +234,61 @@ const CommunityPage: React.FC = () => {
             </Modal>
           )}
 
+          {openEditCommunityModal && (
+            <Modal
+              onClose={handleCloseEditCommunityModal}
+              title="Edit Community"
+              acceptText="Edit"
+              onAccept={handleEditCommunity}
+              isBusy={isEditingCommunity}
+              isDisabledButton={!communityName}
+            >
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleEditCommunity()
+                }}
+              >
+                <TextInput
+                  className="mb-2"
+                  label="Community name"
+                  value={communityName || ''} // Controlled input
+                  onChange={handleCommunityNameChange}
+                  onBlur={handleCommunityNameBlur}
+                  autoFocus
+                />
+                {errorMessage && <p className="text-error">{errorMessage}</p>}
+              </form>
+            </Modal>
+          )}
+
+          {deleteCommunityModalVisible && (
+            <ConfirmModal
+              title="Delete community"
+              text="Are you sure you want to delete this community?"
+              onAccept={handleDeleteCommunity}
+              onClose={handleCloseDeleteCommunityModal}
+              acceptText="Delete"
+              closeText="Cancel"
+              isBusy={isDeletingCommunity}
+            />
+          )}
+
           {isAddingCommunityComplete && (
             <Toast
               variant="success"
               message="Community added successfully"
               isCloseable
               onClose={() => setIsAddingCommunityComplete(false)}
+            />
+          )}
+
+          {isDeletingCommunityComplete && (
+            <Toast
+              variant="success"
+              message="Community deleted successfully"
+              isCloseable
+              onClose={() => setIsDeletingCommunityComplete(false)}
             />
           )}
         </>

@@ -357,17 +357,17 @@ const UsersPage: React.FC = () => {
                 />
                 <CustomButton
                   className="mt-4"
-                  label="Delete"
-                  variant="error"
-                  icon={<TrashIcon />}
-                  onClick={() => handleOpenDeleteUserModal(user.user_id)}
-                />
-                <CustomButton
-                  className="mt-4"
                   label="Edit"
                   variant="secondary"
                   icon={<PencilIcon />}
                   onClick={() => handleOpenEditUserModal(user.user_id)}
+                />
+                <CustomButton
+                  className="mt-4"
+                  label="Delete"
+                  variant="error"
+                  icon={<TrashIcon />}
+                  onClick={() => handleOpenDeleteUserModal(user.user_id)}
                 />
               </ButtonGroup>
             </Accordion>

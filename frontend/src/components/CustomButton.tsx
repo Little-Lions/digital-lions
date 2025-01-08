@@ -31,7 +31,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onClick,
 }) => {
   let buttonClass =
-    'relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center'
+    'relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center min-w-[6rem] min-h-[2.5rem]'
   let buttonColorClass = ''
   let textColorClass = 'text-primary'
   let borderColorClass = 'border-transparent'
@@ -64,7 +64,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       borderColorClass = 'border-neutral-500'
       break
     case 'none':
-      buttonColorClass = ''
       break
     default:
       break
@@ -78,7 +77,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
       } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''} ${textColorClass} ${className}`}
       onClick={onClick}
       disabled={isBusy || isDisabled}
-      style={{ minWidth: '6rem', minHeight: '2.5rem' }}
       aria-busy={isBusy}
     >
       {isBusy ? (

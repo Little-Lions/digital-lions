@@ -312,17 +312,17 @@ const TeamsDetailPage: React.FC = () => {
                   <ButtonGroup>
                     <CustomButton
                       className="mt-4"
-                      label="Delete"
-                      variant="error"
-                      icon={<TrashIcon />}
-                      onClick={() => openDeleteChildModal(child.id)}
-                    />
-                    <CustomButton
-                      className="mt-4"
                       label="Edit"
                       variant="secondary"
                       icon={<PencilIcon />}
                       onClick={() => handleEditChild(child.id)}
+                    />
+                    <CustomButton
+                      className="mt-4"
+                      label="Delete"
+                      variant="error"
+                      icon={<TrashIcon />}
+                      onClick={() => openDeleteChildModal(child.id)}
                     />
                   </ButtonGroup>
                 </Accordion>

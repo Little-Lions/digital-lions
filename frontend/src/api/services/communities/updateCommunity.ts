@@ -1,18 +1,13 @@
-interface ApiInput {
-  is_active: boolean
-  name: string
-}
-
-const getCommunities = async (
-  communityId: string,
-  input: ApiInput,
+const updateCommunity = async (
+  communityId: number,
+  communityName: string,
 ): Promise<void> => {
   try {
     const response = await fetch(
       `/api/communities?community_id=${communityId}`,
       {
         method: 'PATCH',
-        body: JSON.stringify(input),
+        body: JSON.stringify(communityName),
       },
     )
 
@@ -25,4 +20,4 @@ const getCommunities = async (
   }
 }
 
-export default getCommunities
+export default updateCommunity

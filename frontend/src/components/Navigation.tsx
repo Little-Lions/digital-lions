@@ -105,7 +105,7 @@ const Navigation: React.FC = () => {
                   label="Logout"
                   onClick={handleLogout}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600"
+                  className="text-white bg-gray-700 hover:bg-gray-600 py-0"
                   isBusy={isLoggingOut}
                 />
               </>
@@ -153,43 +153,43 @@ const Navigation: React.FC = () => {
         {/* Mobile Menu Links (Full-Screen Overlay) */}
         {isOpen && (
           <div className="md:hidden z-10 bg-gray-800 rounded-b-lg w-full flex flex-col items-start mt-4">
-            {/* Conditionally render mobile menu links if the user is authenticated */}
             {user && (
               <>
                 <NavLink
                   href="/"
                   onClick={toggleMenu}
-                  className="text-white text-2xl py-4"
+                  className="text-white py-4"
                 >
                   Home
                 </NavLink>
                 <NavLink
                   href="/program-tracker"
                   onClick={toggleMenu}
-                  className="text-white text-2xl py-4"
+                  className="text-white py-4"
                 >
                   Program tracker
                 </NavLink>
                 <NavLink
                   href="/communities"
                   onClick={toggleMenu}
-                  className="text-white text-2xl py-4"
+                  className="text-white py-4"
                 >
                   Communities
                 </NavLink>
                 <NavLink
                   href="/users"
                   onClick={toggleMenu}
-                  className="text-white text-2xl py-4"
+                  className="text-white py-4"
                 >
                   Users
                 </NavLink>
-                <CustomButton
+                {/* <div className="border-t-2 border-gray-700 w-full" /> */}
+                <NavigationButton
+                  href="/api/auth/logout"
                   label="Logout"
-                  onClick={handleLogout}
                   variant="none"
-                  className="text-white bg-gray-700 hover:bg-gray-600 rounded-md"
-                  isBusy={isLoggingOut}
+                  className="text-white pt-4 !min-w-0"
+                  closeMenu={toggleMenu}
                 />
               </>
             )}

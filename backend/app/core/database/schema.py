@@ -1,64 +1,9 @@
 """Database schema for all tables in the database."""
 
 from models._metadata import _MetadataPropertiesOut
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.schema import Computed
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
-
-
-class Child(SQLModel, _MetadataPropertiesOut, table=True):
-    """Schema for child model in database."""
-
-    __tablename__ = "children"
-    id: int = Field(default=None, primary_key=True)
-    first_name: str
-    last_name: str
-
-    age: int | None = Field(
-        default=None,
-        description="Age in years at the time of registration",
-    )
-    gender: str | None = Field(
-        default=None, description="Gender of child. Either male or female."
-    )
-
-    team: "Team" = Relationship(back_populates="children")
-    team_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"))
-    )
-    attendances: list["Attendance"] = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="child"
-    )
-
-
-class Team(SQLModel, _MetadataPropertiesOut, table=True):
-    """Data model for teams. A team is a group of children that
-    follow the Little Lions program: a set of workshops. The workshops
-    that the team follows are linked to the team as well."""
-
-    __tablename__ = "teams"
-
-    id: int = Field(default=None, primary_key=True)
-    name: str = Field(description="Name of the team")
-
-    community_id: int = Field(
-        sa_column=Column(Integer, ForeignKey("communities.id", ondelete="CASCADE"))
-    )
-    community: "Community" = Relationship(back_populates="teams")
-    children: list["Child"] | None = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
-    )
-    workshops: list["Workshop"] | None = Relationship(
-        sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
-    )
-
-    @property
-    def parent(self):
-        """Return the parent community of the team, required for RBAC."""
-        return self.community
-
-    @property
-    def resource_type(self):
-        return "Team"
 
 
 class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
@@ -68,9 +13,20 @@ class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
     __tablename__ = "implementing_partners"
     id: int = Field(default=None, primary_key=True)
     name: str
+
     communities: list["Community"] = Relationship(
         sa_relationship_kwargs={"cascade": "delete"},
         back_populates="implementing_partner",
+    )
+    teams: list["Team"] = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"},
+        back_populates="implementing_partner",
+    )
+
+    # resource path is a generated column
+    # in the format /implementingPartners/<id>
+    resource_path: str = Field(
+        sa_column=Column(String, Computed("'/implementingPartners/' || id "))
     )
 
     @property
@@ -102,6 +58,16 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
     implementing_partner: "ImplementingPartner" = Relationship(
         back_populates="communities"
     )
+    # example /implementingPartners/1/communities/1
+    resource_path: str = Field(
+        sa_column=Column(
+            String,
+            Computed(
+                "'/implementingPartners/' || implementing_partner_id || "
+                "'/communities/' || id "
+            ),
+        )
+    )
 
     @property
     def parent(self) -> ImplementingPartner:
@@ -111,6 +77,80 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
     @property
     def resource_type(self):
         return "Community"
+
+
+class Team(SQLModel, _MetadataPropertiesOut, table=True):
+    """Data model for teams. A team is a group of children that
+    follow the Little Lions program: a set of workshops. The workshops
+    that the team follows are linked to the team as well."""
+
+    __tablename__ = "teams"
+
+    id: int = Field(default=None, primary_key=True)
+    name: str = Field(description="Name of the team")
+
+    implementing_partner_id: int = Field(
+        sa_column=Column(
+            Integer, ForeignKey("implementing_partners.id", ondelete="CASCADE")
+        )
+    )
+    implementing_partner: "ImplementingPartner" = Relationship(back_populates="teams")
+
+    community_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("communities.id", ondelete="CASCADE"))
+    )
+    community: "Community" = Relationship(back_populates="teams")
+    children: list["Child"] | None = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
+    )
+    workshops: list["Workshop"] | None = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
+    )
+    # example /implementingPartners/1/communities/1/teams/1
+    resource_path: str = Field(
+        sa_column=Column(
+            String,
+            Computed(
+                "'/implementingPartners/' || implementing_partner_id || "
+                "'/communities/' || community_id || "
+                "'/teams/' || id"
+            ),
+        )
+    )
+
+    @property
+    def parent(self):
+        """Return the parent community of the team, required for RBAC."""
+        return self.community
+
+    @property
+    def resource_type(self):
+        return "Team"
+
+
+class Child(SQLModel, _MetadataPropertiesOut, table=True):
+    """Schema for child model in database."""
+
+    __tablename__ = "children"
+    id: int = Field(default=None, primary_key=True)
+    first_name: str
+    last_name: str
+
+    age: int | None = Field(
+        default=None,
+        description="Age in years at the time of registration",
+    )
+    gender: str | None = Field(
+        default=None, description="Gender of child. Either male or female."
+    )
+
+    team: "Team" = Relationship(back_populates="children")
+    team_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"))
+    )
+    attendances: list["Attendance"] = Relationship(
+        sa_relationship_kwargs={"cascade": "delete"}, back_populates="child"
+    )
 
 
 class Attendance(SQLModel, table=True):

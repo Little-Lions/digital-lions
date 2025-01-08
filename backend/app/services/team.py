@@ -34,12 +34,13 @@ class TeamService(BaseService):
         self._validate_team_unique(team)
 
         try:
-            self.database.communities.read(object_id=team.community_id)
+            community = self.database.communities.read(object_id=team.community_id)
         except exceptions.ItemNotFoundError:
             msg = f"Community with ID {team.community_id} not found"
             logger.error(msg)
             raise exceptions.CommunityNotFoundError(msg)
 
+        team.implementing_partner_id = community.implementing_partner_id
         new_team = self.database.teams.create(team)
         self.commit()
         logger.info(f"Team with ID {new_team.id} created.")

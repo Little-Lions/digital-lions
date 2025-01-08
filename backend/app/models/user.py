@@ -20,7 +20,7 @@ class UserRolePostIn(BaseModel):
     role: Role = Field(description="Role of the user", examples=["Coach"])
     level: Level = Field(
         description="Level at which the role is assigned",
-        examples=["Community", "Team"],
+        examples=["ImplementingPartner", "Community", "Team"],
     )
     resource_id: int = Field(description="ID of the resource the role is assigned to.")
 

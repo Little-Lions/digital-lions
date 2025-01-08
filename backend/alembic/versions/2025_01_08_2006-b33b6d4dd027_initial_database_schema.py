@@ -1,8 +1,8 @@
 """Initial database schema
 
-Revision ID: 70e160773171
+Revision ID: b33b6d4dd027
 Revises: 
-Create Date: 2025-01-08 18:41:32.325191
+Create Date: 2025-01-08 20:06:49.438659
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "70e160773171"
+revision: str = "b33b6d4dd027"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,6 +39,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
     # Insert default record into "implementing_partners"
     from core.database.schema import ImplementingPartner
 

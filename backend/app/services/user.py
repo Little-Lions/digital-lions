@@ -155,7 +155,7 @@ class UserService(BaseService):
         if not user_in_db:
             raise exceptions.UserNotFoundError(f"User with ID {user_id} not found.")
 
-        self._validate_role_resource_id(role)
+        resource_path = self._construct_resouce_path(role=role)
 
         if not self._validate_user_has_auth0_roles(user_id=user_id, role=role):
             logger.info(
@@ -267,8 +267,11 @@ class UserService(BaseService):
         roles = self._get_auth0_roles(user_id=user_id)
         return any(r["name"] == role.role for r in roles)
 
-    def _validate_role_resource_id(self, role: models.user.UserRolePostIn):
+    # TODO: this should not be part of the user service > DDD.
+    def _construct_resouce_path(self, role: models.user.UserRolePostIn) -> str:
         """
+        Construct the resource path of the role.
+
         Validate the resource ID of the role. That is:
         - if the role is assigned on Implementing Partner level,
           the ID must be 1.
@@ -291,19 +294,26 @@ class UserService(BaseService):
                 raise exceptions.BadRequestError(
                     "Resource ID must be 1 for role level Implementing Partner."
                 )
-            return
+            return f"/implementingPartners/{role.resource_id}"
         elif role.level == models.role.Level.community:
             try:
-                self.database.communities.read(role.resource_id)
-                return
+                community = self.database.communities.read(role.resource_id)
+                return (
+                    f"/implementingPartners/{community.implementing_partner_id}"
+                    f"/communities/{community.id}"
+                )
             except exceptions.ItemNotFoundError:
                 raise exceptions.ResourceNotFoundError(
                     f"Community with ID {role.resource_id} not found."
                 )
         elif role.level == models.role.Level.team:
             try:
-                self.database.teams.read(role.resource_id)
-                return
+                team = self.database.teams.read(role.resource_id)
+                return (
+                    f"/implementingPartners/{team.implementing_partner_id}"
+                    f"/communities/{team.community_id}"
+                    f"/teams/{role.resource_id}"
+                )
             except exceptions.ItemNotFoundError:
                 raise exceptions.ResourceNotFoundError(
                     f"Team with ID {role.resource_id} not found."

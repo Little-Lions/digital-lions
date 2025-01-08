@@ -5,6 +5,8 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.schema import Computed
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
+from typing import Optional
+
 
 class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
     """Data model for implementing partners. An implementing partner is an organization
@@ -25,8 +27,9 @@ class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
 
     # resource path is a generated column
     # in the format /implementingPartners/<id>
-    resource_path: str = Field(
-        sa_column=Column(String, Computed("'/implementingPartners/' || id "))
+    resource_path: str | None = Field(
+        default=None,
+        sa_column=Column(String, Computed("'/implementingPartners/' || id ")),
     )
 
     @property
@@ -59,14 +62,15 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
         back_populates="communities"
     )
     # example /implementingPartners/1/communities/1
-    resource_path: str = Field(
+    resource_path: str | None = Field(
+        default=None,
         sa_column=Column(
             String,
             Computed(
                 "'/implementingPartners/' || implementing_partner_id || "
                 "'/communities/' || id "
             ),
-        )
+        ),
     )
 
     @property
@@ -106,16 +110,19 @@ class Team(SQLModel, _MetadataPropertiesOut, table=True):
     workshops: list["Workshop"] | None = Relationship(
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="team"
     )
-    # example /implementingPartners/1/communities/1/teams/1
-    resource_path: str = Field(
+    # resource path cannot actually be null but otherwise
+    # creation of the object fails when we do not pass a value
+    resource_path: str | None = Field(
+        default=None,
         sa_column=Column(
             String,
+            # example /implementingPartners/1/communities/1/teams/1
             Computed(
                 "'/implementingPartners/' || implementing_partner_id || "
                 "'/communities/' || community_id || "
                 "'/teams/' || id"
             ),
-        )
+        ),
     )
 
     @property
@@ -235,4 +242,4 @@ class Role(SQLModel, table=True):
     user_id: str = Field(description="Auth0 user ID.")
     role: str = Field(description="Role of the user")
     level: str = Field(description="The level at which the role is assigned.")
-    resource_id: int = Field(description="ID of the resource the role is assigned to.")
+    resource_path: int = Field(description="Path of resource")

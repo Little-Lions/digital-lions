@@ -30,6 +30,10 @@ class TeamPostIn(BaseModel, _CreatePropertiesIn):
     name: str = Field(description="Name of the team")
     community_id: int = Field(description="ID of community the team belongs to")
 
+    class Config:
+        # useful for setting the implementing partner ID
+        extra = "allow"
+
 
 class TeamPatchIn(BaseModel, _UpdatePropertiesIn):
     """API payload model for PATCH /teams."""

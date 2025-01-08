@@ -5,8 +5,7 @@ from models._metadata import (
     _MetadataPropertiesOut,
     _UpdatePropertiesIn,
 )
-from pydantic import BaseModel
-from sqlmodel import Field
+from pydantic import BaseModel, Field
 
 # TODO: remove once we support multiple Implementing Partners
 VALID_IMPLEMENTING_PARTNER_ID = 1

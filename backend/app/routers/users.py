@@ -290,8 +290,6 @@ async def get_roles_of_user(
     except exceptions.UserNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
 
-    "/{user_id}/roles",
-
 
 @router.delete(
     "/{user_id}/roles/{role_id}",

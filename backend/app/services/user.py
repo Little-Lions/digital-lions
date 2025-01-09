@@ -169,7 +169,7 @@ class UserService(BaseService):
             "user_id": user_id,
             "role": role.role,
             "level": role.level,
-            "resource_id": role.resource_id,
+            "resource_path": resource_path,
         }
         if self.database.roles.where(filters=list(role_in_db.items())):
             msg = (
@@ -202,7 +202,11 @@ class UserService(BaseService):
         roles = self.database.roles.where(filters=[("user_id", user_id)])
         return [
             models.user.UserRoleGetOut(
-                id=v.id, level=v.level, resource_id=v.resource_id, role=v.role
+                id=v.id,
+                level=v.level,
+                # TODO: remove this ugly split
+                resource_id=int(v.resource_path.split("/")[-1]),
+                role=v.role,
             )
             for v in roles
         ]

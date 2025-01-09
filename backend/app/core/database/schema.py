@@ -5,8 +5,6 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.schema import Computed
 from sqlmodel import Field, Relationship, SQLModel, UniqueConstraint
 
-from typing import Optional
-
 
 class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
     """Data model for implementing partners. An implementing partner is an organization
@@ -242,4 +240,4 @@ class Role(SQLModel, table=True):
     user_id: str = Field(description="Auth0 user ID.")
     role: str = Field(description="Role of the user")
     level: str = Field(description="The level at which the role is assigned.")
-    resource_path: int = Field(description="Path of resource")
+    resource_path: str = Field(description="Path of resource")

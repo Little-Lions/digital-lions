@@ -26,7 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const wrapperRef = useRef<HTMLDivElement>(null!)
 
   return (
-    <html lang="en" suppressHydrationWarning className={poppins.className}>
+    <html lang="en" className={poppins.className}>
       <head>
         <title>Digital Lions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

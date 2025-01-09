@@ -67,8 +67,8 @@ const Accordion: React.FC<AccordionProps> = ({
         }}
       >
         <div className="bg-card p-5 rounded-b-lg">
-          <p className="mb-2 text-gray-500 ">{description}</p>
-          <p className="">{children}</p>
+          <p className="mb-2 text-gray-500">{description}</p>
+          <div>{children}</div>
         </div>
       </div>
     </div>

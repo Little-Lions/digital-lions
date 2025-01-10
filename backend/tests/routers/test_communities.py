@@ -63,38 +63,40 @@ def test_patch_community_not_found(client):
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.fixture(name="client_with_team")
-def client_with_community_and_team(client):
-    # arrange two communities
-    children = [
-        {"first_name": "Child 1", "last_name": "Last name", "age": 10},
-        {"first_name": "Child 2", "last_name": "Last name", "age": 12},
-    ]
-
-    client.post(
+@pytest.fixture(name="community_with_team")
+def community_fixture(client, implementing_partner):
+    """Community fixture."""
+    request = client.post(
         "/communities",
-        json={"name": "Community 1"},
+        json={
+            "name": "Community 1",
+            "implementing_partner_id": implementing_partner.get("id"),
+        },
     )
-    client.post(
-        "/teams", json={"community_id": 1, "name": "Team 1", "children": children}
+    assert request.status_code == status.HTTP_201_CREATED
+    community = request.json()
+    community_id = community.get("id")
+
+    request = client.post(
+        "/teams",
+        json={
+            "community_id": community_id,
+            "name": "Team 1",
+        },
     )
-    client.post(
-        "/teams", json={"community_id": 1, "name": "Team 2", "children": children}
-    )
-    return client
+    assert request.status_code == status.HTTP_201_CREATED
+    yield community
 
 
-def test_delete_community_with_teams_error(client_with_team):
+def test_delete_community_with_teams_error(client, community_with_team):
     # test that we can't delete a community with teams
-    community_id = client_with_team.get(ENDPOINT).json()[0].get("id")
-    response = client_with_team.delete(f"{ENDPOINT}/{community_id}")
+    community_id = community_with_team.get("id")
+    response = client.delete(f"{ENDPOINT}/{community_id}")
     assert response.status_code == status.HTTP_409_CONFLICT, response.text
 
 
-def test_delete_community_with_teams_success(client_with_team):
+def test_delete_community_with_teams_success(client, community_with_team):
     # test that we can delete a community with teams when cascading
-    community_id = client_with_team.get(ENDPOINT).json()[0].get("id")
-    response = client_with_team.delete(
-        f"{ENDPOINT}/{community_id}", params={"cascade": True}
-    )
-    assert response.status_code == status.HTTP_200_OK, response.text
+    community_id = community_with_team.get("id")
+    response = client.delete(f"{ENDPOINT}/{community_id}", params={"cascade": True})
+    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text

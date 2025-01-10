@@ -15,7 +15,7 @@ class CommunityPostIn(BaseModel, _CreatePropertiesIn):
     """API payload model for POST /communities endpoint."""
 
     name: str = Field(description="Name of the community")
-    implementing_partner_id: Literal[VALID_IMPLEMENTING_PARTNER_ID] | None = Field(
+    implementing_partner_id: int | None = Field(
         description="Implementing partner in which to create the community.",
         default=VALID_IMPLEMENTING_PARTNER_ID,
     )

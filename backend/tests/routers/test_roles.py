@@ -66,9 +66,9 @@ def test_add_role_success(client, mocker, role_exists):
     }
     mocker.patch("repositories.auth0.Auth0", return_value=auth0)
 
+    community = mocker.MagicMock(id=1)
     mocker.patch(
-        "repositories.database.CommunityRepository.read",
-        return_value=mocker.MagicMock(),
+        "repositories.database.CommunityRepository.read", return_value=community
     )
     user_id = "auth0|1234"
     response = client.post(
@@ -107,7 +107,7 @@ def test_delete_role_success(client, mocker, role_exists):
 
     mocker.patch(
         "repositories.database.CommunityRepository.read",
-        return_value=mocker.MagicMock(),
+        return_value=mocker.MagicMock(id=1),
     )
     user_id = "auth0|1234"
     role = {"role": "Admin", "level": "Community", "resource_id": 1}

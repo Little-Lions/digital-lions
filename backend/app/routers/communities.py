@@ -129,8 +129,7 @@ async def update_community(
 @router.delete(
     "/{community_id}",
     summary="Delete a community",
-    status_code=status.HTTP_200_OK,
-    response_model=Message,
+    status_code=status.HTTP_204_NO_CONTENT,
     responses={
         status.HTTP_404_NOT_FOUND: {
             "model": Message,
@@ -158,7 +157,7 @@ async def delete_community(
 
     """
     try:
-        return service.delete(community_id, cascade)
+        service.delete(community_id, cascade)
     except exceptions.CommunityNotFoundError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
     except exceptions.CommunityHasTeamsError as exc:

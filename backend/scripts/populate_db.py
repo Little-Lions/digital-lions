@@ -18,8 +18,6 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
-URL = "https://backend-dev-f90d.up.railway.app/api/v1"
-# URL = "https://backend-production-7bbc.up.railway.app/api/v1"
 COMMUNITY_COUNT = 3
 TEAM_COUNT = 3
 CHILD_COUNT = 3

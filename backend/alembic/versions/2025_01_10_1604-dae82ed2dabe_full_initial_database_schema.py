@@ -1,8 +1,8 @@
-"""Initial database schema
+"""Full initial database schema
 
-Revision ID: b33b6d4dd027
+Revision ID: dae82ed2dabe
 Revises: 
-Create Date: 2025-01-08 20:06:49.438659
+Create Date: 2025-01-10 16:04:22.405266
 
 """
 
@@ -14,7 +14,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = "b33b6d4dd027"
+revision: str = "dae82ed2dabe"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -39,28 +39,17 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
-
-    # Insert default record into "implementing_partners"
-    from core.database.schema import ImplementingPartner
-
-    bind = op.get_bind()
-    session = sa.orm.Session(bind=bind)
-    little_lions = ImplementingPartner(
-        name="Little Lions",
-        is_active=True,
-        created_at=sa.func.now(),
-        last_updated_at=sa.func.now(),
-    )
-    session.add(little_lions)
-    session.commit()
-
     op.create_table(
         "roles",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("user_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "user_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.Column("role", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("level", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("resource_id", sa.Integer(), nullable=False),
+        sa.Column(
+            "resource_path", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -119,8 +108,12 @@ def upgrade() -> None:
         sa.Column("last_updated_at", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("first_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("last_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "first_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
+        sa.Column(
+            "last_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.Column("age", sa.Integer(), nullable=True),
         sa.Column("gender", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("team_id", sa.Integer(), nullable=True),
@@ -139,11 +132,17 @@ def upgrade() -> None:
     op.create_table(
         "attendances",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("attendance", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column(
+            "attendance", sqlmodel.sql.sqltypes.AutoString(), nullable=False
+        ),
         sa.Column("child_id", sa.Integer(), nullable=True),
         sa.Column("workshop_id", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(["child_id"], ["children.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["workshop_id"], ["workshops.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["child_id"], ["children.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["workshop_id"], ["workshops.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###

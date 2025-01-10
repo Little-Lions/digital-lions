@@ -254,8 +254,8 @@ class UserService(BaseService):
 
         self.commit()
         msg = (
-            f"Role '{role.role}' for {role.level} "
-            f"{role.resource_id} deleted from user {user_id}"
+            f"Role '{role.role}' for {role.level} on "
+            f"{role.resource_path} deleted from user {user_id}"
         )
         logger.info(msg)
         return models.generic.Message(detail=msg)

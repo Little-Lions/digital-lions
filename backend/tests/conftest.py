@@ -2,10 +2,9 @@ import pytest
 from core.auth import BearerTokenHandlerInst
 from core.database.session import get_session
 from core.settings import Settings, get_settings
+from fastapi import status
 from fastapi.testclient import TestClient
-import sqlalchemy as sa
 from main import app
-from core.database.schema import ImplementingPartner
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
@@ -48,15 +47,16 @@ def client(mocker, session):
     app.dependency_overrides[BearerTokenHandlerInst] = lambda: mock_user
     app.dependency_overrides[get_session] = lambda: session
 
-    # add ImplementingPartner
-    little_lions = ImplementingPartner(
-        name="Little Lions",
-        is_active=True,
-        created_at=sa.func.now(),
-        last_updated_at=sa.func.now(),
-    )
-    session.add(little_lions)
-    session.commit()
-
     client = TestClient(app)
+
     yield client
+
+
+@pytest.fixture(name="implementing_partner")
+def implementing_partner_fixture(client):
+    # create defautl Little Lions implementing partner
+    request = client.post("/implementing_partners", json={"name": "Little Lions"})
+    # TODO remove this assert when we have BDD
+    assert request.status_code == status.HTTP_201_CREATED
+    implementing_partner = request.json()
+    yield implementing_partner

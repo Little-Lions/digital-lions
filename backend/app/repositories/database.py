@@ -3,7 +3,7 @@ Each table in the database translate to a repository class."""
 
 from core.database import schema
 from repositories._base import BaseRepository
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func, select, or_
 
 
 class AttendanceRepository(BaseRepository[schema.Attendance]):
@@ -33,7 +33,11 @@ class CommunityRepository(BaseRepository[schema.Community]):
             .distinct(self._model.id)
             .join(
                 schema.Role,
-                schema.Role.resource_path.like(self._model.resource_path + "%"),
+                # match both parent and child
+                or_(
+                    schema.Role.resource_path.like(self._model.resource_path + "%"),
+                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                ),
             )
             .where(schema.Role.user_id == user_id)
         )
@@ -82,7 +86,11 @@ class TeamRepository(BaseRepository[schema.Team]):
             .distinct(self._model.id)
             .join(
                 schema.Role,
-                schema.Role.resource_path.like(self._model.resource_path + "%"),
+                # match both parent and child
+                or_(
+                    schema.Role.resource_path.like(self._model.resource_path + "%"),
+                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                ),
             )
             .where(schema.Role.user_id == user_id)
         )

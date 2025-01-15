@@ -42,14 +42,10 @@ def upgrade() -> None:
     op.create_table(
         "roles",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "user_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-        ),
+        sa.Column("user_id", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("role", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("level", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column(
-            "resource_path", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-        ),
+        sa.Column("resource_path", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -108,12 +104,8 @@ def upgrade() -> None:
         sa.Column("last_updated_at", sa.DateTime(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "first_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-        ),
-        sa.Column(
-            "last_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-        ),
+        sa.Column("first_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("last_name", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("age", sa.Integer(), nullable=True),
         sa.Column("gender", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
         sa.Column("team_id", sa.Integer(), nullable=True),
@@ -132,17 +124,11 @@ def upgrade() -> None:
     op.create_table(
         "attendances",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column(
-            "attendance", sqlmodel.sql.sqltypes.AutoString(), nullable=False
-        ),
+        sa.Column("attendance", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("child_id", sa.Integer(), nullable=True),
         sa.Column("workshop_id", sa.Integer(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["child_id"], ["children.id"], ondelete="CASCADE"
-        ),
-        sa.ForeignKeyConstraint(
-            ["workshop_id"], ["workshops.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["child_id"], ["children.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["workshop_id"], ["workshops.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###

@@ -4,9 +4,8 @@ from core import exceptions
 from core.auth import BearerTokenHandler, CurrentUser
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import implementing_partner as models
+from models.generic import RecordCreated
 from repositories.database import ImplementingPartnerRepository
-
-from app.models.generic import RecordCreated
 
 router = APIRouter(prefix="/implementing_partners")
 

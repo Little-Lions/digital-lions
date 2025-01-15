@@ -33,9 +33,7 @@ class CommunityRepository(BaseRepository[schema.Community]):
             .distinct(self._model.id)
             .join(
                 schema.Role,
-                self._model.resource_path.like(
-                    func.concat("%", schema.Role.resource_path, "%")
-                ),
+                schema.Role.resource_path.like(self._model.resource_path + "%"),
             )
             .where(schema.Role.user_id == user_id)
         )
@@ -84,9 +82,7 @@ class TeamRepository(BaseRepository[schema.Team]):
             .distinct(self._model.id)
             .join(
                 schema.Role,
-                self._model.resource_path.like(
-                    func.concat("%", schema.Role.resource_path, "%")
-                ),
+                schema.Role.resource_path.like(self._model.resource_path + "%"),
             )
             .where(schema.Role.user_id == user_id)
         )

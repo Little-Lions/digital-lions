@@ -20,6 +20,7 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
+URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
 
 fake = Faker(LOCALE)
 Faker.seed(random.randint(0, 10))
@@ -36,20 +37,18 @@ def cli():
 
 @cli.command()
 def wipe():
-    """Wipe all records in database."""
-    r = requests.get(f"{URL}/implementing_partners", headers=get_headers())
+    """Wipe all records in database except the Implementing Partner."""
+    r = requests.get(f"{URL}/communities", headers=get_headers())
     r.raise_for_status()
 
-    ips = r.json()
+    communities = r.json()
 
-    logger.info(f"Found {len(ips)} implementing partners")
-    for ip in ips:
-        id_ = ip.get("id")
+    logger.info(f"Found {len(communities)} implementing partners")
+    for community in communities:
+        id_ = community.get("id")
 
-        logger.info(f"Deleting Implementing Partner with ID {id_}")
-        r_ = requests.delete(
-            f"{URL}/implementing_partners/{id_}", headers=get_headers()
-        )
+        logger.info(f"Deleting community ith ID {id_}")
+        r_ = requests.delete(f"{URL}/communities/{id_}", headers=get_headers())
         r_.raise_for_status()
 
 
@@ -58,20 +57,11 @@ def wipe():
 @click.option("--children", default=3)
 @click.option("--teams", default=3)
 def populate(communities: int, children: int, teams: int):
-    """Populate database with implementing partner, communities,
+    """Populate database with communities,
     teams, children, workshops."""
-    logger.info(f"Adding 1 Implementing Partner to the database")
-    r_ip = requests.post(
-        f"{URL}/implementing_partners",
-        json={"name": "Little Lions"},
-        headers=get_headers(),
-    )
-    r_ip.raise_for_status()
 
-    ip_response = requests.get(f"{URL}/implementing_partners", headers=get_headers())
-    ip_response.raise_for_status()
-
-    ip_id = ip_response.json()[0].get("id")
+    # default ipmleenting partner ID
+    ip_id = 1
 
     logger.info(f"Adding {communities} communities to the db")
 

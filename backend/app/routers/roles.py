@@ -86,24 +86,29 @@ async def list_resources(
     - `teams:read`
 
     """
-    if level not in user_service.get_role_levels(role=role):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Role and level combination not supported.",
-        )
-    if level == models.Level.implementing_partner:
-        return [
-            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-            for v in implementing_partner_repository.read_all()
-        ]
-        return [models.RoleResourcesGetOut(resource_id=1, resource_name="Litle Lions")]
-    if level == models.Level.community:
-        return [
-            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-            for v in community_service.get_all()
-        ]
-    if level == models.Level.team:
-        return [
-            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-            for v in team_service.get_all()
-        ]
+    try:
+        if level not in user_service.get_role_levels(role=role):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Role and level combination not supported.",
+            )
+        if level == models.Level.implementing_partner:
+            return [
+                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+                for v in implementing_partner_repository.read_all()
+            ]
+            return [
+                models.RoleResourcesGetOut(resource_id=1, resource_name="Litle Lions")
+            ]
+        if level == models.Level.community:
+            return [
+                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+                for v in community_service.get_all()
+            ]
+        if level == models.Level.team:
+            return [
+                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+                for v in team_service.get_all()
+            ]
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

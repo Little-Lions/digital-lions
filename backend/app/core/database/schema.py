@@ -12,7 +12,7 @@ class ImplementingPartner(SQLModel, _MetadataPropertiesOut, table=True):
 
     __tablename__ = "implementing_partners"
     id: int = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field(sa_column=Column("name", String, unique=True))
 
     communities: list["Community"] = Relationship(
         sa_relationship_kwargs={"cascade": "delete"},
@@ -46,14 +46,14 @@ class Community(SQLModel, _MetadataPropertiesOut, table=True):
     __tablename__ = "communities"
     id: int = Field(default=None, primary_key=True)
 
-    name: str
+    name: str = Field(sa_column=Column("name", String, unique=True))
     teams: list["Team"] = Relationship(
         sa_relationship_kwargs={"cascade": "delete"}, back_populates="community"
     )
 
     implementing_partner_id: int = Field(
         sa_column=Column(
-            Integer, ForeignKey("implementing_partners.id", ondelete="CASCADE")
+            Integer, ForeignKey("implementing_partners.id", ondelete="RESTRICT")
         )
     )
     implementing_partner: "ImplementingPartner" = Relationship(

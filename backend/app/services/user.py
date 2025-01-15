@@ -294,11 +294,15 @@ class UserService(BaseService):
 
         """
         if role.level == models.role.Level.implementing_partner:
-            if not role.resource_id == 1:
-                raise exceptions.BadRequestError(
-                    "Resource ID must be 1 for role level Implementing Partner."
+            try:
+                implementing_partner = self.database.implementing_partners.read(
+                    role.resource_id
                 )
-            return f"/implementingPartners/{role.resource_id}"
+                return f"/implementingPartners/{implementing_partner.id}"
+            except exceptions.ItemNotFoundError:
+                raise exceptions.ResourceNotFoundError(
+                    f"Implementing Partner with ID {role.resource_id} not found"
+                )
         elif role.level == models.role.Level.community:
             try:
                 community = self.database.communities.read(role.resource_id)

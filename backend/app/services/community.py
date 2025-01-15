@@ -28,11 +28,18 @@ class CommunityService(BaseService):
         logger.info(f"Community created with name: {obj.name}, ID: {community.id}.")
         return community
 
-    def get_all(self):
+    def get_all(self, implementing_partner_id: int = None) -> list | None:
         """Get all objects from the table."""
         self.current_user.verify_permission(self.permissions.communities_read)
 
-        return self.database.communities.read_all()
+        filters = []
+        if implementing_partner_id:
+            filters.append(("implementing_partner_id", implementing_partner_id))
+
+        communities = self.database.communities.read_all_by_user_access(
+            user_id=self.current_user.user_id, filters=filters
+        )
+        return communities
 
     def get(self, object_id):
         """Get an object from the table by id."""

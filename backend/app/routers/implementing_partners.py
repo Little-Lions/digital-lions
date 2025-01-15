@@ -55,3 +55,28 @@ async def create_implementing_partner(
         return record
     except exceptions.InsufficientPermissionsError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+
+
+@router.delete(
+    "/{implementing_partner_id}",
+    summary="Delete an implementing partner",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_implementing_partner(
+    implementing_partner_id: int,
+    current_user: Annotated[CurrentUser, Depends(BearerTokenHandler())],
+    repository: Annotated[
+        ImplementingPartnerRepository, Depends(ImplementingPartnerRepository)
+    ],
+):
+    """
+    Delete an implementing partner.
+    """
+    try:
+        repository.delete(implementing_partner_id)
+        # temporary commit until we have refactored with service
+        repository._session.commit()
+    except exceptions.InsufficientPermissionsError as exc:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    except exceptions.NotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))

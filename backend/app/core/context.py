@@ -30,12 +30,12 @@ class RoleWithPermissions:
     """Parent class for roles with permissions."""
 
     def __init__(
-        self, name: str, level: str, resource_id: int, permissions: list[Permission]
+        self, name: str, level: str, resource_path: str, permissions: list[Permission]
     ):
         self.name = name
         self.permissions = permissions
         self.level = level
-        self.resource_id = resource_id
+        self.resource_path = resource_path
 
     def has_permission(self, permission: Permission) -> bool:
         """Check if the role includes a specific permission."""
@@ -99,7 +99,7 @@ class RoleFactory:
         role_class = RoleFactory._role_map.get(role.role)
         if not role_class:
             raise ValueError(f"Unknown role: {role.role}")
-        return role_class(level=role.level, resource_id=role.resource_id)
+        return role_class(level=role.level, resource_path=role.resource_path)
 
 
 class CurrentUser:

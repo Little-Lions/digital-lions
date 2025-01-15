@@ -11,6 +11,7 @@ from models.team import (
     TeamPatchIn,
     TeamPostIn,
     TeamPostWorkshopIn,
+    TeamStatus,
 )
 from services._base import BaseService
 
@@ -164,13 +165,17 @@ class TeamService(BaseService):
         self.commit()
         return workshop_record
 
-    def get_all(self, community_id: str = None, status: str = "active") -> list | None:
+    def get_all(
+        self,
+        community_id: int = None,
+        status: TeamStatus = TeamStatus.active,
+    ) -> list | None:
         """Get all teams from the table.
 
         Args:
             community_id (str, optional): Filter by community ID. Defaults to None.
-            status (str, optional): Filter by status. Defaults to "active". Ohter options
-                are "non_active" and "all".
+            status (TeamStatus, optional): Filter by status. Defaults to "active". Ohter options
+                are "inactive" and "all".
 
         Returns:
             list: List of teams.
@@ -180,16 +185,16 @@ class TeamService(BaseService):
         filters = []
         if community_id:
             filters.append(("community_id", community_id))
-        # filter by status, if status == "all", do not filter
-        if status == "active":
+
+        # filter by status, if status neither active or inactive, no filters are applied
+        if status == TeamStatus.active:
             filters.append(("is_active", True))
-        if status == "non_active":
+        if status == TeamStatus.inactive:
             filters.append(("is_active", False))
 
-        if filters:
-            teams = self.database.teams.where(filters=filters)
-        else:
-            teams = self.database.teams.read_all()
+        teams = self.database.teams.read_all_by_user_access(
+            user_id=self.current_user.user_id, filters=filters
+        )
 
         team_ids = [team.id for team in teams]
 

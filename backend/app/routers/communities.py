@@ -3,6 +3,7 @@ from typing import Annotated
 from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import community as models
+from models.community import VALID_IMPLEMENTING_PARTNER_ID
 from models.generic import Message, RecordCreated
 from services import CommunityService
 
@@ -48,16 +49,18 @@ async def get_community(
 )
 async def get_communities(
     service: Annotated[CommunityService, Depends(CommunityService)],
+    implementing_partner_id: int | None = VALID_IMPLEMENTING_PARTNER_ID,
 ):
     """
-    List all communities that a user has access to.
+    List all communities that a user has access to, optionally
+    filtered by Implementing Partner.
 
     **Required scopes**
     - `communities:read`
 
     """
     try:
-        return service.get_all()
+        return service.get_all(implementing_partner_id=implementing_partner_id)
     except exceptions.InsufficientPermissionsError as exc:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
 

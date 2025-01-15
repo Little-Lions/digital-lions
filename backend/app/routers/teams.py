@@ -53,7 +53,7 @@ async def post_team(
     except exceptions.TeamAlreadyExistsError as exc:
         raise HTTPException(status_code=http_status.HTTP_409_CONFLICT, detail=str(exc))
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPexception(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
+        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
 
 
 @router.get(

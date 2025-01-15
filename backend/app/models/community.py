@@ -33,6 +33,9 @@ class CommunityGetOut(BaseModel):
     id: int
     name: str
 
+    class Config:
+        extra = "ignore"
+
 
 class CommunityGetByIdOut(BaseModel, _MetadataPropertiesOut):
     """API response model for GET /communities/:id."""

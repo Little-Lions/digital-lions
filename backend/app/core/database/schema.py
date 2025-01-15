@@ -110,11 +110,11 @@ class Team(SQLModel, _MetadataPropertiesOut, table=True):
     )
     # resource path cannot actually be null but otherwise
     # creation of the object fails when we do not pass a value
+    # example /implementingPartners/1/communities/1/teams/1
     resource_path: str | None = Field(
         default=None,
         sa_column=Column(
             String,
-            # example /implementingPartners/1/communities/1/teams/1
             Computed(
                 "'/implementingPartners/' || implementing_partner_id || "
                 "'/communities/' || community_id || "

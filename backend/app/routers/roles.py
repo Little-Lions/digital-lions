@@ -4,6 +4,7 @@ from typing import Annotated
 from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import role as models
+from repositories.database import ImplementingPartnerRepository
 from routers._responses import with_default_responses
 from services import CommunityService, TeamService, UserService
 
@@ -69,6 +70,9 @@ async def list_resources(
     user_service: Annotated[UserService, Depends(UserService)],
     community_service: Annotated[CommunityService, Depends(CommunityService)],
     team_service: Annotated[TeamService, Depends(TeamService)],
+    implementing_partner_repository: Annotated[
+        ImplementingPartnerRepository, Depends(ImplementingPartnerRepository)
+    ],
 ):
     """
     List the available resources for a given scoped role, i.e. all resources
@@ -88,6 +92,10 @@ async def list_resources(
             detail="Role and level combination not supported.",
         )
     if level == models.Level.implementing_partner:
+        return [
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+            for v in implementing_partner_repository.read_all()
+        ]
         return [models.RoleResourcesGetOut(resource_id=1, resource_name="Litle Lions")]
     if level == models.Level.community:
         return [

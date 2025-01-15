@@ -3,7 +3,7 @@ Each table in the database translate to a repository class."""
 
 from core.database import schema
 from repositories._base import BaseRepository
-from sqlalchemy import func
+from sqlalchemy import and_, func, select
 
 
 class AttendanceRepository(BaseRepository[schema.Attendance]):
@@ -22,6 +22,33 @@ class CommunityRepository(BaseRepository[schema.Community]):
     """Repository to interact with Communities table."""
 
     _model = schema.Community
+
+    def read_all_by_user_access(
+        self, user_id: str, filters: list[tuple[str, str]]
+    ) -> list:
+        """Get all communities but only the ones a user has access to
+        by scoped role. Optionally add a WHERE clause."""
+        query = (
+            select(self._model)
+            .distinct(self._model.id)
+            .join(
+                schema.Role,
+                self._model.resource_path.like(
+                    func.concat("%", schema.Role.resource_path, "%")
+                ),
+            )
+            .where(schema.Role.user_id == user_id)
+        )
+        if filters:
+            expr = and_(*self._construct_filter(filters))
+            query = query.where(and_(expr))
+
+        results = self._session.exec(query).all()
+
+        # with a join the returned object are somehow
+        # tuples, even if we only select one model.
+        # so we need to get the first index value of each
+        return [r[0] for r in results]
 
 
 class ImplementingPartnerRepository(BaseRepository[schema.ImplementingPartner]):
@@ -46,6 +73,32 @@ class TeamRepository(BaseRepository[schema.Team]):
     """Repository to interact with Team table."""
 
     _model = schema.Team
+
+    def read_all_by_user_access(
+        self, user_id: str, filters: list[tuple[str, str]]
+    ) -> list[schema.Team] | None:
+        """Get all teams but only the ones a user has access to
+        by scoped role."""
+        query = (
+            select(self._model)
+            .distinct(self._model.id)
+            .join(
+                schema.Role,
+                self._model.resource_path.like(
+                    func.concat("%", schema.Role.resource_path, "%")
+                ),
+            )
+            .where(schema.Role.user_id == user_id)
+        )
+
+        if filters:
+            expr = and_(*self._construct_filter(filters))
+            query = query.where(and_(expr))
+
+        # with a join the returned object are somehow
+        # tuples, even if we only select one model.
+        # so we need to get the first index value of each
+        return [r[0] for r in self._session.exec(query).all()]
 
 
 class WorkshopRepository(BaseRepository[schema.Workshop]):
@@ -87,6 +140,7 @@ class DatabaseRepositories:
         self.attendances = AttendanceRepository(session=session)
         self.children = ChildRepository(session=session)
         self.communities = CommunityRepository(session=session)
+        self.implementing_partners = ImplementingPartnerRepository(session=session)
         self.programs = ProgramRepository(session=session)
         self.roles = RoleRepository(session=session)
         self.teams = TeamRepository(session=session)

@@ -15,7 +15,7 @@ COPY . /home/
 EXPOSE $PORT
 
 HEALTHCHECK --interval=30s --timeout=30s \
-    CMD curl -f http://localhost:${PORT}/health/ || exit 1
+    CMD curl -f http://localhost:${PORT}/api/v1/health || exit 1
 
 RUN groupadd -r api && useradd --no-log-init -r -g api api
 USER api

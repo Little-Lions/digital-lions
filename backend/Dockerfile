@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.11.5-slim
+FROM python:3.11.5-slim
 
 ARG POETRY_VERSION=1.8.2
 
@@ -15,4 +15,7 @@ COPY . /home/
 EXPOSE $PORT
 
 RUN groupadd -r api && useradd --no-log-init -r -g api api
-USER ap/run.sh"]
+
+USER api
+
+CMD ["/bin/sh", "/home/run.sh"]

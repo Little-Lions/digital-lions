@@ -1,13 +1,25 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryFunctionContext,
+} from 'react-query'
+
 import VerticalStepper from '@/components/VerticalStepper'
+
 import getTeamById from '@/api/services/teams/getTeamById'
 import addWorkshopToTeam from '@/api/services/workshops/addWorkshopToTeam'
 import getWorkshopsByTeam from '@/api/services/workshops/getWorkshopsByTeam'
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
+
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
+
 import SkeletonLoader from '@/components/SkeletonLoader'
+import AlertBanner from '@/components/AlertBanner'
 
 import { useParams } from 'next/navigation'
 
@@ -23,41 +35,42 @@ interface Attendance {
 }
 
 const ProgramTrackerAttendancePage: React.FC = () => {
+  const queryClient = useQueryClient()
   const params = useParams()
   const teamId = params?.teamId as string
 
-  const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
-    null,
-  )
-  const [workshopDetails, setWorkshopDetails] = useState<WorkshopInfo[]>([])
   const [attendance, setAttendance] = useState<Record<number, string>>({})
-  const [isLoadingTeam, setIsLoadingTeam] = useState(false)
-  const [isSavingAttendance, setIsSavingAttendance] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  const [selectedDate, setSelectedDate] = useState('')
+  const [isSaved, setIsSaved] = useState<boolean>(false)
+  const [selectedDate, setSelectedDate] = useState<string>('')
+
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   // Fetch team details when teamId changes
-  useEffect(() => {
-    if (teamId) {
-      const fetchTeamById = async (): Promise<void> => {
-        setIsLoadingTeam(true)
-        try {
-          const numericTeamId = Number(teamId)
-          if (isNaN(numericTeamId)) {
-            throw new Error('Invalid team ID')
-          }
-          const teamDetails = await getTeamById(numericTeamId)
-          setSelectedTeam(teamDetails) // Set the fetched team as selectedTeam
-        } catch (error) {
-          console.error('Failed to fetch team details:', error)
-        } finally {
-          setIsLoadingTeam(false)
-        }
+  const fetchTeamById = async ({
+    queryKey,
+  }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
+    try {
+      const [, teamId] = queryKey // Extract teamId from the query key
+      const numericTeamId = Number(teamId)
+      if (isNaN(numericTeamId)) {
+        throw new Error('Invalid team ID')
       }
-
-      fetchTeamById()
+      const response = await getTeamById(numericTeamId)
+      return response
+    } catch (error) {
+      console.error('Failed to fetch team details:', error)
+      throw error
     }
-  }, [teamId])
+  }
+
+  const {
+    data: selectedTeam,
+    isLoading: isLoadingTeam,
+    error: hasErrorFetchingTeam,
+  } = useQuery(['team', teamId], fetchTeamById, {
+    enabled: !!teamId,
+    staleTime: 5 * 60 * 1000,
+  })
 
   const handleDateChange = (date: string): void => {
     setSelectedDate(date)
@@ -70,43 +83,51 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     }))
   }
 
-  const handleSaveAttendance = async (): Promise<void> => {
-    if (selectedTeam) {
-      const apiBody: Attendance = {
-        // if there is no workshopDetails take the current Date
-        date: selectedDate || new Date().toISOString().split('T')[0],
-        workshop_number: selectedTeam.program.progress.current + 1,
-        attendance: Object.entries(attendance).map(([childId, status]) => ({
-          attendance: status,
-          child_id: parseInt(childId, 10),
-        })),
-      }
-      setIsSavingAttendance(true)
-      setIsSaved(false)
-      try {
-        await addWorkshopToTeam(selectedTeam.id, apiBody)
-        const teamDetails = await getTeamById(selectedTeam.id)
-        const workshops = await getWorkshopsByTeam(selectedTeam.id)
-        setSelectedTeam(teamDetails)
-        setWorkshopDetails(workshops)
-        setIsSaved(true)
-
-        // const initialAttendance: Record<number, string> = {};
-        // teamDetails.children.forEach((child) => {
-        //   initialAttendance[child.id] = null; // or another default value
-        // });
-        // setAttendance(initialAttendance);
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setIsSavingAttendance(false)
-      }
+  const saveAttendance = async (): Promise<void> => {
+    if (!selectedTeam) {
+      throw new Error('No team selected')
     }
+
+    const apiBody: Attendance = {
+      date: selectedDate || new Date().toISOString().split('T')[0],
+      workshop_number: selectedTeam.program.progress.current + 1,
+      attendance: Object.entries(attendance).map(([childId, status]) => ({
+        attendance: status,
+        child_id: parseInt(childId, 10),
+      })),
+    }
+
+    await addWorkshopToTeam(selectedTeam.id, apiBody)
   }
 
+  const fetchWorkshops = async (): Promise<WorkshopInfo[]> => {
+    if (!selectedTeam?.id) throw new Error('No team selected')
+    return await getWorkshopsByTeam(selectedTeam.id)
+  }
+
+  const { data: workshopDetails = [], refetch: refetchWorkshops } = useQuery(
+    ['workshops', selectedTeam?.id],
+    fetchWorkshops,
+    {
+      enabled: !!selectedTeam?.id,
+    },
+  )
+
+  const { mutate: handleSaveAttendance, isLoading: isSavingAttendance } =
+    useMutation(saveAttendance, {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries(['team', teamId])
+        await refetchWorkshops()
+        setIsSaved(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    })
+
   useEffect(() => {
-    if (selectedTeam) {
-      // Initialize attendance for the new team
+    if (selectedTeam?.children?.length) {
       const initialAttendance: Record<number, string> = {}
       selectedTeam.children.forEach((child) => {
         initialAttendance[child.id] = ''
@@ -135,7 +156,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   return (
     <>
       {isLoadingTeam ? (
-        <div className=" w-full mx-auto ">
+        <div className="w-full mx-auto">
           {Array.from({ length: 12 }, (_, i) => (
             <SkeletonLoader key={i} type="stepper" index={i} totalItems={12} />
           ))}
@@ -155,6 +176,17 @@ const ProgramTrackerAttendancePage: React.FC = () => {
             isSaved={isSaved}
           />
         )
+      )}
+      {!!errorMessage && (
+        <AlertBanner
+          variant="error"
+          message={errorMessage}
+          isCloseable={false}
+        />
+      )}
+
+      {!!hasErrorFetchingTeam && (
+        <AlertBanner variant="error" message="Failed to fetch teams" />
       )}
     </>
   )

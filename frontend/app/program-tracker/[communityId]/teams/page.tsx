@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React from 'react'
+
+import { useQuery } from 'react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
 
@@ -10,6 +12,7 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import EmptyState from '@/components/EmptyState'
 import Heading from '@/components/Heading'
 import Badge from '@/components/Badge'
+import AlertBanner from '@/components/AlertBanner'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -18,39 +21,35 @@ import getTeamsOfCommunity from '@/api/services/teams/getTeamsOfCommunity'
 import { TeamInCommunity } from '@/types/teamInCommunity.interface'
 
 import { useRouter, useParams } from 'next/navigation'
-import { Team } from '@/types/team.interface'
 
 const ProgramTrackerTeamsPage: React.FC = () => {
   const router = useRouter()
   const params = useParams()
   const communityId = params?.communityId as string
 
-  const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
-
   const { communityName } = useCommunity()
 
-  const fetchTeams = useCallback(async () => {
-    setIsLoading(true)
+  const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const fetchedTeams = await getTeamsOfCommunity(Number(communityId))
-      setTeams(fetchedTeams)
+      const response = await getTeamsOfCommunity(Number(communityId))
+      return response
     } catch (error) {
       console.error('Failed to fetch teams:', error)
-    } finally {
-      setIsLoading(false)
-      setIsInitialLoad(false)
+      throw error
     }
-  }, [communityId])
+  }
 
-  useEffect(() => {
-    fetchTeams()
-  }, [])
+  const {
+    data: teams = [],
+    isLoading,
+    error: hasErrorFetchingTeams,
+  } = useQuery(['teams', communityId], fetchTeams, {
+    staleTime: 5 * 60 * 1000,
+  })
 
   return (
     <>
-      {isLoading && isInitialLoad ? (
+      {isLoading ? (
         <>
           <SkeletonLoader width="301px" height="36px" type="title" level="h3" />
           {Array.from({ length: 5 }, (_, i) => (
@@ -86,6 +85,10 @@ const ProgramTrackerTeamsPage: React.FC = () => {
                 />
               }
             />
+          )}
+
+          {!!hasErrorFetchingTeams && (
+            <AlertBanner variant="error" message="Failed to fetch teams" />
           )}
         </>
       )}

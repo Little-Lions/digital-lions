@@ -12,6 +12,8 @@ import {
 } from 'chart.js'
 import 'chartjs-plugin-datalabels' // Import the datalabels plugin
 
+import Text from './Text'
+
 // Register necessary components
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -80,7 +82,7 @@ const PieChart: React.FC = () => {
       {chartData && chartOptions ? (
         <Pie data={chartData} options={chartOptions} />
       ) : (
-        <p>Loading...</p>
+        <Text>Loading...</Text>
       )}
     </div>
   )

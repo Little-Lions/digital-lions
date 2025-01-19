@@ -1,6 +1,7 @@
 import React from 'react'
 
 import Heading from './Heading'
+import Text from './Text'
 
 interface EmptyStateProps {
   title: string
@@ -21,8 +22,8 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         {pictogram}
       </div>
       <Heading level="h4">{title}</Heading>
-      <p className="mt-2">{text}</p>
-      <div className="mt-4">{actionButton}</div>
+      <Text className="mt-2">{text}</Text>
+      <Text className="mt-4">{actionButton}</Text>
     </div>
   )
 }

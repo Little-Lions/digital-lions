@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
+
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 
 import { useParams } from 'next/navigation'
 
@@ -12,9 +14,11 @@ import CustomButton from '@/components/CustomButton'
 import Modal from '@/components/Modal'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import EmptyState from '@/components/EmptyState'
-import ToggleSwitch from '@/components/ToggleSwitch'
+// import ToggleSwitch from '@/components/ToggleSwitch'
 import Toast from '@/components/Toast'
 import Heading from '@/components/Heading'
+import AlertBanner from '@/components/AlertBanner'
+import Text from '@/components/Text'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -25,47 +29,43 @@ import { TeamInCommunity } from '@/types/teamInCommunity.interface'
 import { Team } from '@/types/team.interface'
 
 const TeamsPage: React.FC = () => {
+  const queryClient = useQueryClient()
   const params = useParams()
   const communityId = params?.communityId as string
-  const [teams, setTeams] = useState<TeamInCommunity[] | Team[]>([])
-  const [filteredTeams, setFilteredTeams] = useState<
-    TeamInCommunity[] | Team[]
-  >([])
-  const [teamName, setTeamName] = useState('')
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [teamName, setTeamName] = useState('')
   const [isActive, setIsActive] = useState(true)
 
-  const [isAddingTeam, setIsAddingTeam] = useState(false)
   const [openAddTeamModal, setOpenAddTeamModal] = useState(false)
   const [isAddingTeamComplete, setIsAddingTeamComplete] = useState(false)
 
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   const { communityName } = useCommunity()
 
-  const fetchTeams = useCallback(async () => {
-    setIsLoading(true)
+  // Fetch teams for the community
+  const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const fetchedTeams = await getTeamsOfCommunity(Number(communityId))
-      setTeams(fetchedTeams)
-      if (isActive) {
-        setFilteredTeams(fetchedTeams.filter((team) => team.is_active))
-      } else {
-        setFilteredTeams(fetchedTeams)
-      }
+      const response = await getTeamsOfCommunity(Number(communityId))
+      return response
     } catch (error) {
       console.error('Failed to fetch teams:', error)
-    } finally {
-      setIsLoading(false)
-      setIsInitialLoad(false)
+      throw error
     }
-  }, [isActive, communityId])
+  }
 
-  useEffect(() => {
-    fetchTeams()
-  }, [fetchTeams])
+  const {
+    data: teams = [],
+    isLoading,
+    error: hasErrorFetchingTeams,
+  } = useQuery(['teams', communityId], fetchTeams, {
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Filtered teams (derived dynamically)
+  const filteredTeams = isActive
+    ? teams.filter((team) => team.is_active)
+    : teams
 
   const handleOpenTeamModal = (): void => {
     setOpenAddTeamModal(true)
@@ -84,47 +84,54 @@ const TeamsPage: React.FC = () => {
     setTeamName(value)
   }
 
-  const handleAddTeam = async (): Promise<void> => {
-    if (teamName.trim() === '') return
-    setIsAddingTeam(true)
+  // Mutation to add a new team
+  const addTeam = async (): Promise<{ id: number }> => {
+    if (teamName.trim() === '') {
+      throw new Error('Team name cannot be empty')
+    }
     try {
-      const newTeam = await createTeam({
+      return await createTeam({
         name: teamName,
         communityId: Number(communityId),
       })
-      setTeams((prevTeams) => [
-        ...prevTeams,
-        { name: teamName, id: newTeam.id } as Team,
-      ])
-      handleCloseTeamModal()
-      await fetchTeams()
-      setIsAddingTeamComplete(true)
     } catch (error) {
       setErrorMessage(String(error))
-      console.error('Error adding team:', error)
-    } finally {
-      setIsAddingTeam(false)
+      throw error
     }
   }
 
-  const handleToggleChange = (active: boolean): void => {
-    setIsActive(active)
-    if (active) {
-      // Filter active teams
-      setFilteredTeams(teams.filter((team) => team.is_active))
-    } else {
-      // Show all teams
-      setFilteredTeams(teams)
-    }
-  }
+  const { mutate: handleAddTeam, isLoading: isAddingTeam } = useMutation(
+    addTeam,
+    {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries(['teams', communityId])
+        handleCloseTeamModal()
+        setIsAddingTeamComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    },
+  )
+
+  // const handleToggleChange = (active: boolean): void => {
+  //   setIsActive(active)
+  //   if (active) {
+  //     // Filter active teams
+  //     setFilteredTeams(teams.filter((team) => team.is_active))
+  //   } else {
+  //     // Show all teams
+  //     setFilteredTeams(teams)
+  //   }
+  // }
   return (
     <>
-      {isLoading && isInitialLoad ? (
+      {isLoading ? (
         <>
           <SkeletonLoader width="142px" type="button" />
           <div className="flex justify-between">
             <SkeletonLoader width="189px" height="40px" type="text" />
-            {/* <SkeletonLoader width="142px" type="button" /> */}
           </div>
           {Array.from({ length: 5 }, (_, i) => (
             <SkeletonLoader key={i} type="card" />
@@ -132,7 +139,7 @@ const TeamsPage: React.FC = () => {
         </>
       ) : (
         <>
-          {teams.length ? (
+          {teams?.length ? (
             <>
               <CustomButton
                 label="Add team"
@@ -195,7 +202,9 @@ const TeamsPage: React.FC = () => {
                   onBlur={handleTeamNameBlur}
                   autoFocus
                 />
-                {errorMessage && <p className="text-error">{errorMessage}</p>}
+                {errorMessage && (
+                  <Text className="text-error">{errorMessage}</Text>
+                )}
               </form>
             </Modal>
           )}
@@ -203,10 +212,14 @@ const TeamsPage: React.FC = () => {
           {isAddingTeamComplete && (
             <Toast
               variant="success"
-              message="Community added successfully"
+              message="Team added successfully"
               isCloseable
               onClose={() => setIsAddingTeamComplete(false)}
             />
+          )}
+
+          {!!hasErrorFetchingTeams && (
+            <AlertBanner variant="error" message="Failed to fetch teams" />
           )}
         </>
       )}

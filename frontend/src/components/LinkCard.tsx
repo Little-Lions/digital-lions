@@ -15,9 +15,8 @@ const LinkCard: React.FC<LinkCardProps> = ({
   className,
   href,
   children,
-  onClick,
 }) => {
-  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>): void => {
     // Prevent navigation when interacting with buttons
     event.stopPropagation()
   }

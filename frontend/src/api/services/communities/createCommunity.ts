@@ -1,5 +1,4 @@
 interface ApiResponse {
-  name: string
   id: number
 }
 

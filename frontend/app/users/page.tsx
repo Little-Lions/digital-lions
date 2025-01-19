@@ -9,6 +9,8 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import Accordion from '@/components/Accordion'
 import SelectInput from '@/components/SelectInput'
 import Toast from '@/components/Toast'
+import Text from '@/components/Text'
+
 // import Loader from '@/components/Loader'
 
 import { TrashIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/16/solid'
@@ -342,8 +344,8 @@ const UsersPage: React.FC = () => {
               className="mb-2"
             >
               <div>
-                <p>{`Nickname: ${user.nickname}`}</p>
-                <p>{`Email: ${user.email}`}</p>
+                <Text>{`Nickname: ${user.nickname}`}</Text>
+                <Text>{`Email: ${user.email}`}</Text>
               </div>
               <div className="border-t mt-4 border-gray-200 " />
 

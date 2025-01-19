@@ -1,6 +1,14 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryFunctionContext,
+} from 'react-query'
+
 import Accordion from '@/components/Accordion'
 import getTeams from '@/api/services/teams/getTeams'
 import getTeamById from '@/api/services/teams/getTeamById'
@@ -18,6 +26,8 @@ import ConfirmModal from '@/components/ConfirmModal'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import ButtonGroup from '@/components/ButtonGroup'
 import Toast from '@/components/Toast'
+import AlertBanner from '@/components/AlertBanner'
+import Text from '@/components/Text'
 
 import EmptyState from '@/components/EmptyState'
 
@@ -34,16 +44,13 @@ interface Team {
 }
 
 const TeamsDetailPage: React.FC = () => {
+  const queryClient = useQueryClient()
   const router = useRouter()
   const params = useParams()
 
   const communityId = params?.communityId as string
   const teamId = params?.teamId as string
 
-  const [teams, setTeams] = useState<Team[]>([])
-  const [selectedTeam, setSelectedTeam] = useState<TeamWithChildren | null>(
-    null,
-  )
   const [modalVisible, setModalVisible] = useState(false)
 
   const [editChildId, setEditChildId] = useState<number | null>(null)
@@ -52,18 +59,7 @@ const TeamsDetailPage: React.FC = () => {
   const [editAge, setEditAge] = useState<number | null>(null)
   const [editGender, setEditGender] = useState<string | null>(null)
 
-  // const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
-
-  const [isLoadingTeams, setIsLoadingTeams] = useState(false) // For the SelectInput
-  const [isLoadingSelectedTeam, setIsLoadingSelectedTeam] = useState(false) // For the selected team's children
-
-  const [isLoadingChild, setIsLoadingChild] = useState(false)
-  const [isDeletingChild, setIsDeletingChild] = useState(false)
-  const [isEditingChild, setIsEditingChild] = useState(false)
-  const [isAddingChild, setIsAddingChild] = useState(false)
-
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   const [deleteChildModalVisible, setDeleteChildModalVisible] = useState(false)
 
@@ -71,56 +67,151 @@ const TeamsDetailPage: React.FC = () => {
   const [isEditingChildComplete, setIsEditingChildComplete] = useState(false)
   const [isDeletingChildComplete, setIsDeletingChildComplete] = useState(false)
 
-  const fetchTeamById = async (teamId: number): Promise<void> => {
-    setIsLoadingSelectedTeam(true)
+  const [editMode, setEditMode] = useState<'add' | 'edit'>('add')
+
+  const fetchTeamById = async ({
+    queryKey,
+  }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
     try {
+      const [, teamId] = queryKey // Extract teamId from the query key
       const numericTeamId = Number(teamId)
       if (isNaN(numericTeamId)) {
         throw new Error('Invalid team ID')
       }
-      const teamDetails = await getTeamById(numericTeamId)
-      setSelectedTeam(teamDetails)
+      const response = await getTeamById(numericTeamId)
+      return response
     } catch (error) {
       console.error('Failed to fetch team details:', error)
-    } finally {
-      setIsLoadingSelectedTeam(false)
+      throw error
     }
   }
 
-  useEffect(() => {
-    if (teamId) {
-      fetchTeamById(Number(teamId))
-    }
-  }, [teamId])
+  const {
+    data: selectedTeam,
+    isLoading: isLoadingSelectedTeam,
+    error: hasErrorFetchingTeams,
+  } = useQuery(['team', teamId], fetchTeamById, {
+    enabled: !!teamId,
+    staleTime: 5 * 60 * 1000,
+  })
 
   // Fetch all teams on component mount
-  useEffect(() => {
-    const fetchTeams = async (): Promise<void> => {
-      setIsLoadingTeams(true)
-      try {
-        const fetchedTeams = await getTeams('active')
-        setTeams(fetchedTeams)
-      } catch (error) {
-        console.error('Failed to fetch teams:', error)
-      } finally {
-        setIsLoadingTeams(true)
-        setIsInitialLoad(false)
-      }
+  const fetchTeams = async (): Promise<Team[]> => {
+    try {
+      const response = await getTeams('active')
+      return response
+    } catch (error) {
+      console.error('Failed to fetch teams:', error)
+      throw error
     }
+  }
 
-    fetchTeams()
-  }, [])
+  const { data: teams = [], isLoading: isLoadingTeams } = useQuery(
+    'teams',
+    fetchTeams,
+    {
+      staleTime: 5 * 60 * 1000,
+    },
+  )
+
+  // Mutation to add a child
+  const addChild = async () => {
+    if (!selectedTeam) throw new Error('No team selected')
+    try {
+      const response = await createChild({
+        teamId: selectedTeam.id,
+        age: editAge || null,
+        gender: editGender,
+        firstName: editFirstName,
+        lastName: editLastName,
+      })
+      return response
+    } catch (error) {
+      setErrorMessage(String(error))
+      throw error
+    }
+  }
+
+  const { mutate: handleAddChild, isLoading: isAddingChild } = useMutation(
+    addChild,
+    {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries(['team', teamId]) // Refetch the selected team
+        closeModal()
+        setIsAddingChildComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    },
+  )
+
+  // Mutation to edit a child
+  const editChild = async () => {
+    if (!editChildId) throw new Error('Invalid child ID')
+    try {
+      const response = await updateChild({
+        childId: editChildId,
+        isActive: true,
+        age: editAge,
+        gender: editGender,
+        firstName: editFirstName,
+        lastName: editLastName,
+      })
+      return response
+    } catch (error) {
+      setErrorMessage(String(error))
+      throw error
+    }
+  }
+
+  const { mutate: handleEditChild, isLoading: isEditingChild } = useMutation(
+    editChild,
+    {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries(['team', teamId])
+        closeModal()
+        setIsEditingChildComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    },
+  )
+
+  // Mutation to delete a child
+  const removeChild = async () => {
+    if (!editChildId) throw new Error('Invalid child ID')
+    try {
+      await deleteChild(editChildId, false)
+    } catch (error) {
+      console.log('has error')
+      setErrorMessage('this child cannot be deleted')
+      throw error
+    }
+  }
+
+  const { mutate: handleDeleteChild, isLoading: isDeletingChild } = useMutation(
+    removeChild,
+    {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries(['team', teamId])
+        setDeleteChildModalVisible(false)
+        setIsDeletingChildComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    },
+  )
 
   const handleTeamChange = (value: string | number): void => {
     const selectedId = typeof value === 'string' ? parseInt(value, 10) : value
     const url = `/communities/${communityId}/teams/${selectedId}`
-
     router.replace(url)
-  }
-
-  const handleAddChild = (): void => {
-    setIsAddingChild(true)
-    setModalVisible(true)
   }
 
   const closeModal = (): void => {
@@ -130,91 +221,32 @@ const TeamsDetailPage: React.FC = () => {
     setEditLastName('')
     setEditAge(null)
     setEditGender(null)
-    setIsAddingChild(false)
-    setIsEditingChild(false)
   }
 
-  const handleFirstNameChange = (value: string): void => {
-    setEditFirstName(value)
+  const openEditChildModal = (child: {
+    id: number
+    first_name: string
+    last_name: string
+    age?: number
+    gender?: string
+  }): void => {
+    setEditChildId(child.id)
+    setEditFirstName(child.first_name)
+    setEditLastName(child.last_name)
+    setEditAge(child.age || null)
+    setEditGender(child.gender || '')
+    setEditMode('edit')
+    setModalVisible(true)
   }
 
-  const handleLastNameChange = (value: string): void => {
-    setEditLastName(value)
-  }
-
-  const handleAgeChange = (value: string): void => {
-    setEditAge(parseInt(value, 10))
-  }
-
-  const handleGenderChange = (value: string): void => {
-    setEditGender(value)
-  }
-
-  const handleEditChild = (childId: number): void => {
-    setIsEditingChild(true)
-    const child = selectedTeam?.children.find((c) => c.id === childId)
-    if (child) {
-      setEditChildId(child.id)
-      setEditFirstName(child.first_name)
-      setEditLastName(child.last_name)
-      setEditAge(child.age)
-      setEditGender(child.gender)
-      setModalVisible(true)
-    }
-  }
-
-  const handleSaveChild = async (): Promise<void> => {
-    if (isEditingChild && editChildId !== null) {
-      if (editFirstName && editLastName) {
-        const updatedChild = {
-          childId: editChildId,
-          isActive: true,
-          age: editAge || null,
-          gender: editGender || 'null',
-          firstName: editFirstName,
-          lastName: editLastName,
-        }
-        setIsLoadingChild(true)
-        try {
-          await updateChild(updatedChild)
-          closeModal()
-
-          await fetchTeamById(Number(selectedTeam?.id))
-          setIsEditingChildComplete(true)
-        } catch (error) {
-          console.error('Failed to update child:', error)
-        } finally {
-          setIsLoadingChild(false)
-        }
-      } else {
-        console.error('Missing required fields for updating child')
-      }
-    } else if (isAddingChild) {
-      if (editFirstName && editLastName && selectedTeam) {
-        const newChild = {
-          teamId: selectedTeam.id,
-          age: editAge,
-          gender: editGender,
-          firstName: editFirstName,
-          lastName: editLastName,
-        }
-        setIsLoadingChild(true)
-        try {
-          await createChild(newChild)
-          closeModal()
-
-          await fetchTeamById(Number(selectedTeam.id))
-          setIsAddingChildComplete(true)
-        } catch (error) {
-          setErrorMessage(String(error))
-          console.error('Failed to create child:', error)
-        } finally {
-          setIsLoadingChild(false)
-        }
-      } else {
-        console.error('Missing required fields for adding child')
-      }
-    }
+  const openAddChildModal = (): void => {
+    setEditChildId(null)
+    setEditFirstName('')
+    setEditLastName('')
+    setEditAge(null)
+    setEditGender('')
+    setEditMode('add')
+    setModalVisible(true)
   }
 
   const openDeleteChildModal = (childId: number): void => {
@@ -224,28 +256,12 @@ const TeamsDetailPage: React.FC = () => {
 
   const handleCloseDeleteChildModal = (): void => {
     setDeleteChildModalVisible(false)
-  }
-
-  const handleDeleteChild = async (): Promise<void> => {
-    const childId = editChildId
-
-    setIsDeletingChild(true)
-    try {
-      await deleteChild(childId as number, false)
-      handleCloseDeleteChildModal()
-
-      await fetchTeamById(Number(selectedTeam?.id))
-      setIsDeletingChildComplete(true)
-    } catch (error) {
-      console.error('Failed to delete child:', error)
-    } finally {
-      setIsDeletingChild(false)
-    }
+    setErrorMessage('')
   }
 
   return (
     <>
-      {isLoadingTeams && isInitialLoad ? (
+      {isLoadingTeams ? (
         <>
           <SkeletonLoader type="input" />
           <SkeletonLoader width="142px" type="button" />
@@ -273,7 +289,7 @@ const TeamsDetailPage: React.FC = () => {
           {selectedTeam?.children.length ? (
             <CustomButton
               label="Add child"
-              onClick={handleAddChild}
+              onClick={openAddChildModal}
               variant="outline"
               isFullWidth
               className="mb-4"
@@ -286,7 +302,7 @@ const TeamsDetailPage: React.FC = () => {
               actionButton={
                 <CustomButton
                   label="Add child"
-                  onClick={handleAddChild}
+                  onClick={openAddChildModal}
                   variant="primary"
                   className="hover:bg-card-dark hover:text-white mb-4"
                 />
@@ -303,10 +319,10 @@ const TeamsDetailPage: React.FC = () => {
                   className="mb-2"
                 >
                   <div>
-                    <p>{`First Name: ${child.first_name}`}</p>
-                    <p>{`Last Name: ${child.last_name}`}</p>
-                    <p>{`Age: ${child.age}`}</p>
-                    <p>{`Gender: ${child.gender}`}</p>
+                    <Text>{`First Name: ${child.first_name}`}</Text>
+                    <Text>{`Last Name: ${child.last_name}`}</Text>
+                    <Text>{`Age: ${child.age}`}</Text>
+                    <Text>{`Gender: ${child.gender}`}</Text>
                   </div>
                   <div className="border-t mt-4 border-gray-200 dark:border-gray-600" />
                   <ButtonGroup>
@@ -315,7 +331,7 @@ const TeamsDetailPage: React.FC = () => {
                       label="Edit"
                       variant="secondary"
                       icon={<PencilIcon />}
-                      onClick={() => handleEditChild(child.id)}
+                      onClick={() => openEditChildModal(child)}
                     />
                     <CustomButton
                       className="mt-4"
@@ -339,29 +355,30 @@ const TeamsDetailPage: React.FC = () => {
               acceptText="Delete"
               closeText="Cancel"
               isBusy={isDeletingChild}
+              errorMessage={errorMessage}
             />
           )}
 
           {modalVisible && (
             <Modal
               onClose={closeModal}
-              title={isEditingChild ? 'Edit child' : 'Add child'}
-              acceptText={isEditingChild ? 'Edit' : 'Add'}
-              onAccept={handleSaveChild}
-              isBusy={isLoadingChild}
+              title={editMode === 'edit' ? 'Edit child' : 'Add child'}
+              acceptText={editMode === 'edit' ? 'Edit' : 'Add'}
+              onAccept={editMode === 'edit' ? handleEditChild : handleAddChild}
+              isBusy={isAddingChild || isEditingChild}
               isDisabledButton={!editFirstName || !editLastName}
             >
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  handleAddChild()
+                  editMode === 'edit' ? handleEditChild() : handleAddChild()
                 }}
               >
                 <TextInput
                   className="mb-2"
                   label="First Name"
                   value={editFirstName}
-                  onChange={handleFirstNameChange}
+                  onChange={(value) => setEditFirstName(value)}
                   required
                   errorMessage="Please enter your first name"
                 />
@@ -369,7 +386,7 @@ const TeamsDetailPage: React.FC = () => {
                   className="mb-2"
                   label="Last Name"
                   value={editLastName}
-                  onChange={handleLastNameChange}
+                  onChange={(value) => setEditLastName(value)}
                   required
                   errorMessage="Please enter your last name"
                 />
@@ -377,21 +394,23 @@ const TeamsDetailPage: React.FC = () => {
                   className="mb-2"
                   label="Age"
                   value={editAge?.toString() || ''}
-                  onChange={handleAgeChange}
+                  onChange={(value) => setEditAge(parseInt(value, 10))}
                 />
                 <SelectInput
                   className="mb-2"
                   label="Gender"
                   value={editGender ?? ''}
                   onChange={(value: string | number) =>
-                    handleGenderChange(String(value))
+                    setEditGender(String(value))
                   }
                 >
                   <option value="">Select gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                 </SelectInput>
-                {errorMessage && <p className="text-error">{errorMessage}</p>}
+                {errorMessage && (
+                  <Text className="text-error">{errorMessage}</Text>
+                )}
               </form>
             </Modal>
           )}
@@ -421,6 +440,10 @@ const TeamsDetailPage: React.FC = () => {
               isCloseable
               onClose={() => setIsDeletingChildComplete(false)}
             />
+          )}
+
+          {!!hasErrorFetchingTeams && (
+            <AlertBanner variant="error" message="Failed to fetch teams" />
           )}
         </>
       )}

@@ -79,7 +79,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   const itemAnimationDuration = animationDuration / workshops.length
 
-  const hasAnimated = useRef(false)
+  // const hasAnimated = useRef(false)
 
   useEffect(() => {
     const animateToCurrentWorkshop = (): void => {
@@ -96,11 +96,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
       }
     }
 
-    // Run animation only once on initial load
-    if (!hasAnimated.current) {
-      animateToCurrentWorkshop()
-      hasAnimated.current = true
-    }
+    animateToCurrentWorkshop()
   }, [currentWorkshop, itemAnimationDuration])
 
   useEffect(() => {

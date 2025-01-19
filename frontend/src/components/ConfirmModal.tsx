@@ -2,6 +2,9 @@ import React from 'react'
 import Modal from './Modal'
 import CustomButton from './CustomButton'
 import ButtonGroup from './ButtonGroup'
+import Text from './Text'
+import AlertBanner from './AlertBanner'
+import { error } from 'console'
 
 interface ConfirmModalProps {
   title: string
@@ -11,6 +14,7 @@ interface ConfirmModalProps {
   acceptText?: string
   closeText?: string
   isBusy?: boolean
+  errorMessage?: string | null
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -21,6 +25,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   acceptText = 'Yes',
   closeText = 'No',
   isBusy = false,
+  errorMessage = '',
 }) => {
   return (
     <Modal
@@ -40,12 +45,20 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
               variant="error"
               onClick={onAccept}
               isBusy={isBusy}
+              isDisabled={errorMessage !== ''}
             />
           </ButtonGroup>
         </>
       }
     >
-      <p className="text-gray-700 ">{text}</p>
+      <Text className="text-gray-700 ">{text}</Text>
+      {errorMessage && (
+        <AlertBanner
+          variant="error"
+          message={errorMessage}
+          isCloseable={false}
+        />
+      )}
     </Modal>
   )
 }

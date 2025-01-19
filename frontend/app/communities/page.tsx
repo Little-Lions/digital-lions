@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
@@ -19,53 +21,51 @@ import Modal from '@/components/Modal'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Toast from '@/components/Toast'
 import ConfirmModal from '@/components/ConfirmModal'
+import AlertBanner from '@/components/AlertBanner'
+import Text from '@/components/Text'
 
-interface Community {
-  name: string
-  id: number
-}
+import { Community } from '@/types/community.interface'
 
 const CommunityPage: React.FC = () => {
+  const queryClient = useQueryClient()
   const { communityName, setCommunityName } = useCommunity()
-  const [communities, setCommunities] = useState<Community[]>([])
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   const [communityId, setCommunityId] = useState<number | null>(null)
 
-  const [isDeletingCommunity, setIsDeletingCommunity] = useState(false)
-  const [isEditingCommunity, setIsEditingCommunity] = useState(false)
   const [isDeletingCommunityComplete, setIsDeletingCommunityComplete] =
-    useState(false)
-
-  const [isAddingCommunity, setIsAddingCommunity] = useState(false)
+    useState<boolean>(false)
+  const [isEditingCommunityComplete, setIsEditingCommunityComplete] =
+    useState<boolean>(false)
   const [isAddingCommunityComplete, setIsAddingCommunityComplete] =
-    useState(false)
-  const [openAddCommunityModal, setOpenAddCommunityModal] = useState(false)
-  const [openEditCommunityModal, setOpenEditCommunityModal] = useState(false)
+    useState<boolean>(false)
+
+  const [openAddCommunityModal, setOpenAddCommunityModal] =
+    useState<boolean>(false)
+  const [openEditCommunityModal, setOpenEditCommunityModal] =
+    useState<boolean>(false)
 
   const [deleteCommunityModalVisible, setDeleteCommunityModalVisible] =
-    useState(false)
+    useState<boolean>(false)
 
-  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
 
-  const fetchCommunities = async (): Promise<void> => {
-    setIsLoading(true)
+  const fetchCommunities = async (): Promise<Community[]> => {
     try {
-      const communitiesData = await getCommunities()
-      setCommunities(communitiesData)
+      const response = await getCommunities()
+      return response
     } catch (error) {
       console.error('Failed to fetch communities:', error)
-    } finally {
-      setIsLoading(false)
-      setIsInitialLoad(false)
+      throw error
     }
   }
 
-  useEffect(() => {
-    fetchCommunities()
-  }, [])
+  const {
+    data: communities = [], // Data from the query
+    isLoading, // Loading state
+    error: hasErrorFetchingCommunities, // Error state
+  } = useQuery<Community[]>('communities', fetchCommunities, {
+    staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
+  })
 
   const handleOpenCommunityModal = (): void => {
     setOpenAddCommunityModal(true)
@@ -84,25 +84,30 @@ const CommunityPage: React.FC = () => {
     setCommunityName(value)
   }
 
-  const handleAddCommunity = async (): Promise<void> => {
-    if (!communityName || communityName.trim() === '') return
-
-    setIsAddingCommunity(true)
+  const addCommunity = async (): Promise<{ id: number }> => {
+    if (!communityName || communityName.trim() === '') {
+      throw new Error('Community name cannot be empty')
+    }
     try {
-      const newCommunity = await createCommunity(communityName)
-      setCommunities([...communities, newCommunity]) // Update the local list
-      // setCommunityName(newCommunity.name) // Update the context value
-      handleCloseCommunityModal()
-
-      await fetchCommunities() // Refetch the communities
-      setIsAddingCommunityComplete(true)
+      return await createCommunity(communityName)
     } catch (error) {
       setErrorMessage(String(error))
-      console.error('Error adding community:', error)
-    } finally {
-      setIsAddingCommunity(false)
+      throw error
     }
   }
+
+  const { mutate: handleAddCommunity, isLoading: isAddingCommunity } =
+    useMutation(addCommunity, {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries('communities')
+        handleCloseCommunityModal()
+        setIsAddingCommunityComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    })
 
   const handleOpenDeleteCommunityModal = (CommunityId: number): void => {
     setCommunityId(CommunityId)
@@ -113,22 +118,35 @@ const CommunityPage: React.FC = () => {
     setDeleteCommunityModalVisible(false)
   }
 
-  const handleDeleteCommunity = async (): Promise<void> => {
+  const removeCommunity = async (): Promise<void> => {
     if (!communityId) return
-
-    setIsDeletingCommunity(true)
     try {
       await deleteCommunity(communityId, false)
-      handleCloseDeleteCommunityModal()
-
-      await fetchCommunities()
-      setIsDeletingCommunityComplete(true)
     } catch (error) {
-      console.error('Failed to delete Community:', error)
-    } finally {
-      setIsDeletingCommunity(false)
+      setErrorMessage(String(error))
+      throw error
     }
   }
+
+  const { mutate: handleDeleteCommunity, isLoading: isDeletingCommunity } =
+    useMutation(removeCommunity, {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries('communities')
+        handleCloseDeleteCommunityModal()
+        setIsDeletingCommunityComplete(true)
+      },
+      onError: (error: Error) => {
+        try {
+          const parsedError = JSON.parse(error.message)
+          setErrorMessage(
+            parsedError.details?.detail || 'Failed to delete team',
+          )
+        } catch {
+          setErrorMessage(error.message)
+        }
+      },
+    })
 
   const handleOpenEditCommunityModal = (CommunityId: number): void => {
     setCommunityId(CommunityId)
@@ -139,30 +157,35 @@ const CommunityPage: React.FC = () => {
     setOpenEditCommunityModal(false)
   }
 
-  const handleEditCommunity = async (): Promise<void> => {
-    if (!communityName || communityName.trim() === '') return
+  const editCommunity = async (): Promise<void> => {
+    if (!communityName || communityName.trim() === '') {
+      throw new Error('Community name cannot be empty')
+    }
     if (!communityId) return
 
-    setIsEditingCommunity(true)
     try {
       await updateCommunity(communityId, communityName)
-      await createCommunity(communityName)
-
-      handleCloseEditCommunityModal()
-
-      await fetchCommunities()
-      setIsAddingCommunityComplete(true)
     } catch (error) {
       setErrorMessage(String(error))
-      console.error('Error adding community:', error)
-    } finally {
-      setIsEditingCommunity(false)
     }
   }
 
+  const { mutate: handleEditCommunity, isLoading: isEditingCommunity } =
+    useMutation(editCommunity, {
+      onSuccess: async () => {
+        setErrorMessage(null)
+        await queryClient.invalidateQueries('communities')
+        handleCloseEditCommunityModal()
+        setIsEditingCommunityComplete(true)
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    })
+
   return (
     <>
-      {isLoading && isInitialLoad ? (
+      {isLoading ? (
         <>
           <SkeletonLoader width="142px" type="button" />
           {Array.from({ length: 8 }, (_, i) => (
@@ -224,12 +247,14 @@ const CommunityPage: React.FC = () => {
                 <TextInput
                   className="mb-2"
                   label="Community name"
-                  value={communityName || ''} // Controlled input
+                  value={''} // Controlled input
                   onChange={handleCommunityNameChange}
                   onBlur={handleCommunityNameBlur}
                   autoFocus
                 />
-                {errorMessage && <p className="text-error">{errorMessage}</p>}
+                {errorMessage && (
+                  <AlertBanner variant="error" message={errorMessage} />
+                )}
               </form>
             </Modal>
           )}
@@ -257,7 +282,9 @@ const CommunityPage: React.FC = () => {
                   onBlur={handleCommunityNameBlur}
                   autoFocus
                 />
-                {errorMessage && <p className="text-error">{errorMessage}</p>}
+                {errorMessage && (
+                  <Text className="text-error">{errorMessage}</Text>
+                )}
               </form>
             </Modal>
           )}
@@ -283,12 +310,28 @@ const CommunityPage: React.FC = () => {
             />
           )}
 
+          {isEditingCommunityComplete && (
+            <Toast
+              variant="success"
+              message="Community edited successfully"
+              isCloseable
+              onClose={() => setIsEditingCommunityComplete(false)}
+            />
+          )}
+
           {isDeletingCommunityComplete && (
             <Toast
               variant="success"
               message="Community deleted successfully"
               isCloseable
               onClose={() => setIsDeletingCommunityComplete(false)}
+            />
+          )}
+
+          {!!hasErrorFetchingCommunities && (
+            <AlertBanner
+              variant="error"
+              message="Failed to fetch communities"
             />
           )}
         </>

@@ -7,12 +7,15 @@ const updateCommunity = async (
       `/api/communities?community_id=${communityId}`,
       {
         method: 'PATCH',
-        body: JSON.stringify(communityName),
+        body: JSON.stringify({ name: communityName }),
       },
     )
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      const errorBody = await response.json()
+      throw new Error(
+        `Error: ${response.statusText}. Message: ${errorBody.message || 'Unknown error'}`,
+      )
     }
   } catch (error) {
     console.error('Error fetching data:', error)

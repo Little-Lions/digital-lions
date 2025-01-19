@@ -1,41 +1,41 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
+
+import { useQuery } from 'react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 
+import { Community } from '@/types/community.interface'
+
 import LinkCard from '@/components/LinkCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Badge from '@/components/Badge'
 import Heading from '@/components/Heading'
-interface Community {
-  name: string
-  id: number
-}
+import AlertBanner from '@/components/AlertBanner'
 
 const ProgramTrackerCommunityPage: React.FC = () => {
-  const [communities, setCommunities] = useState<Community[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-
   const { setCommunityName } = useCommunity()
 
-  const fetchCommunities = async (): Promise<void> => {
-    setIsLoading(true)
+  const fetchCommunities = async (): Promise<Community[]> => {
     try {
-      const communitiesData = await getCommunities()
-      setCommunities(communitiesData)
+      const response = await getCommunities()
+      return response
     } catch (error) {
       console.error('Failed to fetch communities:', error)
-    } finally {
-      setIsLoading(false)
+      throw error
     }
   }
 
-  useEffect(() => {
-    fetchCommunities()
-  }, [])
+  const {
+    data: communities = [],
+    isLoading,
+    error: hasErrorFetchingCommunities,
+  } = useQuery<Community[], Error>('communities', fetchCommunities, {
+    staleTime: 5 * 60 * 1000,
+  })
 
   return (
     <>
@@ -47,7 +47,7 @@ const ProgramTrackerCommunityPage: React.FC = () => {
           ))}
         </>
       ) : (
-        <>
+        <div>
           <Heading level="h3">Communities</Heading>
           {communities.map((community) => (
             <LinkCard
@@ -63,7 +63,13 @@ const ProgramTrackerCommunityPage: React.FC = () => {
               </div>
             </LinkCard>
           ))}
-        </>
+          {!!hasErrorFetchingCommunities && (
+            <AlertBanner
+              variant="error"
+              message="Failed to fetch communities"
+            />
+          )}
+        </div>
       )}
     </>
   )

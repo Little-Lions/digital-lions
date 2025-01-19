@@ -153,8 +153,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
           })
         }
 
-        // Increment to the next step
-        return nextChecked
+        return nextChecked // Increment to the next step
       })
     }
   }, [isSaved, workshops.length])

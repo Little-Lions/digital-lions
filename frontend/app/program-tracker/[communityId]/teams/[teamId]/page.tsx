@@ -109,7 +109,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     ['workshops', selectedTeam?.id],
     fetchWorkshops,
     {
-      enabled: !!selectedTeam?.id,
+      enabled: false, // Disable automatic fetching
     },
   )
 
@@ -118,8 +118,10 @@ const ProgramTrackerAttendancePage: React.FC = () => {
       onSuccess: async () => {
         setErrorMessage(null)
         await queryClient.invalidateQueries(['team', teamId])
+        setTimeout(() => {
+          setIsSaved(false)
+        }, 50)
         await refetchWorkshops()
-        setIsSaved(true)
       },
       onError: (error: Error) => {
         setErrorMessage(error.message)

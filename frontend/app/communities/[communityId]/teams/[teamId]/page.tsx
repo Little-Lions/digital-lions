@@ -187,7 +187,6 @@ const TeamsDetailPage: React.FC = () => {
     try {
       await deleteChild(editChildId, false)
     } catch (error) {
-      console.log('has error')
       setErrorMessage('this child cannot be deleted')
       throw error
     }

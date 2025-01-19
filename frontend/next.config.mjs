@@ -1,9 +1,21 @@
-export default {
-  experimental: {
-    appDir: true, // This enables the App Router in Next.js 13+
-  },
+import withBundleAnalyzer from '@next/bundle-analyzer'
 
-  async redirects() {
-    return []
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})({
+  experimental: {
+    appDir: true,
+    webpackMemoryOptimizations: true,
+    webpackBuildWorker: true,
+    serverSourceMaps: false,
   },
-}
+  productionBrowserSourceMaps: false,
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
+  webpack: (config, { dev }) => {
+    if (!dev) {
+      config.cache = Object.freeze({ type: 'memory' })
+    }
+    return config
+  },
+})

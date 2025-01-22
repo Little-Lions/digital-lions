@@ -17,18 +17,19 @@ router = APIRouter(prefix="/users")
 
 @router.get(
     "/me",
-    response_model=models.UserCurrentGetOut,
+    # response_model=models.UserCurrentGetOut,
     tags=["users"],
     status_code=status.HTTP_200_OK,
     summary="Get information about the current user",
 )
-async def me(current_user: Annotated[CurrentUser, Depends(BearerTokenHandlerInst)]):
+async def me(
+    user_service: Annotated[UserService, Depends(UserService)],
+):
     """
     Get the current user.
 
     """
-
-    return current_user
+    return user_service.me()
 
 
 @router.get(

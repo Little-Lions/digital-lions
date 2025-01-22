@@ -9,6 +9,17 @@ class UserCurrentGetOut(BaseModel):
     """API response model for GET /users/me."""
 
     user_id: str
+    nickname: str | None = Field(default=None)
+    email: EmailStr
+
+    # login information
+    email_verified: bool
+    created_at: datetime
+    updated_at: datetime
+
+    permissions: list[str] = Field(
+        description="List of permissions the user has based on their role."
+    )
 
     class Config:
         extra = "ignore"  # Ignore fields not defined in the model

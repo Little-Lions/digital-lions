@@ -3,8 +3,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: pgadmin_container
     environment:
-      PGADMIN_DEFAULT_EMAIL: 
-      PGADMIN_DEFAULT_PASSWORD: 
+      PGADMIN_DEFAULT_EMAIL: user@domain.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - 80:80
     networks:

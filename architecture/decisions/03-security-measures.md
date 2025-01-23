@@ -13,6 +13,8 @@ This document outlines the security measures that are or will be implemented in 
 
 ## Authentication & Authorization
 
+> This is outdated: Digital Lions fully relies on Auth0 for user management.
+
 - [x] No plain passwords are stored in the database. Instead, we store the hash of the password and the [salt](https://auth0.com/blog/adding-salt-to-hashing-a-better-way-to-store-passwords/) used to generate the hash. Passwords can be reset via email links.
 - [x] The database will require a strong password to access it.
   - [ ] This password will be rotated every X months.

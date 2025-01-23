@@ -20,7 +20,7 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
-URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
+# URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
 
 fake = Faker(LOCALE)
 Faker.seed(random.randint(0, 10))

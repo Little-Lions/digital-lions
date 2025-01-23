@@ -34,7 +34,7 @@ db.wipe:
 	docker compose up db
 
 db.ip: 
-	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres
+	docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' lions-db
 
 key: 
 	openssl rand -hex 32

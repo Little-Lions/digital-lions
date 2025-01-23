@@ -66,6 +66,7 @@ class CommunityService(BaseService):
 
         self._validate_community_exists(object_id)
 
+        # TODO: this should be managed by database cascading setting
         if self.database.teams.where([("community_id", object_id)]):
             if not cascade:
                 raise exceptions.CommunityHasTeamsError(

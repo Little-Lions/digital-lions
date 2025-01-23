@@ -136,6 +136,7 @@ class BearerTokenHandler(HTTPBearer):
         except jwt.exceptions.DecodeError:
             return None
 
+    # TODO: make this asynchronous
     def _get_public_key(self, token: str, kid: str, pub_key_url: str) -> str | None:
         """Get public key from Auth0 server with which token was signed."""
         pub_key = None

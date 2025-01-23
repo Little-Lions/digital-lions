@@ -17,11 +17,14 @@ class Permission(str, Enum):
     children_write: str = "children:write"
     communities_read: str = "communities:read"
     communities_write: str = "communities:write"
+    implementing_partners_read: str = "implementing_partners:read"
+    implementing_partners_write: str = "implementing_partners:write"
     teams_read: str = "teams:read"
     teams_write: str = "teams:write"
     users_read: str = "users:read"
     users_write: str = "users:write"
     roles_read: str = "roles:read"
+    roles_write: str = "roles:write"
     workshops_read: str = "workshops:read"
     workshops_write: str = "workshops:write"
 
@@ -43,6 +46,7 @@ class RoleWithPermissions:
 
 
 # TODO: ideally permissions should be obtained from OAuth
+# idea: populate roles with permissions once on deployment
 class CoachRole(RoleWithPermissions):
     """Role with permissions for a coach."""
 

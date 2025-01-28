@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - dev
       - main
     paths:
       - backend/**
@@ -37,19 +38,31 @@ jobs:
         run: |
           poetry run python -m pytest tests -vvv --cov=app 
 
-  deploy:
-    name: Deploy Backend to Railway
-    environment: production
+  deploy_dev:
+    name: Deploy Backend to Coolify Dev
+    if: github.ref == 'refs/heads/dev'
+    environment: dev
     needs: [test] 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Railway
-        run: npm i -g @railway/cli
+      - name: Deploy to Coolify
+        run: | 
+         curl --request GET '${{ secrets.COOLIFY_WEBHOOK_BACKEND }}' \
+              --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
 
-      - name: Deploy Backend
-        run: railway up --service backend --environment production
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+  # deploy_prd:
+  #   name: Deploy Backend to Coolify
+  #   if: github.ref == 'refs/heads/main'
+  #   environment: production
+  #   needs: [test] 
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - name: Deploy to Coolify
+  #       run: | 
+  #         curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' \
+  #               --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
 

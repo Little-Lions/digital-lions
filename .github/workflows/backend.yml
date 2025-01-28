@@ -39,7 +39,7 @@ jobs:
           poetry run python -m pytest tests -vvv --cov=app 
 
   deploy_dev:
-    name: Deploy Backend to Coolify Dev
+    name: Deploy backend from Coolify dev
     if: github.ref == 'refs/heads/dev'
     environment: dev
     needs: [test] 
@@ -52,17 +52,17 @@ jobs:
          curl --request GET '${{ secrets.COOLIFY_WEBHOOK_BACKEND }}' \
               --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
 
-  # deploy_prd:
-  #   name: Deploy Backend to Coolify
-  #   if: github.ref == 'refs/heads/main'
-  #   environment: production
-  #   needs: [test] 
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #
-  #     - name: Deploy to Coolify
-  #       run: | 
-  #         curl --request GET '${{ secrets.COOLIFY_WEBHOOK }}' \
-  #               --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
+  deploy_prd:
+    name: Deploy backend from Coolify production
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    needs: [test] 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger Coolify production deployment
+        run: | 
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK_BACKEND }}' \
+                --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
 

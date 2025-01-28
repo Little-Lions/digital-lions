@@ -4,23 +4,35 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - dev
       - main
     paths:
       - frontend/**
 
 jobs:
-  deploy:
-    name: Deploy Frontend to Railway
+  deploy_dev:
+    name: Deploy frontend from Coolify dev
+    if: github.ref == 'refs/heads/dev'
+    environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trigger Coolify dev deployment
+        run: | 
+         curl --request GET '${{ secrets.COOLIFY_WEBHOOK_FRONTEND }}' \
+              --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
+
+  deploy_prd:
+    name: Deploy frontend from Coolify production
+    if: github.ref == 'refs/heads/main'
     environment: production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Railway
-        run: npm i -g @railway/cli
-
-      - name: Deploy Frontend
-        run: railway up --service frontend --environment production
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Trigger Coolify production deployment
+        run: | 
+          curl --request GET '${{ secrets.COOLIFY_WEBHOOK_FRONTEND }}' \
+                --header 'Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}'
 

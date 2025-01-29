@@ -3,7 +3,7 @@ Each table in the database translate to a repository class."""
 
 from core.database import schema
 from repositories._base import BaseRepository
-from sqlalchemy import and_, func, select, or_
+from sqlalchemy import and_, func, or_, select
 
 
 class AttendanceRepository(BaseRepository[schema.Attendance]):

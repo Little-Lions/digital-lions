@@ -100,11 +100,9 @@ class UserService(BaseService):
         """Get info about current user, such as
         name, permissions, etc."""
         auth0_user = self.get(self.current_user.user_id)
-        breakpoint()
-        print(auth0_user)
-
         return models.user.UserCurrentGetOut(
-            auth0_user.as_dict(), permissions=self.current_user.permissions
+            **auth0_user.model_dump(),
+            permissions=self.current_user.permissions,
         )
 
     def update(self, user_id: str):

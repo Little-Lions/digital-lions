@@ -9,8 +9,8 @@ TOKEN=$(curl \
   --url ${URL} \
   --header 'content-type: application/x-www-form-urlencoded' \
   --data "grant_type=password" \
-  --data "client_id=${BE_AUTH0_CLIENT_ID}" \
-  --data "client_secret=${BE_AUTH0_CLIENT_SECRET}" \
+  --data "client_id=${AUTH0_CLIENT_ID}" \
+  --data "client_secret=${AUTH0_CLIENT_SECRET}" \
   --data "audience=${AUTH0_AUDIENCE}" \
   --data "username=${USERNAME}" \
   --data "password=${PASSWORD}")

@@ -96,6 +96,15 @@ class UserService(BaseService):
 
         return models.user.UserGetByIdOut(**user_obj)
 
+    def me(self) -> models.user.UserCurrentGetOut | None:
+        """Get info about current user, such as
+        name, permissions, etc."""
+        auth0_user = self.get(self.current_user.user_id)
+        return models.user.UserCurrentGetOut(
+            **auth0_user.model_dump(),
+            permissions=self.current_user.permissions,
+        )
+
     def update(self, user_id: str):
         """Update a user by ID."""
         raise NotImplementedError()

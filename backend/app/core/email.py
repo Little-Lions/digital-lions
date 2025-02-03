@@ -21,7 +21,7 @@ class EmailService:
         self.reset_password_template = os.path.join(
             self.template_dir, "reset_password.html"
         )
-        self.reset_password_subject = "Digital Lions Password Reset"
+        self.reset_password_subject = "Digital Lions Password Reset"  # nosec
         self.sender = self.settings.RESEND_SENDER
 
     def send_reset_password_link(self, email: str, link: str):

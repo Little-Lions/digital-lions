@@ -1,11 +1,12 @@
 import logging
 from enum import Enum
 
+from repositories.database import RoleRepository
+
 from core import exceptions
 from core.database.schema import Community, Role, Team
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
-from repositories.database import RoleRepository
 
 logger = logging.getLogger(__name__)
 
@@ -126,9 +127,9 @@ class CurrentUser:
         self._user_id = user_id
         self._permissions = permissions
         self._role_repository = RoleRepository(session=session)
-        self._roles: list[RoleWithPermissions] | None = (
-            self._get_roles_with_permissions(user_id=user_id)
-        )
+        self._roles: list[
+            RoleWithPermissions
+        ] | None = self._get_roles_with_permissions(user_id=user_id)
 
     @property
     def user_id(self):
@@ -191,10 +192,8 @@ class CurrentUser:
             return False
 
         for role in self.roles:
-
             # check if any of the scoped roles' resource match the resoource
             if resource.resource_type == role.level and resource.id == role.resource_id:
-
                 # check if the role has the required permission
                 if role.has_permission(permission):
                     return True

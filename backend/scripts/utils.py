@@ -1,11 +1,11 @@
 """Utility script to populate db with records."""
 
 import logging
+import os
 import random
 import sys
-import click
-import os
 
+import click
 import requests
 from faker import Faker
 

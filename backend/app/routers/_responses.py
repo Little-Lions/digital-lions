@@ -1,4 +1,4 @@
-"""Standard authorization responses that are 
+"""Standard authorization responses that are
 included on every endpoint."""
 
 from typing import Any

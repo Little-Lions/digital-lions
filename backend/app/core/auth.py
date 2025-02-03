@@ -1,13 +1,14 @@
 import logging
-from typing import Annotated, Any
+from typing import Any
 
 import jwt
 import requests
+from fastapi import HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from core.context import CurrentUser
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
-from fastapi import Depends, HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 

@@ -13,6 +13,7 @@ from models.team import (
     TeamPostWorkshopIn,
     TeamStatus,
 )
+
 from services._base import BaseService
 
 logger = logging.getLogger(__name__)
@@ -103,10 +104,10 @@ class TeamService(BaseService):
             raise exceptions.WorkshopNumberInvalidError(error_msg)
 
         # validate that all children in the payload are part of the team
-        payload_child_ids = set([child.child_id for child in workshop.attendance])
-        team_child_ids = set(
-            [child.id for child in self.database.children.where([("team_id", team_id)])]
-        )
+        payload_child_ids = {child.child_id for child in workshop.attendance}
+        team_child_ids = {
+            child.id for child in self.database.children.where([("team_id", team_id)])
+        }
 
         payload_child_ids_not_in_team = [
             i for i in payload_child_ids if i not in team_child_ids

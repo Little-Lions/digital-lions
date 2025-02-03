@@ -5,8 +5,9 @@ from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import role as models
 from repositories.database import ImplementingPartnerRepository
-from routers._responses import with_default_responses
 from services import CommunityService, TeamService, UserService
+
+from routers._responses import with_default_responses
 
 logger = logging.getLogger()
 

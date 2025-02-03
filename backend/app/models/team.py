@@ -1,12 +1,13 @@
 import datetime
 from enum import Enum
 
+from pydantic import BaseModel, Field, field_validator
+
 from models._metadata import (
     _CreatePropertiesIn,
     _MetadataPropertiesOut,
     _UpdatePropertiesIn,
 )
-from pydantic import BaseModel, Field, field_validator
 
 
 class TeamStatus(str, Enum):

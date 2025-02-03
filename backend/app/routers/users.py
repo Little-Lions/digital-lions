@@ -5,8 +5,9 @@ from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import user as models
 from models.generic import Message
-from routers._responses import with_default_responses
 from services import UserService
+
+from routers._responses import with_default_responses
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 include ../.env
 export
-.PHONY: shell build run app tests lint format 
+.PHONY: shell build run app tests lint format
 
 SERVICE=backend
 POETRY := $(shell which poetry)
 
-shell: 
+shell:
 	poetry shell
 
 build:

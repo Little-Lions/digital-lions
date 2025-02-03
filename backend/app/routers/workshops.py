@@ -5,8 +5,9 @@ from core import exceptions
 from fastapi import APIRouter, Depends, HTTPException, status
 from models import team as models
 from models.generic import Message, RecordCreated
-from routers._responses import with_default_responses
 from services import TeamService
+
+from routers._responses import with_default_responses
 
 logger = logging.getLogger()
 

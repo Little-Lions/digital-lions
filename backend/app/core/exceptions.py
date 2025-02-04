@@ -1,5 +1,7 @@
 """Custom exceptions for the app."""
 
+from fastapi import status
+
 
 class BadRequestError(Exception):
     pass
@@ -21,16 +23,33 @@ class ChildNotInTeam(Exception):
     pass
 
 
-class CommunityAlreadyExistsError(Exception):
-    pass
+class BaseException(Exception):
+    """Custom base exception for all internal errors.
+    Each subclass should have its own short message
+    which is displayed to the user."""
+
+    def __init__(self, message):
+        """The error message is what we want to show
+        as detail, which is not shown to the user."""
+        self.detail = message
 
 
-class CommunityHasTeamsError(Exception):
-    pass
+class CommunityAlreadyExistsError(BaseException):
+
+    message = "Community already exists!"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class CommunityNotFoundError(Exception):
-    pass
+class CommunityHasTeamsError(BaseException):
+
+    message = "Community has teams"
+    status_code = status.HTTP_409_CONFLICT
+
+
+class CommunityNotFoundError(BaseException):
+
+    message = "Community not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class ForbiddenError(Exception):

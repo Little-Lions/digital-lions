@@ -79,7 +79,7 @@ def test_add_role_success(client, mocker, role_exists):
 
     response_get = client.get(f"{ENDPOINT}/{user_id}/roles")
     assert response_get.status_code == status.HTTP_200_OK, response_get.text
-    assert response_get.json() == [
+    assert response_get.json().get("data") == [
         {"id": 1, "role": "Admin", "level": "Community", "resource_id": 1}
     ]
 
@@ -119,7 +119,7 @@ def test_delete_role_success(client, mocker, role_exists):
 
     response_get = client.get(f"{ENDPOINT}/{user_id}/roles")
     assert response_get.status_code == status.HTTP_200_OK, response_get.text
-    assert response_get.json() == [
+    assert response_get.json().get("data") == [
         {"id": 1, "role": "Admin", "level": "Community", "resource_id": 1}
     ]
 
@@ -133,12 +133,12 @@ def test_role_resources(client):
     # test all resource endpoints all at once
     roles = client.get("/roles")
     assert roles.status_code == status.HTTP_200_OK, roles.text
-    for role in roles.json():
+    for role in roles.json().get("data"):
 
         levels = client.get("/roles/levels", params={"role": role})
         assert levels.status_code == status.HTTP_200_OK, levels.text
 
-        for level in levels.json():
+        for level in levels.json().get("data"):
             response = client.get(
                 "/roles/resources", params={"role": role, "level": level}
             )

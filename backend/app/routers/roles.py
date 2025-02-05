@@ -1,9 +1,10 @@
 import logging
 from typing import Annotated
 
-from core import exceptions
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from models import role as models
+from models.generic import APIResponse
 from repositories.database import ImplementingPartnerRepository
 from routers._responses import with_default_responses
 from services import CommunityService, TeamService, UserService
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/roles")
 @router.get(
     "",
     tags=["roles"],
-    response_model=list[str] | None,
+    response_model=APIResponse[list[str]],
     status_code=status.HTTP_200_OK,
     summary="List available user roles",
     responses=with_default_responses(),
@@ -27,16 +28,14 @@ async def list_roles(
     """
     List the roles that can be assigned to a user.
     """
-    try:
-        return user_service.get_platform_roles()
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    roles = user_service.get_platform_roles()
+    return APIResponse(data=roles)
 
 
 @router.get(
     "/levels",
     tags=["roles"],
-    response_model=list[str] | None,
+    response_model=APIResponse[list[str]],
     status_code=status.HTTP_200_OK,
     summary="List levels at which a role can be assigned.",
     responses=with_default_responses(),
@@ -50,16 +49,14 @@ async def list_levels(
     can be found at `/roles`.
 
     """
-    try:
-        return user_service.get_role_levels(role)
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    levels = user_service.get_role_levels(role)
+    return APIResponse(data=levels)
 
 
 @router.get(
     "/resources",
     tags=["roles"],
-    response_model=list[models.RoleResourcesGetOut] | None,
+    response_model=APIResponse[list[models.RoleResourcesGetOut]],
     status_code=status.HTTP_200_OK,
     summary="List resources for role and level",
     responses=with_default_responses(),
@@ -86,29 +83,24 @@ async def list_resources(
     - `teams:read`
 
     """
-    try:
-        if level not in user_service.get_role_levels(role=role):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Role and level combination not supported.",
-            )
-        if level == models.Level.implementing_partner:
-            return [
-                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-                for v in implementing_partner_repository.read_all()
-            ]
-            return [
-                models.RoleResourcesGetOut(resource_id=1, resource_name="Litle Lions")
-            ]
-        if level == models.Level.community:
-            return [
-                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-                for v in community_service.get_all()
-            ]
-        if level == models.Level.team:
-            return [
-                models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
-                for v in team_service.get_all()
-            ]
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    if level not in user_service.get_role_levels(role=role):
+        detail = "Role and level combination not supported."
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content=APIResponse(detail=detail)
+        )
+    if level == models.Level.implementing_partner:
+        data = [
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+            for v in implementing_partner_repository.read_all()
+        ]
+    if level == models.Level.community:
+        data = [
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+            for v in community_service.get_all()
+        ]
+    if level == models.Level.team:
+        data = [
+            models.RoleResourcesGetOut(resource_id=v.id, resource_name=v.name)
+            for v in team_service.get_all()
+        ]
+    return APIResponse(data=data)

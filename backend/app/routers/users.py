@@ -2,9 +2,10 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from models import user as models
-from models.generic import Message
+from models.generic import APIResponse
 from routers._responses import with_default_responses
 from services import UserService
 
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/users")
 
 @router.get(
     "/me",
-    response_model=models.UserCurrentGetOut,
+    response_model=APIResponse[models.UserCurrentGetOut],
     tags=["users"],
     status_code=status.HTTP_200_OK,
     summary="Get information about the current user",
@@ -27,12 +28,13 @@ async def me(
     Get the current user.
 
     """
-    return user_service.me()
+    data = user_service.me()
+    return APIResponse(data=data)
 
 
 @router.get(
     "",
-    response_model=list[models.UserGetOut],
+    response_model=APIResponse[list[models.UserGetOut]],
     tags=["users"],
     status_code=status.HTTP_200_OK,
     summary="List all users",
@@ -47,21 +49,25 @@ async def get_users(user_service: Annotated[UserService, Depends(UserService)]):
 
     """
     try:
-        return user_service.get_all()
+        data = user_service.get_all()
+        return APIResponse(data=data)
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "/{user_id}",
     tags=["users"],
-    response_model=models.UserGetByIdOut,
+    response_model=APIResponse[models.UserGetByIdOut],
     status_code=status.HTTP_200_OK,
     summary="Get user",
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             }
         }
@@ -79,27 +85,34 @@ async def get_user_by_id(
 
     """
     try:
-        return user_service.get(user_id=user_id)
+        data = user_service.get(user_id=user_id)
+        return APIResponse(data=data)
     except exceptions.UserNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.post(
     "",
     tags=["users"],
-    response_model=models.UserPostOut,
+    response_model=APIResponse[models.UserPostOut],
     status_code=status.HTTP_201_CREATED,
     summary="Invite new user",
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             },
             status.HTTP_409_CONFLICT: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User email already exists",
             },
         }
@@ -119,23 +132,30 @@ async def create_user(
 
     """
     try:
-        return user_service.create(user)
+        data = user_service.create(user)
+        return APIResponse(data=data)
     except exceptions.UserEmailExistsError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.post(
     "/resend-invite",
     tags=["users"],
-    response_model=Message,
+    response_model=APIResponse[APIResponse],
     status_code=status.HTTP_200_OK,
     summary="Resend invite link",
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             }
         }
@@ -154,22 +174,29 @@ async def resend_invite(
 
     """
     try:
-        return user_service.send_invite(user_id=user_id)
+        data = user_service.send_invite(user_id=user_id)
+        return APIResponse(data=data)
     except exceptions.BadRequestError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.UserNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.delete(
     "/{user_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
     summary="Delete user",
     tags=["users"],
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             },
         }
@@ -187,25 +214,29 @@ async def delete_user(
 
     """
     try:
-        user_service.delete(user_id=user_id)
+        msg = user_service.delete(user_id=user_id)
+        return APIResponse(message="User deleted successfully", detail=msg)
     except exceptions.UserNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.post(
     "/{user_id}/roles",
     tags=["roles"],
-    response_model=Message,
+    response_model=APIResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Add scoped role to a user",
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             },
             status.HTTP_409_CONFLICT: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "Role with scope already exists",
             },
         }
@@ -244,30 +275,43 @@ async def add_role_to_user(
 
     """
     try:
-        return user_service.add_role(user_id=user_id, role=role)
+        data = user_service.add_role(user_id=user_id, role=role)
+        return APIResponse(data=data)
     except exceptions.BadRequestError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except (
         exceptions.ResourceNotFoundError,
         exceptions.UserNotFoundError,
     ) as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.RoleAlreadyExistsError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "/{user_id}/roles",
-    response_model=list[models.UserRoleGetOut] | None,
+    response_model=APIResponse[list[models.UserRoleGetOut] | None],
     status_code=status.HTTP_200_OK,
     tags=["roles"],
     summary="List all scoped roles of a user",
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             }
         }
@@ -285,9 +329,13 @@ async def get_roles_of_user(
 
     """
     try:
-        return user_service.get_roles(user_id=user_id)
+        data = user_service.get_roles(user_id=user_id)
+        return APIResponse(data=data)
     except exceptions.UserNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.delete(
@@ -298,11 +346,11 @@ async def get_roles_of_user(
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "User not found",
             },
             status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "Role not found for user",
             },
         }
@@ -322,8 +370,15 @@ async def remove_role_from_user(
 
     """
     try:
-        return user_service.delete_role(user_id=user_id, role_id=role_id)
+        user_service.delete_role(user_id=user_id, role_id=role_id)
+        return APIResponse(message="Role deleted successfully")
     except (exceptions.UserNotFoundError, exceptions.RoleNotFoundForUserError) as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )

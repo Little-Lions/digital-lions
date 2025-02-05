@@ -110,12 +110,16 @@ class TeamNotFoundError(BaseAPIException):
     status_code = status.HTTP_404_NOT_FOUND
 
 
-class UserEmailExistsError(Exception):
-    pass
+class UserEmailExistsError(BaseAPIException):
+
+    message = "User email already exists"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class UserNotFoundError(Exception):
-    pass
+class UserNotFoundError(BaseAPIException):
+
+    message = "User not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class UserUnauthorizedError(Exception):

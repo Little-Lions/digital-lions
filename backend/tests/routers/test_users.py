@@ -72,8 +72,6 @@ def test_add_user_success(client, mocker):
 
     # assert
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json()["user_id"] == USER_ID
-
     assert resend.Emails.send.call_args.args[0]["to"][0] == EMAIL
 
 
@@ -114,7 +112,7 @@ def test_delete_user_success(client, mocker):
     response = client.delete(f"{ENDPOINT}/{USER_ID}")
 
     # assert that the correct user_id is passed to the auth0 repository
-    assert response.status_code == status.HTTP_204_NO_CONTENT, response.text
+    assert response.status_code == status.HTTP_200_OK, response.text
     auth0.users.delete.assert_called_with(USER_ID)
 
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from models import community as models
 from models.community import VALID_IMPLEMENTING_PARTNER_ID
-from models.generic import APIResponse, Message
+from models.generic import APIResponse
 from services import CommunityService
 
 from app.routers._responses import with_default_responses
@@ -163,11 +163,11 @@ async def update_community(
     status_code=status.HTTP_204_NO_CONTENT,
     responses={
         status.HTTP_404_NOT_FOUND: {
-            "model": Message,
+            "model": APIResponse,
             "description": "Community not found",
         },
         status.HTTP_409_CONFLICT: {
-            "model": Message,
+            "model": APIResponse,
             "description": "Community has teams and cascade is false.",
         },
     },

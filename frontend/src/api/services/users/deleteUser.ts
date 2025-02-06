@@ -1,3 +1,10 @@
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 const deleteUser = async (userId: string): Promise<void> => {
   try {
     const encodedUserId = encodeURIComponent(userId)
@@ -5,15 +12,16 @@ const deleteUser = async (userId: string): Promise<void> => {
       method: 'DELETE',
     })
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete user: ${response.statusText}`)
-    }
+    const responseData: ApiResponse<void> = await response.json()
 
-    if (response.status === 204) {
-      return
+    if (!response.ok) {
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to delete user')
     }
   } catch (error) {
-    console.error('Error deleting user:', error)
     throw error
   }
 }

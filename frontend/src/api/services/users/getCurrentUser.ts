@@ -1,26 +1,23 @@
 'use client'
 
 import { User } from '@/types/user.interface'
-
 interface ApiResponse<T> {
   message: string | null
   data: T
 }
 
-const getUser = async (userId: string): Promise<User> => {
+const getCurrentUser = async (): Promise<User[]> => {
   try {
-    const response = await fetch(`/api/users?user_id=${userId}`, {
-      method: 'GET',
-    })
+    const response = await fetch('/api/users/me', { method: 'GET' })
 
-    const responseData: ApiResponse<User> = await response.json()
+    const responseData: ApiResponse<User[]> = await response.json()
 
     if (!response.ok) {
       console.error(
         'API Error Detail:',
         (responseData as any).detail || 'No detail available',
       )
-      throw new Error(responseData.message || 'Failed to fetch user')
+      throw new Error(responseData.message || 'Failed to fetch current user')
     }
 
     return responseData.data
@@ -29,4 +26,4 @@ const getUser = async (userId: string): Promise<User> => {
   }
 }
 
-export default getUser
+export default getCurrentUser

@@ -25,13 +25,16 @@ export async function GET(request: Request): Promise<NextResponse> {
       endpoint = `/teams?status=${status}`
     }
 
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     console.error('Error in GET /api/teams:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -48,13 +51,21 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const body = await request.json()
 
-    const data = await apiRequest('/teams', 'POST', accessToken, body)
+    const { message, data } = await apiRequest(
+      '/teams',
+      'POST',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
     console.error('Error in POST /api/teams:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -81,15 +92,17 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     }
 
     const endpoint = `/teams/${teamId}?cascade=${cascade || 'false'}`
-    await apiRequest(endpoint, 'DELETE', accessToken)
-    return NextResponse.json(
-      { message: 'Team deleted successfully' },
-      { status: 200 },
-    )
+
+    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
+
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     console.error('Error in DELETE /api/teams:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

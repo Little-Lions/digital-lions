@@ -17,13 +17,18 @@ export async function GET(request: Request): Promise<NextResponse> {
       ? `/communities/${communityId}`
       : '/communities'
 
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/communities:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/communities:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -39,13 +44,23 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const body = await request.json()
 
-    const data = await apiRequest('/communities', 'POST', accessToken, body)
+    const { message, data } = await apiRequest(
+      '/communities',
+      'POST',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in POST /api/communities:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/communities:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -71,18 +86,23 @@ export async function PATCH(request: Request): Promise<NextResponse> {
       )
     }
 
-    const data = await apiRequest(
+    const { message, data } = await apiRequest(
       `/communities/${communityId}`,
       'PATCH',
       accessToken,
       body,
     )
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in PATCH /api/communities:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in PATCH /api/communities:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -109,24 +129,19 @@ export async function DELETE(request: Request): Promise<NextResponse> {
 
     const endpoint = `/communities/${communityId}?cascade=${cascade || 'false'}`
 
-    await apiRequest(endpoint, 'DELETE', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
-    return NextResponse.json(
-      { message: 'Community deleted successfully' },
-      { status: 200 },
-    )
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    // Safely handle 'unknown' error
-    let errorMessage = 'Internal Server Error'
-
-    if (error instanceof Error) {
-      errorMessage = error.message
-    } else if (typeof error === 'string') {
-      errorMessage = error // Handle string error
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in DELETE /api/communities:', error)
     }
-
-    console.error('Error in DELETE /api/communities:', error)
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    return NextResponse.json(
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
+      { status: 500 },
+    )
   }
 }

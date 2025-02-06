@@ -1,4 +1,11 @@
+'use client'
+
 import { Role } from '@/types/role.type'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 const getRoles = async (): Promise<Role[]> => {
   try {
@@ -6,14 +13,18 @@ const getRoles = async (): Promise<Role[]> => {
       method: 'GET',
     })
 
+    const responseData: ApiResponse<Role[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to fetch roles')
     }
 
-    const data: Role[] = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

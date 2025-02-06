@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import { useQuery } from 'react-query'
 
@@ -29,13 +29,18 @@ const ProgramTrackerTeamsPage: React.FC = () => {
 
   const { communityName } = useCommunity()
 
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
+
   const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const response = await getTeamsOfCommunity(Number(communityId))
-      return response
+      return await getTeamsOfCommunity(Number(communityId))
     } catch (error) {
-      console.error('Failed to fetch teams:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -88,7 +93,7 @@ const ProgramTrackerTeamsPage: React.FC = () => {
           )}
 
           {!!hasErrorFetchingTeams && (
-            <AlertBanner variant="error" message="Failed to fetch teams" />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

@@ -497,7 +497,9 @@ const UsersPage: React.FC = () => {
                     </option>
                   ))}
               </SelectInput>
-              {addUserError && <AlertBanner variant="error" message="" />}
+              {addUserError && (
+                <AlertBanner variant="error" message={errorMessage ?? ''} />
+              )}
             </Modal>
           )}
 
@@ -516,7 +518,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="User added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingUserComplete(false)}
             />
           )}
@@ -525,7 +527,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="User deleted successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsDeletingUserComplete(false)}
             />
           )}
@@ -534,7 +536,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="User edited successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsEditingUserComplete(false)}
             />
           )} */}
@@ -543,7 +545,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="Role assigned successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsRoleAssignmentComplete(false)}
             />
           )}

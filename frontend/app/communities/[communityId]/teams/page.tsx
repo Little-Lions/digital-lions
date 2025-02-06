@@ -46,11 +46,14 @@ const TeamsPage: React.FC = () => {
   // Fetch teams for the community
   const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const response = await getTeamsOfCommunity(Number(communityId))
-      return response
+      return await getTeamsOfCommunity(Number(communityId))
     } catch (error) {
-      console.error('Failed to fetch teams:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -95,8 +98,12 @@ const TeamsPage: React.FC = () => {
         communityId: Number(communityId),
       })
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -203,7 +210,11 @@ const TeamsPage: React.FC = () => {
                   autoFocus
                 />
                 {errorMessage && (
-                  <Text className="text-error">{errorMessage}</Text>
+                  <AlertBanner
+                    variant="error"
+                    message={errorMessage}
+                    isCloseable={false}
+                  />
                 )}
               </form>
             </Modal>
@@ -213,13 +224,13 @@ const TeamsPage: React.FC = () => {
             <Toast
               variant="success"
               message="Team added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingTeamComplete(false)}
             />
           )}
 
           {!!hasErrorFetchingTeams && (
-            <AlertBanner variant="error" message="Failed to fetch teams" />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

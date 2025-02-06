@@ -78,11 +78,14 @@ const TeamsDetailPage: React.FC = () => {
       if (isNaN(numericTeamId)) {
         throw new Error('Invalid team ID')
       }
-      const response = await getTeamById(numericTeamId)
-      return response
+      return await getTeamById(numericTeamId)
     } catch (error) {
-      console.error('Failed to fetch team details:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -118,17 +121,20 @@ const TeamsDetailPage: React.FC = () => {
   const addChild = async () => {
     if (!selectedTeam) throw new Error('No team selected')
     try {
-      const response = await createChild({
+      return await createChild({
         teamId: selectedTeam.id,
         age: editAge || null,
         gender: editGender,
         firstName: editFirstName,
         lastName: editLastName,
       })
-      return response
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -151,7 +157,7 @@ const TeamsDetailPage: React.FC = () => {
   const editChild = async () => {
     if (!editChildId) throw new Error('Invalid child ID')
     try {
-      const response = await updateChild({
+      return await updateChild({
         childId: editChildId,
         isActive: true,
         age: editAge,
@@ -159,10 +165,13 @@ const TeamsDetailPage: React.FC = () => {
         firstName: editFirstName,
         lastName: editLastName,
       })
-      return response
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -187,8 +196,12 @@ const TeamsDetailPage: React.FC = () => {
     try {
       await deleteChild(editChildId, false)
     } catch (error) {
-      setErrorMessage('this child cannot be deleted')
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -408,7 +421,11 @@ const TeamsDetailPage: React.FC = () => {
                   <option value="female">Female</option>
                 </SelectInput>
                 {errorMessage && (
-                  <Text className="text-error">{errorMessage}</Text>
+                  <AlertBanner
+                    variant="error"
+                    message={errorMessage}
+                    isCloseable={false}
+                  />
                 )}
               </form>
             </Modal>
@@ -418,7 +435,7 @@ const TeamsDetailPage: React.FC = () => {
             <Toast
               variant="success"
               message="Child added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingChildComplete(false)}
             />
           )}
@@ -427,7 +444,7 @@ const TeamsDetailPage: React.FC = () => {
             <Toast
               variant="success"
               message="Child updated successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsEditingChildComplete(false)}
             />
           )}
@@ -436,13 +453,13 @@ const TeamsDetailPage: React.FC = () => {
             <Toast
               variant="success"
               message="Child deleted successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsDeletingChildComplete(false)}
             />
           )}
 
           {!!hasErrorFetchingTeams && (
-            <AlertBanner variant="error" message="Failed to fetch teams" />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

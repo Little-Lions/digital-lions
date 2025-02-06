@@ -10,13 +10,16 @@ export async function GET(): Promise<NextResponse> {
       throw new Error('Access token is undefined')
     }
 
-    const data = await apiRequest('/roles', 'GET', accessToken)
+    const { message, data } = await apiRequest('/roles', 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     console.error('Error in GET /api/teams:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

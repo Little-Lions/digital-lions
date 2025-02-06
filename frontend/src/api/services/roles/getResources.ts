@@ -1,6 +1,13 @@
+'use client'
+
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 const getResources = async (role: Role, level: Level): Promise<Resource[]> => {
   try {
@@ -13,14 +20,18 @@ const getResources = async (role: Role, level: Level): Promise<Resource[]> => {
       },
     )
 
+    const responseData: ApiResponse<Resource[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to fetch resources')
     }
 
-    const data: Resource[] = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching resources:', error)
     throw error
   }
 }

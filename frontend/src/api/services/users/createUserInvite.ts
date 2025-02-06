@@ -1,26 +1,37 @@
+'use client'
+
 import { User } from '@/types/user.interface'
-import { Roles } from '@/types/role.type'
+import { Role } from '@/types/role.type'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 export interface ApiBody {
   email: string
-  roles: Roles[]
+  roles: Role[]
 }
 
 const createUser = async (userId: string): Promise<User[]> => {
   try {
     const response = await fetch(`/api/resend-invite?user_id=${userId}`, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(userId),
     })
 
+    const responseData: ApiResponse<User[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to create user invite')
     }
 
-    const responseData: User[] = await response.json()
-    return responseData
+    return responseData.data
   } catch (error) {
-    console.error('Error creating user:', error)
     throw error
   }
 }

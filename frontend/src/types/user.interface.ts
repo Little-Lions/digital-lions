@@ -5,4 +5,5 @@ export interface User {
   email_verified: boolean
   created_at: string
   updated_at: string
+  permissions: string[]
 }

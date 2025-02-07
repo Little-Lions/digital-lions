@@ -2,9 +2,10 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from models import team as models
-from models.generic import Message, RecordCreated
+from models.generic import APIResponse, Message, RecordCreated
 from routers._responses import with_default_responses
 from services import TeamService
 
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/teams")
     "/{team_id}/workshops",
     status_code=status.HTTP_200_OK,
     summary="Get workshops done by team",
-    response_model=list[models.TeamGetWorkshopOut],
+    response_model=APIResponse[list[models.TeamGetWorkshopOut]],
     responses=with_default_responses(),
 )
 async def get_workshops(
@@ -32,18 +33,20 @@ async def get_workshops(
 
     """
     try:
-        return team_service.get_workshops(team_id)
+        data = team_service.get_workshops(team_id)
+        return APIResponse(data=data)
     except exceptions.TeamNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "/{team_id}/workshops/{workshop_number}",
     status_code=status.HTTP_200_OK,
     summary="Get a team's workshop by number",
-    response_model=models.TeamGetWorkshopByNumberOut,
+    response_model=APIResponse[models.TeamGetWorkshopByNumberOut],
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
@@ -66,29 +69,33 @@ async def get_workshop_by_number(
 
     """
     try:
-        return team_service.get_workshop_by_number(team_id, workshop_number)
+        data = team_service.get_workshop_by_number(team_id, workshop_number)
+        return APIResponse(data=data)
     except (
         exceptions.TeamNotFoundError,
         exceptions.WorkshopNotFoundError,
     ) as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.post(
     "/{team_id}/workshops",
     status_code=status.HTTP_201_CREATED,
     summary="Add workshop to team",
-    response_model=RecordCreated,
+    response_model=APIResponse[RecordCreated],
     responses=with_default_responses(
         {
-            400: {
-                "model": Message,
+            status.HTTP_404_NOT_FOUND: {
+                "model": APIResponse,
             },
-            409: {"model": Message},
-            404: {
-                "model": Message,
+            status.HTTP_409_CONFLICT: {
+                "model": APIResponse,
+            },
+            status.HTTP_400_BAD_REQUEST: {
+                "model": APIResponse,
             },
         }
     ),
@@ -106,22 +113,24 @@ async def post_workshop(
 
     """
     try:
-        return team_service.create_workshop(team_id, workshop)
+        data = team_service.create_workshop(team_id, workshop)
+        return APIResponse(data=data)
     except exceptions.TeamNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.WorkshopExistsError as exc:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,
-            detail=str(exc),
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
     except (
         exceptions.ChildNotInTeam,
         exceptions.WorkshopIncompleteAttendance,
         exceptions.WorkshopNumberInvalidError,
     ) as exc:
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))

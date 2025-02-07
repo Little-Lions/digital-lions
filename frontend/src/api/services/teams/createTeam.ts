@@ -1,4 +1,10 @@
-interface ApiResponse {
+'use client'
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
+interface Team {
   id: number
 }
 
@@ -13,7 +19,7 @@ const createTeam = async ({
 }: {
   name: string
   communityId: number
-}): Promise<ApiResponse> => {
+}): Promise<Team> => {
   try {
     const response = await fetch(`/api/teams`, {
       method: 'POST',
@@ -25,19 +31,18 @@ const createTeam = async ({
       ),
     })
 
-    if (response.status === 409) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || 'Conflict: Team already exists')
-    }
+    const responseData: ApiResponse<Team> = await response.json()
 
     if (!response.ok) {
-      throw new Error('Failed to create team')
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to create team')
     }
 
-    const data: ApiResponse = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error creating team:', error)
     throw error
   }
 }

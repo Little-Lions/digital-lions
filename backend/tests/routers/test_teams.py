@@ -30,13 +30,13 @@ def test_post_team_success(client):
     data = {"community_id": 1, "name": team_1}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     # assert that team can be obtained
     response_get = client.get(f"{ENDPOINT}/{id_}")
     assert response_get.status_code == status.HTTP_200_OK
-    assert response_get.json().get("name") == team_1
-    assert response_get.json().get("is_active")
+    assert response_get.json().get("data").get("name") == team_1
+    assert response_get.json().get("data").get("is_active")
 
 
 # TODO setup testing framework with current_user
@@ -63,9 +63,9 @@ def test_get_team_by_id(client):
     data = {"community_id": 1, "name": team_x}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
     response_get = client.get(f"{ENDPOINT}/{id_}")
-    assert response_get.json().get("name") == team_x
+    assert response_get.json().get("data").get("name") == team_x
 
 
 def test_delete_team_with_children(client):
@@ -74,7 +74,7 @@ def test_delete_team_with_children(client):
     data = {"community_id": 1, "name": team_x}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     # add child to team
     child = {"first_name": "Child 1", "last_name": "Last name", "age": 10}
@@ -91,14 +91,15 @@ def test_delete_team_with_children_cascade(client):
     data = {"community_id": 1, "name": team_x}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     # add child to team
     child = {"first_name": "Child 1", "last_name": "Last name", "age": 10}
     client.post("/children", json={**child, "team_id": id_})
 
     team = client.get(f"{ENDPOINT}/{id_}")
-    child_id_0 = team.json().get("children")[0].get("id")
+    assert team.status_code == status.HTTP_200_OK
+    child_id_0 = team.json().get("data").get("children")[0].get("id")
 
     # assert team cannot be deleted
     response_delete = client.delete(f"{ENDPOINT}/{id_}", params={"cascade": True})
@@ -129,6 +130,7 @@ def client_with_community_and_team(client):
         id_ = (
             client.post("/teams", json={"community_id": 1, "name": team})
             .json()
+            .get("data")
             .get("id")
         )
         # add children to team
@@ -152,17 +154,23 @@ def test_add_workshop_with_attendance(client_with_team):
 
     # assert that team progress is 0 at first
     response_team = client_with_team.get(f"{ENDPOINT}/{team_id}")
-    assert response_team.json().get("program").get("progress").get("current") == 0
+    assert (
+        response_team.json().get("data").get("program").get("progress").get("current")
+        == 0
+    )
 
     response = client_with_team.post(f"{ENDPOINT}/{team_id}/workshops", json=payload)
     assert response.status_code == status.HTTP_201_CREATED, response.text
 
     # assert that team progress is updated
     response_team = client_with_team.get(f"{ENDPOINT}/{team_id}")
-    assert response_team.json().get("program").get("progress").get("current") == 1
+    assert (
+        response_team.json().get("data").get("program").get("progress").get("current")
+        == 1
+    )
 
     response_workshop = client_with_team.get(f"{ENDPOINT}/{team_id}/workshops")
-    assert response_workshop.json()[0].get("workshop").get("number") == 1
+    assert response_workshop.json().get("data")[0].get("workshop").get("number") == 1
 
 
 def test_add_workshop_missing_child_id(client_with_team):
@@ -285,10 +293,10 @@ def test_team_non_active_after_completed_program(client_with_team):
         {"attendance": "absent", "child_id": 2},
     ]
     team = client_with_team.get(f"{ENDPOINT}/{team_id}")
-    current = team.json().get("program").get("progress").get("current")
+    current = team.json().get("data").get("program").get("progress").get("current")
 
     # assert that team is active at first
-    assert team.json().get("is_active")
+    assert team.json().get("data").get("is_active")
 
     # TODO the POST workshop endpoint does not do date validation
     # (chronologic order of date)
@@ -306,4 +314,4 @@ def test_team_non_active_after_completed_program(client_with_team):
 
     # assert that team is non-active
     team = client_with_team.get(f"{ENDPOINT}/{team_id}")
-    assert team.json().get("is_active") is False
+    assert team.json().get("data").get("is_active") is False

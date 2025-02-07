@@ -1,5 +1,20 @@
 """Custom exceptions for the app."""
 
+from fastapi import status
+
+
+class BaseAPIException(Exception):
+    """Custom base exception for all internal errors
+    that are exposed to the user.
+
+    Each subclass should have its own short message
+    which is displayed to the user, and status code."""
+
+    def __init__(self, message):
+        """The error message is what we want to show
+        as detail, which is not shown to the user."""
+        self.detail = message
+
 
 class BadRequestError(Exception):
     pass
@@ -13,24 +28,34 @@ class ChildHasAttendanceError(Exception):
     pass
 
 
-class ChildNotFoundError(Exception):
-    pass
+class ChildNotFoundError(BaseAPIException):
+
+    message = "Child not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
-class ChildNotInTeam(Exception):
-    pass
+class ChildNotInTeam(BaseAPIException):
+
+    message = "Child not in team"
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
-class CommunityAlreadyExistsError(Exception):
-    pass
+class CommunityAlreadyExistsError(BaseAPIException):
+
+    message = "Community already exists!"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class CommunityHasTeamsError(Exception):
-    pass
+class CommunityHasTeamsError(BaseAPIException):
+
+    message = "Community has teams"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class CommunityNotFoundError(Exception):
-    pass
+class CommunityNotFoundError(BaseAPIException):
+
+    message = "Community not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class ForbiddenError(Exception):
@@ -73,37 +98,51 @@ class TeamAlreadyExistsError(Exception):
     pass
 
 
-class TeamHasChildrenError(Exception):
-    pass
+class TeamHasChildrenError(BaseAPIException):
+
+    message = "Team has children!"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class TeamNotFoundError(Exception):
-    pass
+class TeamNotFoundError(BaseAPIException):
+
+    message = "Team not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
-class UserEmailExistsError(Exception):
-    pass
+class UserEmailExistsError(BaseAPIException):
+
+    message = "User email already exists"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class UserNotFoundError(Exception):
-    pass
+class UserNotFoundError(BaseAPIException):
+
+    message = "User not found"
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class UserUnauthorizedError(Exception):
     pass
 
 
-class WorkshopExistsError(Exception):
-    pass
+class WorkshopExistsError(BaseAPIException):
+
+    message = "Workshop already exists!"
+    status_code = status.HTTP_409_CONFLICT
 
 
-class WorkshopIncompleteAttendance(Exception):
-    pass
+class WorkshopIncompleteAttendance(BaseAPIException):
+
+    message = "Missing child attendance"
+    status_code = status.HTTP_400_BAD_REQUEST
 
 
 class WorkshopNotFoundError(Exception):
     pass
 
 
-class WorkshopNumberInvalidError(Exception):
-    pass
+class WorkshopNumberInvalidError(BaseAPIException):
+
+    message = "Workshop number invalid!"
+    status_code = status.HTTP_400_BAD_REQUEST

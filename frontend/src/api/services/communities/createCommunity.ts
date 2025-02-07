@@ -1,22 +1,32 @@
-interface ApiResponse {
+'use client'
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
+interface Community {
   id: number
 }
 
-const createCommunity = async (communityName: string): Promise<ApiResponse> => {
+const createCommunity = async (communityName: string): Promise<Community> => {
   try {
     const response = await fetch('/api/communities', {
       method: 'POST',
       body: JSON.stringify({ name: communityName }),
     })
 
+    const responseData: ApiResponse<Community> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to create community')
     }
 
-    const data: ApiResponse = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

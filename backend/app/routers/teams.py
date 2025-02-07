@@ -2,10 +2,11 @@ import logging
 from typing import Annotated
 
 from core import exceptions
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from fastapi import status as http_status
+from fastapi.responses import JSONResponse
 from models import team as models
-from models.generic import Message, RecordCreated
+from models.generic import APIResponse
 from routers._responses import with_default_responses
 from services import TeamService
 
@@ -16,18 +17,18 @@ router = APIRouter(prefix="/teams")
 
 @router.post(
     "",
-    response_model=RecordCreated,
+    response_model=APIResponse,
     status_code=http_status.HTTP_201_CREATED,
     summary="Create a new team",
     responses=with_default_responses(
         {
             http_status.HTTP_404_NOT_FOUND: {
-                "model": Message,
-                "description": "Community not found",
+                "model": APIResponse,
+                "description": "Not found",
             },
             http_status.HTTP_409_CONFLICT: {
-                "model": Message,
-                "description": "Conflict: team name already exists",
+                "model": APIResponse,
+                "description": "Conflict",
             },
         }
     ),
@@ -47,18 +48,28 @@ async def post_team(
 
     """
     try:
-        return team_service.create(team)
+        data = team_service.create(team)
+        return APIResponse(message="Team successfully created!", data=data)
     except exceptions.CommunityNotFoundError as exc:
-        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.TeamAlreadyExistsError as exc:
-        raise HTTPException(status_code=http_status.HTTP_409_CONFLICT, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_409_CONFLICT,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "",
-    response_model=list[models.TeamGetOut],
+    response_model=APIResponse[list[models.TeamGetOut]],
     status_code=http_status.HTTP_200_OK,
     summary="Get teams",
     responses=with_default_responses(),
@@ -76,21 +87,25 @@ async def get_teams(
 
     """
     try:
-        return team_service.get_all(community_id=community_id, status=status)
+        data = team_service.get_all(community_id=community_id, status=status)
+        return APIResponse(data=data)
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "/{team_id}",
-    response_model=models.TeamGetByIdOut,
+    response_model=APIResponse[models.TeamGetByIdOut],
     status_code=http_status.HTTP_200_OK,
     summary="Get team by id",
     responses=with_default_responses(
         {
             http_status.HTTP_404_NOT_FOUND: {
-                "model": Message,
-                "description": "Team not found",
+                "model": APIResponse,
+                "description": "Not found",
             },
         }
     ),
@@ -107,29 +122,33 @@ async def get_team(
 
     """
     try:
-        return team_service.get(object_id=team_id)
+        data = team_service.get(object_id=team_id)
+        return APIResponse(data=data)
     except exceptions.TeamNotFoundError as exc:
-        raise HTTPException(
+        return JSONResponse(
             status_code=http_status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.delete(
     "/{team_id}",
     status_code=http_status.HTTP_200_OK,
     summary="Delete a team",
-    response_model=Message,
+    response_model=APIResponse,
     responses=with_default_responses(
         {
             http_status.HTTP_404_NOT_FOUND: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "Team not found",
             },
             http_status.HTTP_409_CONFLICT: {
-                "model": Message,
+                "model": APIResponse,
                 "description": "Conflict: team has children and cascade is False",
             },
         }
@@ -151,13 +170,20 @@ async def delete_team(
 
     """
     try:
-        return team_service.delete(object_id=team_id, cascade=cascade)
+        msg = team_service.delete(object_id=team_id, cascade=cascade)
+        return APIResponse(message="Team successfully deleted!", detail=msg)
     except exceptions.TeamHasChildrenError as exc:
-        raise HTTPException(
+        return JSONResponse(
             status_code=http_status.HTTP_409_CONFLICT,
-            detail=str(exc),
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
     except exceptions.TeamNotFoundError as exc:
-        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=http_status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )

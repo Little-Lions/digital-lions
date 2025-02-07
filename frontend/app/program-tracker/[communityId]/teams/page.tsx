@@ -1,10 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import { useQuery } from 'react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
+import { useCustomUser } from '@/context/UserContext'
 
 import LinkCard from '@/components/LinkCard'
 import CustomButton from '@/components/CustomButton'
@@ -23,19 +24,25 @@ import { TeamInCommunity } from '@/types/teamInCommunity.interface'
 import { useRouter, useParams } from 'next/navigation'
 
 const ProgramTrackerTeamsPage: React.FC = () => {
+  const { customUser } = useCustomUser()
   const router = useRouter()
   const params = useParams()
   const communityId = params?.communityId as string
 
   const { communityName } = useCommunity()
 
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
+
   const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const response = await getTeamsOfCommunity(Number(communityId))
-      return response
+      return await getTeamsOfCommunity(Number(communityId))
     } catch (error) {
-      console.error('Failed to fetch teams:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -73,22 +80,29 @@ const ProgramTrackerTeamsPage: React.FC = () => {
           ) : (
             <EmptyState
               title="No teams available"
+              text={
+                customUser?.permissions.includes('teams:write')
+                  ? 'Go to the teams page to add a new team'
+                  : "You don't have permission to add a new team"
+              }
               pictogram={<UsersIcon />}
               actionButton={
-                <CustomButton
-                  label="Add team"
-                  onClick={() =>
-                    router.push(`/communities/${communityId}/teams`)
-                  }
-                  variant="primary"
-                  className="hover:bg-card-dark hover:text-white mb-4"
-                />
+                customUser?.permissions.includes('teams:write') ? (
+                  <CustomButton
+                    label="Go"
+                    onClick={() =>
+                      router.push(`/communities/${communityId}/teams`)
+                    }
+                    variant="primary"
+                    className="hover:bg-card-dark hover:text-white mb-4"
+                  />
+                ) : null
               }
             />
           )}
 
           {!!hasErrorFetchingTeams && (
-            <AlertBanner variant="error" message="Failed to fetch teams" />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

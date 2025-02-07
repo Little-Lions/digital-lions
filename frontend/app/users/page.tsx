@@ -1,6 +1,14 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryFunctionContext,
+} from 'react-query'
+
 import TextInput from '@/components/TextInput'
 import CustomButton from '@/components/CustomButton'
 import Modal from '@/components/Modal'
@@ -32,22 +40,22 @@ import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
 import AlertBanner from '@/components/AlertBanner'
+import ConfirmModal from '@/components/ConfirmModal'
 
 const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([])
+  const queryClient = useQueryClient()
   //   const [user, setUser] = useState<User | null>(null);
   // const [isLoading, setIsLoading] = useState(false)
-  const [isAddingUser, setIsAddingUser] = useState(false)
-  const [isLoadingUser, setIsLoadingUser] = useState(false)
+
+  const [modalType, setModalType] = useState<'edit' | 'delete' | null>(null)
+
   const [isAssigningUser, setIsAssigningUser] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
-  const [isDeletingUser, setIsDeletingUser] = useState(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [isLoadingUserData, setIsLoadingUserData] = useState(false)
-  //   const [isLoadingCommunity, setIsLoadingCommunity] = useState(false);
+
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   const [addUserModalVisible, setAddUserModalVisible] = useState(false)
-  const [editUserModalVisible, setEditUserModalVisible] = useState(false)
+  // const [editUserModalVisible, setEditUserModalVisible] = useState(false)
   const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false)
   const [assignUserModalVisible, setAssignUserModalVisible] = useState(false)
 
@@ -94,31 +102,52 @@ const UsersPage: React.FC = () => {
     setSelectedResourceId(resource.resource_id)
   }
 
-  const fetchUsers = async (): Promise<void> => {
-    setIsLoadingUserData(true)
+  const fetchUsers = async (): Promise<User[]> => {
     try {
-      const usersData = await getUsers()
-      setUsers(usersData)
+      return await getUsers()
     } catch (error) {
-      console.error('Failed to fetch users:', error)
-    } finally {
-      setIsLoadingUserData(false)
-      setIsInitialLoad(false)
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
-  const fetchUser = async (userId: string): Promise<void> => {
-    setIsLoadingUser(true)
+  const {
+    data: users = [],
+    isLoading,
+    error: hasErrorFetchingUsers,
+  } = useQuery<User[], Error>('users', fetchUsers, {
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const fetchUser = async (userId: string): Promise<User> => {
     try {
-      const user = await getUser(userId)
-      setNickName(user.nickname)
-      setEmailAddress(user.email)
+      return await getUser(userId)
     } catch (error) {
-      console.error('Failed to fetch user:', error)
-    } finally {
-      setIsLoadingUser(false)
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
+
+  const {
+    data: selectedUser,
+    isLoading: isLoadingUser,
+    error: hasErrorFetchingUser,
+  } = useQuery<User, Error>(
+    ['user', selectedUserId],
+    () => fetchUser(selectedUserId!),
+    {
+      enabled: Boolean(selectedUserId),
+      staleTime: 5 * 60 * 1000,
+    },
+  )
 
   //   const handleSaveUser = async () => {
   //     if (!selectedUserId) return; // Ensure there's a user selected
@@ -150,38 +179,27 @@ const UsersPage: React.FC = () => {
     setEmailAddress(value)
   }
 
-  //   const fetchCommunities = async () => {
-  //     setIsLoadingCommunity(true);
-  //     try {
-  //       const communities = await getCommunities();
-  //       setCommunities(communities);
-  //     } catch (error) {
-  //       console.error("Failed to fetch communities:", error);
-  //     } finally {
-  //       setIsLoadingCommunity(false);
-  //     }
-  //   }
-
   const handleOpenAddUserModal = (): void => {
     setAddUserModalVisible(true)
   }
 
   const handleCloseAddUserModal = (): void => {
     setAddUserModalVisible(false)
-  }
-
-  const handleOpenEditUserModal = async (userId: string): Promise<void> => {
-    setSelectedUserId(userId)
-    await fetchUser(userId)
-    setEditUserModalVisible(true)
-  }
-
-  const handleCloseEditUserModal = (): void => {
-    setEditUserModalVisible(false)
-    setSelectedUserId(null)
-    setNickName('')
     setEmailAddress('')
+    setAddUserError(null)
   }
+
+  // const handleOpenEditUserModal = (userId: string): void => {
+  //   setSelectedUserId(userId)
+  //   setEditUserModalVisible(true)
+  // }
+
+  // const handleCloseEditUserModal = (): void => {
+  //   setEditUserModalVisible(false)
+  //   setSelectedUserId(null)
+  //   setNickName('')
+  //   setEmailAddress('')
+  // }
 
   const handleOpenDeleteUserModal = (userId: string): void => {
     setSelectedUserId(userId)
@@ -191,6 +209,7 @@ const UsersPage: React.FC = () => {
   const handleCloseDeleteUserModal = (): void => {
     setDeleteUserModalVisible(false)
     setSelectedUserId(null)
+    setErrorMessage('')
   }
 
   const handleOpenAssignUserModal = async (userId: string): Promise<void> => {
@@ -229,24 +248,36 @@ const UsersPage: React.FC = () => {
     }
   }
 
-  const handleAddUser = async (): Promise<void> => {
-    if (emailAddress.trim() === '') return
-
-    setIsAddingUser(true)
+  const AddUser = async (email: string): Promise<void> => {
     try {
-      await createUser(emailAddress)
-      handleCloseAddUserModal()
+      if (email.trim() === '') {
+        throw new Error('Email address is required')
+      }
 
-      await fetchUsers()
-      setIsAddingUserComplete(true)
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'An unexpected error occurred'
-      setAddUserError(errorMessage)
-    } finally {
-      setIsAddingUser(false)
+      await createUser(email)
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
+
+  const { mutate: handleAddUser, isLoading: isAddingUser } = useMutation(
+    (email: string) => AddUser(email),
+    {
+      onSuccess: async () => {
+        handleCloseAddUserModal()
+        setIsAddingUserComplete(true)
+        await queryClient.invalidateQueries('users')
+      },
+      onError: (error: Error) => {
+        setAddUserError(error.message)
+      },
+    },
+  )
 
   // const handleAddUserInvite = async () => {
   //   if (!selectedUserId) return;
@@ -262,21 +293,35 @@ const UsersPage: React.FC = () => {
   //   }
   // };
 
-  const handleDeleteUser = async (): Promise<void> => {
-    if (!selectedUserId) return
-    setIsDeletingUser(true)
+  const removeUser = async (userId: string): Promise<void> => {
     try {
-      await deleteUser(selectedUserId)
-
-      setIsDeletingUserComplete(true)
-      setUsers(users.filter((user) => user.user_id !== selectedUserId))
+      if (!userId.trim()) {
+        throw new Error('User ID is required')
+      }
+      await deleteUser(userId)
     } catch (error) {
-      console.error('Failed to delete user:', error)
-    } finally {
-      setIsDeletingUser(false)
-      handleCloseDeleteUserModal()
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
+
+  const { mutate: handleDeleteUser, isLoading: isDeletingUser } = useMutation(
+    () => removeUser(selectedUserId!),
+    {
+      onSuccess: async () => {
+        handleCloseDeleteUserModal()
+        setIsDeletingUserComplete(true)
+        await queryClient.invalidateQueries('users')
+      },
+      onError: (error: Error) => {
+        setErrorMessage(error.message)
+      },
+    },
+  )
 
   const fetchRoles = async (): Promise<void> => {
     try {
@@ -320,7 +365,7 @@ const UsersPage: React.FC = () => {
 
   return (
     <>
-      {isLoadingUserData && isInitialLoad ? (
+      {isLoading ? (
         <>
           <SkeletonLoader width="142px" type="button" />
           {Array.from({ length: 8 }, (_, i) => (
@@ -355,21 +400,26 @@ const UsersPage: React.FC = () => {
                   label="Assign"
                   variant="outline"
                   icon={<UserPlusIcon />}
-                  onClick={() => handleOpenAssignUserModal(user.user_id)}
+                  onClick={() =>
+                    user.user_id && handleOpenAssignUserModal(user.user_id)
+                  }
                 />
-                <CustomButton
+                {/* <CustomButton
                   className="mt-4"
                   label="Edit"
                   variant="secondary"
+                  isBusy={selectedUserId === user.user_id && isLoadingUser}
                   icon={<PencilIcon />}
                   onClick={() => handleOpenEditUserModal(user.user_id)}
-                />
+                /> */}
                 <CustomButton
                   className="mt-4"
                   label="Delete"
                   variant="error"
                   icon={<TrashIcon />}
-                  onClick={() => handleOpenDeleteUserModal(user.user_id)}
+                  onClick={() =>
+                    user.user_id && handleOpenDeleteUserModal(user.user_id)
+                  }
                 />
               </ButtonGroup>
             </Accordion>
@@ -380,14 +430,14 @@ const UsersPage: React.FC = () => {
               onClose={handleCloseAddUserModal}
               title="Invite new user"
               acceptText="Invite"
-              onAccept={handleAddUser}
+              onAccept={() => handleAddUser(emailAddress)}
               isBusy={isAddingUser}
               isDisabledButton={!emailAddress.trim()}
             >
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  handleAddUser()
+                  handleAddUser(emailAddress)
                 }}
               >
                 <TextInput
@@ -395,24 +445,26 @@ const UsersPage: React.FC = () => {
                   value={emailAddress}
                   onChange={handleEmailAddressChange}
                   required
-                  errorMessage="email address is required"
+                  errorMessage="Email address is required"
                   autoFocus
                 />
+                {addUserError && (
+                  <AlertBanner variant="error" message={addUserError} />
+                )}
               </form>
             </Modal>
           )}
 
-          {editUserModalVisible && (
+          {/* {editUserModalVisible && selectedUser && (
             <Modal
               onClose={handleCloseEditUserModal}
               title="Edit user"
               acceptText="Save"
-              onAccept={handleAddUser}
-              isBusy={isLoadingUser}
+              onAccept={() => handleAddUser(selectedUser?.email || '')}
             >
               <TextInput
                 label="Nickname"
-                value={nickName}
+                value={selectedUser?.nickname || ''}
                 onChange={(e) => handleNicknameChange(e)}
                 required
                 errorMessage="Nickname is required"
@@ -420,13 +472,16 @@ const UsersPage: React.FC = () => {
               />
               <TextInput
                 label="Email address"
-                value={emailAddress}
+                value={selectedUser?.email || ''}
                 onChange={(e) => handleEmailAddressChange(e)}
                 required
                 errorMessage="Email address is required"
               />
+              {hasErrorFetchingUser && (
+                <AlertBanner variant="error" message={errorMessage ?? ''} />
+              )}
             </Modal>
-          )}
+          )} */}
 
           {assignUserModalVisible && (
             <Modal
@@ -497,26 +552,29 @@ const UsersPage: React.FC = () => {
                     </option>
                   ))}
               </SelectInput>
-              {addUserError && <AlertBanner variant="error" message="" />}
+              {errorMessage && (
+                <AlertBanner variant="error" message={errorMessage ?? ''} />
+              )}
             </Modal>
           )}
 
           {deleteUserModalVisible && (
-            <Modal
-              onClose={handleCloseDeleteUserModal}
-              title="Delete user"
-              acceptText="Delete"
+            <ConfirmModal
+              title="Delete child"
+              text="Are you sure you want to delete this user?"
               onAccept={handleDeleteUser}
+              onClose={handleCloseDeleteUserModal}
+              acceptText="Delete"
+              closeText="Cancel"
               isBusy={isDeletingUser}
-            >
-              <p>Are you sure you want to delete this user?</p>
-            </Modal>
+              errorMessage={errorMessage}
+            />
           )}
           {isAddingUserComplete && (
             <Toast
               variant="success"
               message="User added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingUserComplete(false)}
             />
           )}
@@ -525,7 +583,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="User deleted successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsDeletingUserComplete(false)}
             />
           )}
@@ -534,7 +592,7 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="User edited successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsEditingUserComplete(false)}
             />
           )} */}
@@ -543,9 +601,13 @@ const UsersPage: React.FC = () => {
             <Toast
               variant="success"
               message="Role assigned successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsRoleAssignmentComplete(false)}
             />
+          )}
+
+          {!!hasErrorFetchingUsers && (
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

@@ -15,13 +15,18 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     const endpoint = userId ? `/users/${userId}` : '/users'
 
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/users:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -42,13 +47,23 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const endpoint = userId ? `/resend-invite/${userId}` : '/users'
 
-    const data = await apiRequest(endpoint, 'POST', accessToken, body)
+    const { message, data } = await apiRequest(
+      endpoint,
+      'POST',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/users:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -75,14 +90,19 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     const encodedUserId = encodeURIComponent(userId)
     const endpoint = `/users/${encodedUserId}`
 
-    await apiRequest(endpoint, 'DELETE', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
     // Return a 204 response without a body
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    console.error('Error in DELETE /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in DELETE /api/users:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

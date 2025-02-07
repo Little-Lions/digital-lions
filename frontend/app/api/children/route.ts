@@ -21,13 +21,18 @@ export async function GET(request: Request): Promise<NextResponse> {
     } else if (communityId) {
       endpoint = `/children?community_id=${communityId}`
     }
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/children:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -43,13 +48,23 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const body = await request.json()
 
-    const data = await apiRequest('/children', 'POST', accessToken, body)
+    const { message, data } = await apiRequest(
+      '/children',
+      'POST',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/children:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -76,16 +91,18 @@ export async function DELETE(request: Request): Promise<NextResponse> {
 
     const endpoint = `/children/${childId}?cascade=${cascade || 'false'}`
 
-    await apiRequest(endpoint, 'DELETE', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
-    return NextResponse.json(
-      { message: 'Child deleted successfully' },
-      { status: 200 },
-    )
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in DELETE /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in DELETE /api/children:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -111,13 +128,21 @@ export async function PATCH(request: Request): Promise<NextResponse> {
 
     const body = await request.json()
     const endpoint = `/children/${childId}`
-    const data = await apiRequest(endpoint, 'PATCH', accessToken, body)
+    const { message, data } = await apiRequest(
+      endpoint,
+      'PATCH',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     console.error('Error in PATCH /api/children:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

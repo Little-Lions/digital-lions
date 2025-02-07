@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
 import { useCommunity } from '@/context/CommunityContext'
+import { useCustomUser } from '@/context/UserContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 import createCommunity from '@/api/services/communities/createCommunity'
@@ -22,13 +23,14 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import Toast from '@/components/Toast'
 import ConfirmModal from '@/components/ConfirmModal'
 import AlertBanner from '@/components/AlertBanner'
-import Text from '@/components/Text'
 
 import { Community } from '@/types/community.interface'
 
 const CommunityPage: React.FC = () => {
   const queryClient = useQueryClient()
   const { communityName, setCommunityName } = useCommunity()
+
+  const { customUser } = useCustomUser()
 
   const [communityId, setCommunityId] = useState<number | null>(null)
 
@@ -51,11 +53,14 @@ const CommunityPage: React.FC = () => {
 
   const fetchCommunities = async (): Promise<Community[]> => {
     try {
-      const response = await getCommunities()
-      return response
+      return await getCommunities()
     } catch (error) {
-      console.error('Failed to fetch communities:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -91,8 +96,12 @@ const CommunityPage: React.FC = () => {
     try {
       return await createCommunity(communityName)
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -123,8 +132,12 @@ const CommunityPage: React.FC = () => {
     try {
       await deleteCommunity(communityId, false)
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -166,7 +179,12 @@ const CommunityPage: React.FC = () => {
     try {
       await updateCommunity(communityId, communityName)
     } catch (error) {
-      setErrorMessage(String(error))
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -194,13 +212,15 @@ const CommunityPage: React.FC = () => {
         </>
       ) : (
         <>
-          <CustomButton
-            label="Add Community"
-            onClick={handleOpenCommunityModal}
-            variant="outline"
-            isFullWidth
-            className="hover:bg-card-dark hover:text-white mb-4"
-          />
+          {customUser?.permissions.includes('communities:write') && (
+            <CustomButton
+              label="Add Community"
+              onClick={handleOpenCommunityModal}
+              variant="outline"
+              isFullWidth
+              className="hover:bg-card-dark hover:text-white mb-4"
+            />
+          )}
           {communities.map((community) => (
             <LinkCard
               key={community.id}
@@ -228,7 +248,6 @@ const CommunityPage: React.FC = () => {
               </ButtonGroup>
             </LinkCard>
           ))}
-
           {openAddCommunityModal && (
             <Modal
               onClose={handleCloseCommunityModal}
@@ -253,12 +272,15 @@ const CommunityPage: React.FC = () => {
                   autoFocus
                 />
                 {errorMessage && (
-                  <AlertBanner variant="error" message={errorMessage} />
+                  <AlertBanner
+                    variant="error"
+                    message={errorMessage}
+                    isCloseable={false}
+                  />
                 )}
               </form>
             </Modal>
           )}
-
           {openEditCommunityModal && (
             <Modal
               onClose={handleCloseEditCommunityModal}
@@ -283,12 +305,15 @@ const CommunityPage: React.FC = () => {
                   autoFocus
                 />
                 {errorMessage && (
-                  <Text className="text-error">{errorMessage}</Text>
+                  <AlertBanner
+                    variant="error"
+                    message={errorMessage}
+                    isCloseable={false}
+                  />
                 )}
               </form>
             </Modal>
           )}
-
           {deleteCommunityModalVisible && (
             <ConfirmModal
               title="Delete community"
@@ -300,39 +325,32 @@ const CommunityPage: React.FC = () => {
               isBusy={isDeletingCommunity}
             />
           )}
-
           {isAddingCommunityComplete && (
             <Toast
               variant="success"
               message="Community added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingCommunityComplete(false)}
             />
           )}
-
           {isEditingCommunityComplete && (
             <Toast
               variant="success"
               message="Community edited successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsEditingCommunityComplete(false)}
             />
           )}
-
           {isDeletingCommunityComplete && (
             <Toast
               variant="success"
               message="Community deleted successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsDeletingCommunityComplete(false)}
             />
           )}
-
           {!!hasErrorFetchingCommunities && (
-            <AlertBanner
-              variant="error"
-              message="Failed to fetch communities"
-            />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

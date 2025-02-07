@@ -17,13 +17,13 @@ def test_post_community_success(client):
     data = {"name": community_name}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     # test that community can be obtained
     response_get = client.get(f"{ENDPOINT}/{id_}")
     assert response_get.status_code == status.HTTP_200_OK
-    assert response_get.json().get("name") == community_name
-    assert response_get.json().get("is_active")
+    assert response_get.json().get("data").get("name") == community_name
+    assert response_get.json().get("data").get("is_active")
 
 
 def test_post_community_duplicate(client):
@@ -41,14 +41,14 @@ def test_patch_community_success(client):
     data = {"name": "Community 3"}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     data = {"is_active": False}
     response_patch = client.patch(f"{ENDPOINT}/{id_}", json=data)
     assert response_patch.status_code == status.HTTP_200_OK
 
     # check new status
-    response_get_json = client.get(f"{ENDPOINT}/{id_}").json()
+    response_get_json = client.get(f"{ENDPOINT}/{id_}").json().get("data")
     assert not response_get_json.get("is_active")
     assert response_get_json.get("last_updated_at") != response_get_json.get(
         "created_at"
@@ -58,7 +58,7 @@ def test_patch_community_success(client):
 def test_patch_community_not_found(client):
     # test that we can't update a non-existing community
     non_existing_id = 100
-    data = {"is": "Community 3"}
+    data = {"name": "Community 3"}
     response = client.patch(f"{ENDPOINT}/{non_existing_id}", json=data)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -74,7 +74,7 @@ def community_fixture(client, implementing_partner):
         },
     )
     assert request.status_code == status.HTTP_201_CREATED
-    community = request.json()
+    community = request.json().get("data")
     community_id = community.get("id")
 
     request = client.post(

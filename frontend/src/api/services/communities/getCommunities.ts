@@ -1,22 +1,31 @@
 'use client'
 
-interface ApiResponse {
-  name: string
-  id: number
+interface ApiResponse<T> {
+  message: string | null
+  data: T
 }
 
-const getCommunities = async (): Promise<ApiResponse[]> => {
+interface Community {
+  id: number
+  name: string
+}
+
+const getCommunities = async (): Promise<Community[]> => {
   try {
     const response = await fetch('/api/communities', { method: 'GET' })
 
+    const responseData: ApiResponse<Community[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to fetch communities')
     }
 
-    const data: ApiResponse[] = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

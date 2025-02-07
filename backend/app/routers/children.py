@@ -1,9 +1,10 @@
 from typing import Annotated
 
 from core import exceptions
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import JSONResponse
 from models import child as models
-from models.generic import Message, RecordCreated
+from models.generic import APIResponse
 from services import ChildService
 
 router = APIRouter(prefix="/children")
@@ -12,10 +13,10 @@ router = APIRouter(prefix="/children")
 @router.get(
     "/{child_id}",
     summary="Get a child by id",
-    response_model=models.ChildGetByIdOut,
+    response_model=APIResponse[models.ChildGetByIdOut],
     responses={
         status.HTTP_404_NOT_FOUND: {
-            "model": Message,
+            "model": APIResponse,
             "description": "Child not found",
         }
     },
@@ -31,17 +32,19 @@ async def get_child(
 
     """
     try:
-        return child_service.get(child_id)
+        data = child_service.get(child_id)
+        return APIResponse(data=data)
     except exceptions.ChildNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.get(
     "",
     summary="Get children",
-    response_model=list[models.ChildGetOut] | None,
+    response_model=APIResponse[list[models.ChildGetOut] | None],
     status_code=status.HTTP_200_OK,
 )
 async def get_children(
@@ -55,19 +58,20 @@ async def get_children(
     - `children:read`
 
     """
-    try:
-        if community_id:
-            raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED)
-        return child_service.get_all()
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    if community_id:
+        return JSONResponse(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            content=APIResponse(message="Not implemented").model_dump(),
+        )
+    data = child_service.get_all()
+    return APIResponse(data=data)
 
 
 @router.post(
     "",
     summary="Add a child",
     status_code=status.HTTP_201_CREATED,
-    response_model=RecordCreated,
+    response_model=APIResponse,
 )
 async def add_child(
     child_service: Annotated[ChildService, Depends(ChildService)],
@@ -81,19 +85,24 @@ async def add_child(
 
     """
     try:
-        return child_service.create(child)
+        data = child_service.create(child)
+        return APIResponse(data=data)
     except exceptions.ChildAlreadyExistsError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.TeamNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.patch(
     "/{child_id}",
     summary="Update a child",
-    response_model=models.ChildGetByIdOut,
+    response_model=APIResponse[models.ChildGetByIdOut],
     status_code=status.HTTP_200_OK,
 )
 async def update_child(
@@ -109,17 +118,20 @@ async def update_child(
 
     """
     try:
-        return child_service.update(object_id=child_id, obj=child)
+        data = child_service.update(object_id=child_id, obj=child)
+        return APIResponse(data=data)
     except exceptions.ChildNotFoundError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
 
 
 @router.delete(
     "/{child_id}",
     summary="Delete a child",
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
+    response_model=APIResponse,
 )
 async def delete_child(
     child_id: int,
@@ -136,13 +148,15 @@ async def delete_child(
 
     """
     try:
-        child_service.delete(object_id=child_id, cascade=cascade)
+        data = child_service.delete(object_id=child_id, cascade=cascade)
+        return APIResponse(data=data)
     except exceptions.ChildHasAttendanceError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc))
-    except exceptions.ChildNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
-    except exceptions.InsufficientPermissionsError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    except exceptions.ChildNotFoundError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )

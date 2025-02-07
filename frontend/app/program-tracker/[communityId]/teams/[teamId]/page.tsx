@@ -55,11 +55,14 @@ const ProgramTrackerAttendancePage: React.FC = () => {
       if (isNaN(numericTeamId)) {
         throw new Error('Invalid team ID')
       }
-      const response = await getTeamById(numericTeamId)
-      return response
+      return await getTeamById(numericTeamId)
     } catch (error) {
-      console.error('Failed to fetch team details:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -179,16 +182,9 @@ const ProgramTrackerAttendancePage: React.FC = () => {
           />
         )
       )}
-      {!!errorMessage && (
-        <AlertBanner
-          variant="error"
-          message={errorMessage}
-          isCloseable={false}
-        />
-      )}
 
       {!!hasErrorFetchingTeam && (
-        <AlertBanner variant="error" message="Failed to fetch teams" />
+        <AlertBanner variant="error" message={errorMessage ?? ''} />
       )}
     </>
   )

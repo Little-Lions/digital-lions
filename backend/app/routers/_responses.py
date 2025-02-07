@@ -4,15 +4,15 @@ included on every endpoint."""
 from typing import Any
 
 from fastapi import status
-from models.generic import Message
+from models.generic import APIResponse
 
 DEFAULT_RESPONSES = {
     status.HTTP_401_UNAUTHORIZED: {
-        "model": Message,
+        "model": APIResponse,
         "description": "Unauthorized",
     },
     status.HTTP_403_FORBIDDEN: {
-        "model": Message,
+        "model": APIResponse,
         "description": "Forbidden",
     },
 }

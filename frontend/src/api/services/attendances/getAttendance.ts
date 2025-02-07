@@ -16,16 +16,21 @@ interface Workshop {
   team_id: number
 }
 
-interface ApiResponse {
+interface Attendance {
   attendance: string
   child: Child
   workshop: Workshop
 }
 
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 const getAttendance = async (
   childId: number,
   communityId: number,
-): Promise<ApiResponse[]> => {
+): Promise<Attendance[]> => {
   try {
     const response = await fetch(
       `/api/attendance?child_id=${childId}&community_id=${communityId}`,
@@ -34,14 +39,17 @@ const getAttendance = async (
       },
     )
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
-    }
+    const responseData: ApiResponse<Attendance[]> = await response.json()
 
-    const data: ApiResponse[] = await response.json()
-    return data
+    if (!response.ok) {
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to fetch attendance')
+    }
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

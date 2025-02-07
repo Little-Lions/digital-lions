@@ -40,12 +40,12 @@ def test_post_child_success(client):
     data = {"first_name": child_name, "last_name": "Lastname", "team_id": 1}
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED, response.text
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     # test that child can be obtained
     response_get = client.get(f"{ENDPOINT}/{id_}")
     assert response_get.status_code == status.HTTP_200_OK, response_get.text
-    assert response_get.json().get("first_name") == child_name
+    assert response_get.json().get("data").get("first_name") == child_name
 
 
 def test_update_child_success(client):
@@ -58,14 +58,14 @@ def test_update_child_success(client):
     }
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
-    id_ = response.json().get("id")
+    id_ = response.json().get("data").get("id")
 
     update_data = {"is_active": False, "last_name": "New Lastname"}
     response_patch = client.patch(f"{ENDPOINT}/{id_}", json=update_data)
     assert response_patch.status_code == status.HTTP_200_OK, response_patch.text
 
     # assert that first name still same, but last name updated
-    response_json = response_patch.json()
+    response_json = response_patch.json().get("data")
 
     assert response_json.get("first_name") == "Firstname"
     assert response_json.get("last_name") == "New Lastname"

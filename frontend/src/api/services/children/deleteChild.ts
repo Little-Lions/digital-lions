@@ -1,3 +1,10 @@
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 const deleteChild = async (
   childId: number,
   cascade: boolean,
@@ -10,13 +17,16 @@ const deleteChild = async (
       },
     )
 
-    // Check for HTTP errors
+    const responseData: ApiResponse<void> = await response.json()
+
     if (!response.ok) {
-      const errorBody = await response.json()
-      throw new Error(errorBody.error || 'Failed to delete child')
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to delete child')
     }
   } catch (error) {
-    console.error('Error deleting child:', error)
     throw error
   }
 }

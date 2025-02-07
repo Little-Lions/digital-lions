@@ -1,4 +1,11 @@
-interface ApiResponse {
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
+interface Workshop {
   date: string
   cancelled: false
   cancellation_reason: string
@@ -6,18 +13,24 @@ interface ApiResponse {
   team_id: number
 }
 
-const getWorkshops = async (): Promise<ApiResponse[]> => {
+const getWorkshops = async (): Promise<Workshop[]> => {
   try {
     const response = await fetch(`/api/workshops`, {
       method: 'GET',
     })
+
+    const responseData: ApiResponse<Workshop[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to fetch workshops')
     }
-    const data: ApiResponse[] = await response.json()
-    return data
+
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

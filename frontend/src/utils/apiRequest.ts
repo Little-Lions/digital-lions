@@ -5,7 +5,7 @@ export const apiRequest = async (
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   accessToken: string,
   body?: Record<string, unknown>,
-): Promise<{ message: string | null; data: T }> => {
+): Promise<{ message: string | null; data: any }> => {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${accessToken}`,

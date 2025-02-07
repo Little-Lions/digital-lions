@@ -25,7 +25,7 @@ export function CustomUserProvider({
   children,
 }: {
   children: ReactNode
-}): Promise<User | undefined> {
+}): JSX.Element {
   const { user: auth0User, isLoading: isAuthLoading } = useAuth0User()
 
   const initialUser =

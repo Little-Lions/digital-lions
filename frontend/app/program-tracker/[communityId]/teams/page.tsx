@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { useQuery } from 'react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
+import { useCustomUser } from '@/context/UserContext'
 
 import LinkCard from '@/components/LinkCard'
 import CustomButton from '@/components/CustomButton'
@@ -23,6 +24,7 @@ import { TeamInCommunity } from '@/types/teamInCommunity.interface'
 import { useRouter, useParams } from 'next/navigation'
 
 const ProgramTrackerTeamsPage: React.FC = () => {
+  const { customUser } = useCustomUser()
   const router = useRouter()
   const params = useParams()
   const communityId = params?.communityId as string
@@ -78,16 +80,23 @@ const ProgramTrackerTeamsPage: React.FC = () => {
           ) : (
             <EmptyState
               title="No teams available"
+              text={
+                customUser?.permissions.includes('teams:write')
+                  ? 'Go to the teams page to add a new team'
+                  : "You don't have permission to add a new team"
+              }
               pictogram={<UsersIcon />}
               actionButton={
-                <CustomButton
-                  label="Add team"
-                  onClick={() =>
-                    router.push(`/communities/${communityId}/teams`)
-                  }
-                  variant="primary"
-                  className="hover:bg-card-dark hover:text-white mb-4"
-                />
+                customUser?.permissions.includes('teams:write') ? (
+                  <CustomButton
+                    label="Go"
+                    onClick={() =>
+                      router.push(`/communities/${communityId}/teams`)
+                    }
+                    variant="primary"
+                    className="hover:bg-card-dark hover:text-white mb-4"
+                  />
+                ) : null
               }
             />
           )}

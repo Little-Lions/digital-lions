@@ -28,7 +28,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/workshops:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -63,7 +65,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/workshops:', error)
+    }
     return NextResponse.json(
       {
         message:

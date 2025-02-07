@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
 import { useCommunity } from '@/context/CommunityContext'
-import { useUser } from '@/context/UserContext'
+import { useCustomUser } from '@/context/UserContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 import createCommunity from '@/api/services/communities/createCommunity'
@@ -30,7 +30,7 @@ const CommunityPage: React.FC = () => {
   const queryClient = useQueryClient()
   const { communityName, setCommunityName } = useCommunity()
 
-  const { user } = useUser()
+  const { customUser } = useCustomUser()
 
   const [communityId, setCommunityId] = useState<number | null>(null)
 
@@ -212,13 +212,15 @@ const CommunityPage: React.FC = () => {
         </>
       ) : (
         <>
-          <CustomButton
-            label="Add Community"
-            onClick={handleOpenCommunityModal}
-            variant="outline"
-            isFullWidth
-            className="hover:bg-card-dark hover:text-white mb-4"
-          />
+          {customUser?.permissions.includes('communities:write') && (
+            <CustomButton
+              label="Add Community"
+              onClick={handleOpenCommunityModal}
+              variant="outline"
+              isFullWidth
+              className="hover:bg-card-dark hover:text-white mb-4"
+            />
+          )}
           {communities.map((community) => (
             <LinkCard
               key={community.id}
@@ -246,7 +248,6 @@ const CommunityPage: React.FC = () => {
               </ButtonGroup>
             </LinkCard>
           ))}
-
           {openAddCommunityModal && (
             <Modal
               onClose={handleCloseCommunityModal}
@@ -280,7 +281,6 @@ const CommunityPage: React.FC = () => {
               </form>
             </Modal>
           )}
-
           {openEditCommunityModal && (
             <Modal
               onClose={handleCloseEditCommunityModal}
@@ -314,7 +314,6 @@ const CommunityPage: React.FC = () => {
               </form>
             </Modal>
           )}
-
           {deleteCommunityModalVisible && (
             <ConfirmModal
               title="Delete community"
@@ -326,7 +325,6 @@ const CommunityPage: React.FC = () => {
               isBusy={isDeletingCommunity}
             />
           )}
-
           {isAddingCommunityComplete && (
             <Toast
               variant="success"
@@ -335,7 +333,6 @@ const CommunityPage: React.FC = () => {
               onClose={() => setIsAddingCommunityComplete(false)}
             />
           )}
-
           {isEditingCommunityComplete && (
             <Toast
               variant="success"
@@ -344,7 +341,6 @@ const CommunityPage: React.FC = () => {
               onClose={() => setIsEditingCommunityComplete(false)}
             />
           )}
-
           {isDeletingCommunityComplete && (
             <Toast
               variant="success"
@@ -353,7 +349,6 @@ const CommunityPage: React.FC = () => {
               onClose={() => setIsDeletingCommunityComplete(false)}
             />
           )}
-
           {!!hasErrorFetchingCommunities && (
             <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}

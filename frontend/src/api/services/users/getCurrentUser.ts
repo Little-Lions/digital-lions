@@ -6,11 +6,11 @@ interface ApiResponse<T> {
   data: T
 }
 
-const getCurrentUser = async (): Promise<User[]> => {
+const getCurrentUser = async (): Promise<User> => {
   try {
     const response = await fetch('/api/users/me', { method: 'GET' })
 
-    const responseData: ApiResponse<User[]> = await response.json()
+    const responseData: ApiResponse<User> = await response.json()
 
     if (!response.ok) {
       console.error(
@@ -19,7 +19,7 @@ const getCurrentUser = async (): Promise<User[]> => {
       )
       throw new Error(responseData.message || 'Failed to fetch current user')
     }
-
+    delete responseData.data.user_id
     return responseData.data
   } catch (error) {
     throw error

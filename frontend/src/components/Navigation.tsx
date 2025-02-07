@@ -5,6 +5,8 @@ import NavLink from './NavLink'
 import { usePathname } from 'next/navigation'
 import NavigationButton from './NavigationButton'
 import { useUser } from '@auth0/nextjs-auth0/client'
+
+import { useCustomUser } from '@/context/UserContext'
 import CustomButton from './CustomButton'
 
 const Navigation: React.FC = () => {
@@ -12,6 +14,7 @@ const Navigation: React.FC = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { user } = useUser()
+  const { customUser } = useCustomUser()
 
   const toggleMenu = (): void => {
     setIsOpen((prevState) => !prevState)
@@ -100,7 +103,9 @@ const Navigation: React.FC = () => {
                 <NavLink href="/">Home</NavLink>
                 <NavLink href="/program-tracker">Program tracker</NavLink>
                 <NavLink href="/communities">Communities</NavLink>
-                <NavLink href="/users">Users</NavLink>
+                {customUser?.permissions.includes('users:write') && (
+                  <NavLink href="/users">Users</NavLink>
+                )}
                 <CustomButton
                   label="Logout"
                   onClick={handleLogout}
@@ -176,13 +181,15 @@ const Navigation: React.FC = () => {
                 >
                   Communities
                 </NavLink>
-                <NavLink
-                  href="/users"
-                  onClick={toggleMenu}
-                  className="text-white py-4"
-                >
-                  Users
-                </NavLink>
+                {customUser?.permissions.includes('users:write') && (
+                  <NavLink
+                    href="/users"
+                    onClick={toggleMenu}
+                    className="text-white py-4"
+                  >
+                    Users
+                  </NavLink>
+                )}
                 {/* <div className="border-t-2 border-gray-700 w-full" /> */}
                 <NavigationButton
                   href="/api/auth/logout"

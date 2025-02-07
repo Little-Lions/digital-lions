@@ -25,7 +25,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/children:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -55,7 +57,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/children:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -89,12 +93,11 @@ export async function DELETE(request: Request): Promise<NextResponse> {
 
     const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
-    return NextResponse.json(
-      { message: 'Child deleted successfully' },
-      { status: 200 },
-    )
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in DELETE /api/children:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in DELETE /api/children:', error)
+    }
     return NextResponse.json(
       {
         message:

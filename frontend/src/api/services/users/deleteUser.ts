@@ -12,6 +12,12 @@ const deleteUser = async (userId: string): Promise<void> => {
       method: 'DELETE',
     })
 
+    // If the status is 204, there is no content, so consider it a success.
+    if (response.status === 204) {
+      return
+    }
+
+    // Otherwise, try to parse the JSON response.
     const responseData: ApiResponse<void> = await response.json()
 
     if (!response.ok) {

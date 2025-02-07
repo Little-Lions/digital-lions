@@ -18,7 +18,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/teams:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/roles/levels:', error)
+    }
     return NextResponse.json(
       {
         message:

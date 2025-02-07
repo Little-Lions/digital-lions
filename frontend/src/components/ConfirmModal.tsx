@@ -4,7 +4,6 @@ import CustomButton from './CustomButton'
 import ButtonGroup from './ButtonGroup'
 import Text from './Text'
 import AlertBanner from './AlertBanner'
-import { error } from 'console'
 
 interface ConfirmModalProps {
   title: string
@@ -45,7 +44,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
               variant="error"
               onClick={onAccept}
               isBusy={isBusy}
-              isDisabled={errorMessage === ''}
+              isDisabled={errorMessage !== ''}
             />
           </ButtonGroup>
         </>

@@ -31,7 +31,9 @@ export async function GET(
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/teams/[teamId]/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/teams/[teamId]/workshops:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -73,7 +75,9 @@ export async function POST(
 
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/teams/[teamId]/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/teams/[teamId]/workshops:', error)
+    }
     return NextResponse.json(
       {
         message:

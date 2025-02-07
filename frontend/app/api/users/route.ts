@@ -19,7 +19,9 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/users:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -54,7 +56,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/users:', error)
+    }
     return NextResponse.json(
       {
         message:
@@ -91,7 +95,9 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     // Return a 204 response without a body
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    console.error('Error in DELETE /api/users:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in DELETE /api/users:', error)
+    }
     return NextResponse.json(
       {
         message:

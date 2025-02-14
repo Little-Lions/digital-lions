@@ -94,7 +94,6 @@ const ProgramTrackerTeamsPage: React.FC = () => {
                       router.push(`/communities/${communityId}/teams`)
                     }
                     variant="primary"
-                    className="hover:bg-card-dark hover:text-white mb-4"
                   />
                 ) : null
               }

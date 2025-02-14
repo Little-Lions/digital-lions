@@ -14,16 +14,13 @@ const LinkCard: React.FC<LinkCardProps> = ({
   title,
   className,
   href,
+  onClick,
   children,
 }) => {
-  const handleCardClick = (event: React.MouseEvent<HTMLDivElement>): void => {
-    // Prevent navigation when interacting with buttons
-    event.stopPropagation()
-  }
-
   return (
     <div
       className={`${className} rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors`}
+      onClick={onClick}
     >
       {/* Title Section */}
       <Link href={href} className="flex-grow">
@@ -32,15 +29,15 @@ const LinkCard: React.FC<LinkCardProps> = ({
         </Heading>
       </Link>
 
-      {/* Divider */}
-      {children && (
-        <div className="border-l border-gray-300 h-auto min-h-[50px]"></div>
-      )}
-
       {/* Children Section */}
-      <div className="flex items-center gap-2" onClick={handleCardClick}>
-        {children}
-      </div>
+      {children && (
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      )}
 
       {/* Right Arrow */}
       <Link href={href}>

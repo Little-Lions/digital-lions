@@ -90,10 +90,12 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     const encodedUserId = encodeURIComponent(userId)
     const endpoint = `/users/${encodedUserId}`
 
-    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
+    // const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
+    await apiRequest(endpoint, 'DELETE', accessToken)
     // Return a 204 response without a body
     return new NextResponse(null, { status: 204 })
+    // return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Error in DELETE /api/users:', error)

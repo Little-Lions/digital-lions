@@ -20,7 +20,7 @@ export const apiRequest = async (
   const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`
   const response = await fetch(fullUrl, options)
 
-  const jsonResponse = await response.json().catch(() => null) // Handle invalid JSON responses
+  const jsonResponse = await response.json().catch(() => null)
 
   if (!response.ok) {
     throw new Error(

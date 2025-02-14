@@ -69,6 +69,7 @@ const TeamsDetailPage: React.FC = () => {
 
   const [editMode, setEditMode] = useState<'add' | 'edit'>('add')
 
+  // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
     queryKey,
   }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
@@ -316,7 +317,6 @@ const TeamsDetailPage: React.FC = () => {
                   label="Add child"
                   onClick={openAddChildModal}
                   variant="primary"
-                  className="hover:bg-card-dark hover:text-white mb-4"
                 />
               }
             />

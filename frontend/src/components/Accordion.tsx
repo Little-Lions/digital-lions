@@ -10,6 +10,7 @@ interface AccordionProps {
   children: React.ReactNode
   className?: string
   disabled?: boolean
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 }
 
 const Accordion: React.FC<AccordionProps> = ({
@@ -17,11 +18,18 @@ const Accordion: React.FC<AccordionProps> = ({
   description,
   children,
   className,
+  onClick,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const toggleAccordion = (): void => {
+  const toggleAccordion = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
     setIsOpen(!isOpen)
+
+    if (onClick && !isOpen) {
+      onClick(e) // Pass the event
+    }
   }
 
   return (
@@ -68,7 +76,9 @@ const Accordion: React.FC<AccordionProps> = ({
         }}
       >
         <div className="bg-card p-5 rounded-b-lg">
-          <Text className="mb-2 text-gray-500 ">{description}</Text>
+          {description && (
+            <Text className="mb-2 text-gray-500 ">{description}</Text>
+          )}
           <div>{children}</div>
         </div>
       </div>

@@ -171,7 +171,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                 router.push(`/communities/${communityId}/teams/${teamId}`)
               }
               variant="primary"
-              className="hover:bg-card-dark hover:text-white mb-4"
             />
           }
         />

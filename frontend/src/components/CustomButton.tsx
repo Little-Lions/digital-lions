@@ -60,7 +60,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
     case 'outline':
       buttonClass += ' border'
       buttonColorClass = 'hover:bg-neutral-light'
-      textColorClass = 'hover:text-gray-800'
+      textColorClass = 'hover:text-gray-600'
       borderColorClass = 'border-neutral-500'
       break
     case 'none':

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
@@ -40,6 +40,8 @@ import LoadingOverlay from '@/components/LoadingOverlay'
 
 const UsersPage: React.FC = () => {
   const queryClient = useQueryClient()
+
+  const accordionRefs = useRef<(HTMLButtonElement | null)[]>([])
   //   const [user, setUser] = useState<User | null>(null);
   // const [isLoading, setIsLoading] = useState(false)
 
@@ -409,7 +411,7 @@ const UsersPage: React.FC = () => {
             isFullWidth
             className="mb-4"
           />
-          {users.map((user) => {
+          {users.map((user, index) => {
             const cachedRoles =
               queryClient.getQueryData<UserRoles[]>([
                 'rolesPerUser',
@@ -419,6 +421,10 @@ const UsersPage: React.FC = () => {
               <Accordion
                 key={user.user_id}
                 title={user.nickname}
+                index={index}
+                id={`accordion-item-${index}`}
+                totalItems={users.length}
+                accordionRefs={accordionRefs}
                 className="mb-2"
                 onClick={(e) => {
                   e.stopPropagation()

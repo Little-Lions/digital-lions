@@ -20,7 +20,7 @@ Digital Lions is the private web application that is part of [Little Lions Child
 
 ## System design
 
-Design decisions, architecture diagrams, and other relevant design information can be found in the [architecture](architecture) folder. A status overview of the backend endpoints can be found in the [development status](architecture/README.md) table.
+Design decisions, architecture diagrams, and other relevant design information can be found in the [docs](docs) folder. A status overview of the backend endpoints can be found in the [development status](docs/README.md) table.
 The application is a classic web application consisting of three main components:
 - [Frontend in React](frontend)
 - [Backend in Python FastAPI](backend)

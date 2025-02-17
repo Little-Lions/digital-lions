@@ -1,3 +1,5 @@
+from unittest.mock import Base
+
 """Custom exceptions for the app."""
 
 from fastapi import status
@@ -56,6 +58,18 @@ class CommunityNotFoundError(BaseAPIException):
 
     message = "Community not found"
     status_code = status.HTTP_404_NOT_FOUND
+
+
+class ImplementingPartnerNotFoundError(BaseAPIException):
+
+    message = "Implementing partner not found"
+    status_code = status.HTTP_404_NOT_FOUND
+
+
+class ImplementingPartnerAlreadyExistsError(BaseAPIException):
+
+    message = "Implementing partner exists"
+    status_code = status.HTTP_409_CONFLICT
 
 
 class ForbiddenError(Exception):

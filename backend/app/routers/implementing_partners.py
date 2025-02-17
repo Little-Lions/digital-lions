@@ -6,7 +6,9 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from models import implementing_partner as models
 from models.generic import APIResponse
-from repositories.database import ImplementingPartnerRepository
+from services.implementing_partner import ImplementingPartnerService
+
+from app.models import implementing_partner
 
 router = APIRouter(prefix="/implementing_partners")
 
@@ -19,14 +21,12 @@ router = APIRouter(prefix="/implementing_partners")
 )
 async def get_implementing_partners(
     current_user: Annotated[CurrentUser, Depends(BearerTokenHandler())],
-    repository: Annotated[
-        ImplementingPartnerRepository, Depends(ImplementingPartnerRepository)
-    ],
+    service: Annotated[ImplementingPartnerService, Depends(ImplementingPartnerService)],
 ):
     """
     List implementing partners.
     """
-    data = repository.read_all()
+    data = service.get_all()
     return APIResponse(data=data)
 
 
@@ -39,17 +39,19 @@ async def get_implementing_partners(
 async def create_implementing_partner(
     implementing_partner: models.ImplementingPartnerPostIn,
     current_user: Annotated[CurrentUser, Depends(BearerTokenHandler())],
-    repository: Annotated[
-        ImplementingPartnerRepository, Depends(ImplementingPartnerRepository)
-    ],
+    service: Annotated[ImplementingPartnerService, Depends(ImplementingPartnerService)],
 ):
     """
     Create a new implementing partner.
     """
-    record = repository.create(implementing_partner)
-    # temporary commit until we have refactored with service
-    repository._session.commit()
-    return APIResponse(message="Created implementing partner!", data=record)
+    try:
+        record = service.create(implementing_partner)
+        return APIResponse(message=f"Created {record.name}", data=record)
+    except exceptions.ImplementingPartnerAlreadyExistsError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=APIResponse(detail=exc.detail, message=exc.message).model_dump(),
+        )
 
 
 @router.delete(
@@ -61,19 +63,14 @@ async def create_implementing_partner(
 async def delete_implementing_partner(
     implementing_partner_id: int,
     current_user: Annotated[CurrentUser, Depends(BearerTokenHandler())],
-    repository: Annotated[
-        ImplementingPartnerRepository, Depends(ImplementingPartnerRepository)
-    ],
+    service: Annotated[ImplementingPartnerService, Depends(ImplementingPartnerService)],
 ):
     """
     Delete an implementing partner.
     """
     try:
-        repository.delete(implementing_partner_id)
-        # temporary commit until we have refactored with service
-        repository._session.commit()
-        return APIResponse(message="Successfully deleted implementing partner")
-    except exceptions.NotFoundError as exc:
+        return service.delete(implementing_partner_id)
+    except exceptions.ImplementingPartnerNotFoundError as exc:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content=APIResponse(

@@ -130,7 +130,9 @@ class BearerTokenHandler(HTTPBearer):
             jwt.exceptions.ExpiredSignatureError,
             jwt.exceptions.InvalidAudienceError,
         ) as exc:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            )
 
     def _get_unverified_headers(self, token: str) -> dict[str, str] | None:
         """Get unverified token headers containing type,

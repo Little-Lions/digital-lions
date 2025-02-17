@@ -86,7 +86,7 @@ async def list_resources(
     if level not in user_service.get_role_levels(role=role):
         detail = "Role and level combination not supported."
         return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST, content=APIResponse(detail=detail)
+            status_code=status.HTTP_400_BAD_REQUEST, content=APIResponse(detail=detail).model_dump()
         )
     if level == models.Level.implementing_partner:
         data = [

@@ -28,16 +28,19 @@ export async function GET(
 
     const endpoint = `/teams/${teamId}/workshops/${workshopId}`
 
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     console.error(
       'Error in GET /api/teams/[teamId]/workshops/[workshopId]:',
       error,
     )
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

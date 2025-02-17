@@ -2,6 +2,9 @@ include .env
 export 
 .PHONY: app backend frontend db precommit alembic
 
+app:
+	$(MAKE) -C backend app
+
 backend:
 	docker compose up --build backend
 

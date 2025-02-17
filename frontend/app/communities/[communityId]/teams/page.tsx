@@ -7,6 +7,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'next/navigation'
 
 import { useCommunity } from '@/context/CommunityContext'
+import { useCustomUser } from '@/context/UserContext'
 
 import LinkCard from '@/components/LinkCard'
 import TextInput from '@/components/TextInput'
@@ -18,7 +19,6 @@ import EmptyState from '@/components/EmptyState'
 import Toast from '@/components/Toast'
 import Heading from '@/components/Heading'
 import AlertBanner from '@/components/AlertBanner'
-import Text from '@/components/Text'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -26,9 +26,9 @@ import createTeam from '@/api/services/teams/createTeam'
 import getTeamsOfCommunity from '@/api/services/teams/getTeamsOfCommunity'
 
 import { TeamInCommunity } from '@/types/teamInCommunity.interface'
-import { Team } from '@/types/team.interface'
 
 const TeamsPage: React.FC = () => {
+  const { customUser } = useCustomUser()
   const queryClient = useQueryClient()
   const params = useParams()
   const communityId = params?.communityId as string
@@ -46,11 +46,14 @@ const TeamsPage: React.FC = () => {
   // Fetch teams for the community
   const fetchTeams = async (): Promise<TeamInCommunity[]> => {
     try {
-      const response = await getTeamsOfCommunity(Number(communityId))
-      return response
+      return await getTeamsOfCommunity(Number(communityId))
     } catch (error) {
-      console.error('Failed to fetch teams:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -95,8 +98,12 @@ const TeamsPage: React.FC = () => {
         communityId: Number(communityId),
       })
     } catch (error) {
-      setErrorMessage(String(error))
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -141,13 +148,15 @@ const TeamsPage: React.FC = () => {
         <>
           {teams?.length ? (
             <>
-              <CustomButton
-                label="Add team"
-                isFullWidth
-                onClick={handleOpenTeamModal}
-                variant="outline"
-                className="hover:bg-card-dark hover:text-white mb-4"
-              />
+              {customUser?.permissions.includes('teams:write') && (
+                <CustomButton
+                  label="Add team"
+                  isFullWidth
+                  onClick={handleOpenTeamModal}
+                  variant="outline"
+                  className="hover:bg-card-dark hover:text-white mb-4"
+                />
+              )}
               <div className="flex justify-between mb-2">
                 <Heading level="h3" hasNoMargin={true}>
                   Teams in {communityName}
@@ -165,16 +174,22 @@ const TeamsPage: React.FC = () => {
             </>
           ) : (
             <EmptyState
-              title="No teams Available"
-              text="Create a new team to get started"
+              title="No teams available"
+              text={
+                customUser?.permissions.includes('teams:write')
+                  ? 'Create a new team to get started'
+                  : "You don't have permission to add a new team"
+              }
               pictogram={<UsersIcon />}
               actionButton={
-                <CustomButton
-                  label="Add team"
-                  onClick={handleOpenTeamModal}
-                  variant="primary"
-                  className="hover:bg-card-dark hover:text-white mb-4"
-                />
+                customUser?.permissions.includes('teams:write') ? (
+                  <CustomButton
+                    label="Add team"
+                    onClick={handleOpenTeamModal}
+                    variant="primary"
+                    className="hover:bg-card-dark hover:text-white mb-4"
+                  />
+                ) : null
               }
             />
           )}
@@ -203,7 +218,11 @@ const TeamsPage: React.FC = () => {
                   autoFocus
                 />
                 {errorMessage && (
-                  <Text className="text-error">{errorMessage}</Text>
+                  <AlertBanner
+                    variant="error"
+                    message={errorMessage}
+                    isCloseable={false}
+                  />
                 )}
               </form>
             </Modal>
@@ -213,13 +232,13 @@ const TeamsPage: React.FC = () => {
             <Toast
               variant="success"
               message="Team added successfully"
-              isCloseable
+              isCloseable={true}
               onClose={() => setIsAddingTeamComplete(false)}
             />
           )}
 
           {!!hasErrorFetchingTeams && (
-            <AlertBanner variant="error" message="Failed to fetch teams" />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </>
       )}

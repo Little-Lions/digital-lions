@@ -2,7 +2,6 @@ import logging
 from enum import Enum
 
 from core import exceptions
-from models.generic import Message
 from models.team import (
     TeamGetByIdOut,
     TeamGetOut,
@@ -280,7 +279,7 @@ class TeamService(BaseService):
             if not deleted_children
             else f"Team with ID {object_id} and related children deleted."
         )
-        return Message(detail=msg)
+        return msg
 
     def get_workshops(self, team_id: int) -> list | None:
         """Get all workshops for a team."""

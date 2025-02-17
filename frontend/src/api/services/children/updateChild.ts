@@ -1,3 +1,10 @@
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 interface ApiBody {
   is_active: boolean
   age: number | null
@@ -34,11 +41,16 @@ const updateChildById = async ({
       method: 'PATCH',
       body: JSON.stringify(body),
     })
+    const responseData: ApiResponse<void> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to update child')
     }
   } catch (error) {
-    console.error('Error updating child data:', error)
     throw error
   }
 }

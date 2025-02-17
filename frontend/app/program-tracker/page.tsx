@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import { useQuery } from 'react-query'
 
@@ -19,13 +19,18 @@ import AlertBanner from '@/components/AlertBanner'
 const ProgramTrackerCommunityPage: React.FC = () => {
   const { setCommunityName } = useCommunity()
 
+  const [errorMessage, setErrorMessage] = useState<string | null>('')
+
   const fetchCommunities = async (): Promise<Community[]> => {
     try {
-      const response = await getCommunities()
-      return response
+      return await getCommunities()
     } catch (error) {
-      console.error('Failed to fetch communities:', error)
-      throw error
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+        throw error
+      } else {
+        throw error
+      }
     }
   }
 
@@ -64,10 +69,7 @@ const ProgramTrackerCommunityPage: React.FC = () => {
             </LinkCard>
           ))}
           {!!hasErrorFetchingCommunities && (
-            <AlertBanner
-              variant="error"
-              message="Failed to fetch communities"
-            />
+            <AlertBanner variant="error" message={errorMessage ?? ''} />
           )}
         </div>
       )}

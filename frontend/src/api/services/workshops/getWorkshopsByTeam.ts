@@ -1,4 +1,11 @@
+'use client'
+
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 const getWorkshopsByTeam = async (teamId: number): Promise<WorkshopInfo[]> => {
   try {
@@ -6,14 +13,20 @@ const getWorkshopsByTeam = async (teamId: number): Promise<WorkshopInfo[]> => {
       method: 'GET',
     })
 
+    const responseData: ApiResponse<WorkshopInfo[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(
+        responseData.message || 'Failed to fetch workshops by team',
+      )
     }
 
-    const data: WorkshopInfo[] = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

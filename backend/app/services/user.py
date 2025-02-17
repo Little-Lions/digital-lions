@@ -140,7 +140,7 @@ class UserService(BaseService):
         self.commit()
         msg = f"User with ID {user_id} deleted."
         logger.info(msg)
-        return models.generic.Message(detail=msg)
+        return msg
 
     def add_role(
         self, user_id: str, role: models.user.UserRolePostIn

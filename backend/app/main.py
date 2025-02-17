@@ -4,10 +4,13 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
+from core import exceptions
 from core.database.session import init_db
 from core.settings import get_settings
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from models.generic import APIResponse
 from routers import (
     children,
     communities,
@@ -27,7 +30,6 @@ def setup_logger(settings):
     logging.config.fileConfig(logging_conf, disable_existing_loggers=False)
     logger = logging.getLogger(__name__)
     logger.info("Logging configuration: %s", logging_conf)
-    logger.info(f"OAuth authorization enabled: {settings.FEATURE_AUTH0}")
 
 
 @asynccontextmanager
@@ -42,26 +44,61 @@ async def lifespan(app: FastAPI):
     yield
 
 
-async def catch_any_exception(request: Request, call_next: Any) -> Any:
-    """
-    Catch any exception and return it as 500 with info.
-    """
-    # TODO: this should be removed in production and handled by a proper error handler
-    try:
-        return await call_next(request)
-    except Exception as exc:
-        logger.error(exc)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)
-        )
-
-
 app = FastAPI(
     title="Digital Lions API",
     version="0.1.0",
     root_path="/api/v1",
     lifespan=lifespan,
 )
+
+
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
+async def unauthorized_exception_handler(request: Request, exc: HTTPException) -> Any:
+    """Handle 401 unauthorized exceptions."""
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content=APIResponse(
+            message="User is not authorized",
+            detail=str(exc),
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(exceptions.InsufficientPermissionsError)
+@app.exception_handler(status.HTTP_403_FORBIDDEN)
+async def forbidden_exception_handler(request: Request, exc: HTTPException) -> Any:
+    """Handle 403 forbidden exceptions."""
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content=APIResponse(
+            message="User does not have access",
+            detail=str(exc),
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(Exception)
+async def catch_any_exception(request: Request, exc) -> Any:
+    """
+    Catch all internal exceptions that are not explicitly raised
+    and raise them as proper HTTPExceptions.
+    """
+    logger.exception(exc)
+    try:
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=APIResponse(message=exc.message, detail=str(exc)).model_dump(),
+        )
+    except AttributeError:
+        # in case an unknown error occurs
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=APIResponse(
+                message="Something went wrong.", detail=str(exc)
+            ).model_dump(),
+        )
+
+
 app.add_middleware(
     CORSMiddleware,
     # TODO: allowed origins should come from settings
@@ -71,7 +108,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["Content-Type", "Authorization"],
 )
-# app.middleware("http")(catch_any_exception)
 app.include_router(health.router, tags=["health"])
 app.include_router(implementing_partners.router, tags=["implementing partners"])
 app.include_router(communities.router, tags=["communities"])

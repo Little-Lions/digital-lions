@@ -1,4 +1,11 @@
-interface ApiResponse {
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
+interface Child {
   team_id: number
   age: number | null
   gender: string | null
@@ -18,7 +25,7 @@ const createChild = async ({
   gender: string | null
   firstName: string
   lastName: string
-}): Promise<ApiResponse> => {
+}): Promise<Child> => {
   try {
     const response = await fetch(`/api/children`, {
       method: 'POST',
@@ -31,20 +38,18 @@ const createChild = async ({
       }),
     })
 
-    if (response.status === 409) {
-      const errorData = await response.json()
-      throw errorData.detail
-      // throw new Error(errorData.detail || "Conflict: Child already exists");
-    }
+    const responseData: ApiResponse<Child> = await response.json()
 
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to create child')
     }
 
-    const data: ApiResponse = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

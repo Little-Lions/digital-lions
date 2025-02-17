@@ -1,14 +1,15 @@
-import { TeamWithChildren } from '@/types/teamWithChildren.interface'
+'use client'
 
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 interface ApiInput {
   teamId: number
   cascade: boolean
 }
 
-const deleteTeam = async ({
-  teamId,
-  cascade,
-}: ApiInput): Promise<TeamWithChildren> => {
+const deleteTeam = async ({ teamId, cascade }: ApiInput): Promise<void> => {
   try {
     const response = await fetch(
       `/api/teams?team_id=${teamId}&cascade=${cascade}`,
@@ -17,14 +18,16 @@ const deleteTeam = async ({
       },
     )
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
-    }
+    const responseData: ApiResponse<void> = await response.json()
 
-    const data: TeamWithChildren = await response.json()
-    return data
+    if (!response.ok) {
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to delete team')
+    }
   } catch (error) {
-    console.error('Error deleting team:', error)
     throw error
   }
 }

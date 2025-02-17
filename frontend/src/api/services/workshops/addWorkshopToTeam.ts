@@ -1,4 +1,11 @@
+'use client'
+
 import { Workshop } from '@/types/workshop.interface'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 interface AttendanceRecord {
   attendance: string
@@ -21,14 +28,18 @@ const addWorkshopToTeam = async (
       body: JSON.stringify(data),
     })
 
+    const responseData: ApiResponse<Workshop[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to add workshop to team')
     }
 
-    const responseData: Workshop[] = await response.json()
-    return responseData
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

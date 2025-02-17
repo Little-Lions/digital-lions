@@ -27,13 +27,18 @@ export async function GET(
 
     const endpoint = `/teams/${teamId}/workshops`
 
-    const data = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
-    return NextResponse.json(data, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error('Error in GET /api/teams/[teamId]/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in GET /api/teams/[teamId]/workshops:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }
@@ -61,13 +66,23 @@ export async function POST(
     const endpoint = `/teams/${teamId}/workshops`
 
     // Call the actual API
-    const data = await apiRequest(endpoint, 'POST', accessToken, body)
+    const { message, data } = await apiRequest(
+      endpoint,
+      'POST',
+      accessToken,
+      body,
+    )
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
-    console.error('Error in POST /api/teams/[teamId]/workshops:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in POST /api/teams/[teamId]/workshops:', error)
+    }
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 },
     )
   }

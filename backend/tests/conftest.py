@@ -58,5 +58,5 @@ def implementing_partner_fixture(client):
     request = client.post("/implementing_partners", json={"name": "Little Lions"})
     # TODO remove this assert when we have BDD
     assert request.status_code == status.HTTP_201_CREATED
-    implementing_partner = request.json()
+    implementing_partner = request.json().get("data")
     yield implementing_partner

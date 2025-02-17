@@ -1,14 +1,13 @@
 import logging
 from typing import Any
 
+import httpx
 import jwt
-import requests
-from fastapi import HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
 from core.context import CurrentUser
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
+from fastapi import HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class BearerTokenHandler(HTTPBearer):
             return
 
         token, kid = await self._verify_request(request)
-        verified_token = self._verify_token(token=token, kid=kid)
+        verified_token = await self._verify_token(token=token, kid=kid)
 
         return CurrentUser.from_token(
             verified_token, settings=self.settings, session=session
@@ -88,9 +87,9 @@ class BearerTokenHandler(HTTPBearer):
             detail="Invalid authorization code.",
         )
 
-    def _verify_token(self, token: str, kid: str) -> dict:
+    async def _verify_token(self, token: str, kid: str) -> dict:
         """Verify access token."""
-        pub_key = self._get_public_key(
+        pub_key = await self._get_public_key(
             token=token,
             kid=kid,
             pub_key_url=self.PUBLIC_KEY_URL.format(self.settings.AUTH0_SERVER),
@@ -126,8 +125,14 @@ class BearerTokenHandler(HTTPBearer):
                 algorithms=algorithm,
                 audience=audience,
             )
-        except (jwt.exceptions.DecodeError, jwt.exceptions.ExpiredSignatureError):
-            return None
+        except (
+            jwt.exceptions.DecodeError,
+            jwt.exceptions.ExpiredSignatureError,
+            jwt.exceptions.InvalidAudienceError,
+        ) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+            )
 
     def _get_unverified_headers(self, token: str) -> dict[str, str] | None:
         """Get unverified token headers containing type,
@@ -137,16 +142,21 @@ class BearerTokenHandler(HTTPBearer):
         except jwt.exceptions.DecodeError:
             return None
 
-    # TODO: make this asynchronous
-    def _get_public_key(self, token: str, kid: str, pub_key_url: str) -> str | None:
+    async def _get_public_key(
+        self, token: str, kid: str, pub_key_url: str
+    ) -> str | None:
         """Get public key from Auth0 server with which token was signed."""
         pub_key = None
-        response = requests.get(pub_key_url)
-        keys = response.json()["keys"]
-        for key in keys:
-            if key["kid"] == kid:
-                pub_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
-                break
+        async with httpx.AsyncClient() as client:
+            response = await client.get(pub_key_url)
+            response.raise_for_status()  # Ensure we catch HTTP errors
+            data = response.json()
+            keys = data.get("keys", [])
+
+            for key in keys:
+                if key.get("kid") == kid:
+                    pub_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
+                    break
         return pub_key
 
 

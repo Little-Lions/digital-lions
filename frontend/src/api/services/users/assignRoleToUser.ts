@@ -1,5 +1,12 @@
+'use client'
+
 import { Level } from '@/types/level.type'
 import { Role } from '@/types/role.type'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 export interface ApiBody {
   role: Role
@@ -27,12 +34,18 @@ const assignRoleToUser = async (
       body: JSON.stringify(body),
     })
 
+    const responseData: ApiResponse<void> = await response.json()
+
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || `Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(responseData.message || 'Failed to assign role to user')
     }
+
+    return responseData.data
   } catch (error) {
-    console.error('Error creating user:', error)
     throw error
   }
 }

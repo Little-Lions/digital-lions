@@ -1,3 +1,10 @@
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 const updateCommunity = async (
   communityId: number,
   communityName: string,
@@ -11,14 +18,16 @@ const updateCommunity = async (
       },
     )
 
+    const responseData: ApiResponse<void> = await response.json()
+
     if (!response.ok) {
-      const errorBody = await response.json()
-      throw new Error(
-        `Error: ${response.statusText}. Message: ${errorBody.message || 'Unknown error'}`,
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
       )
+      throw new Error(responseData.message || 'Failed to update community')
     }
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

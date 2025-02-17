@@ -8,6 +8,9 @@ export default withBundleAnalyzer({
     webpackMemoryOptimizations: true,
     webpackBuildWorker: true,
     serverSourceMaps: false,
+    devIndicators: {
+      appIsrStatus: false,
+    },
   },
   productionBrowserSourceMaps: false,
   eslint: { ignoreDuringBuilds: true },

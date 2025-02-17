@@ -14,7 +14,7 @@ interface ToastProps {
 const Toast: React.FC<ToastProps> = ({
   message,
   variant = 'success',
-  isCloseable = true,
+  isCloseable = false,
   onClose,
   position = 'bottom-center', // Default placement
 }) => {

@@ -1,3 +1,10 @@
+'use client'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
+
 const deleteCommunity = async (
   communityId: number,
   cascade: boolean,
@@ -10,14 +17,16 @@ const deleteCommunity = async (
       },
     )
 
+    const responseData: ApiResponse<void> = await response.json()
+
     if (!response.ok) {
-      const errorBody = await response.json()
-      throw new Error(
-        `Error: ${response.statusText}. Message: ${errorBody.message || 'Unknown error'}`,
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
       )
+      throw new Error(responseData.message || 'Failed to delete community')
     }
   } catch (error) {
-    console.error('Error deleting community:', error)
     throw error
   }
 }

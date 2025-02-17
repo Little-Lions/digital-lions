@@ -1,4 +1,11 @@
+'use client'
+
 import { TeamInCommunity } from '@/types/teamInCommunity.interface'
+
+interface ApiResponse<T> {
+  message: string | null
+  data: T
+}
 
 const getTeamsOfCommunity = async (
   communityId: number,
@@ -8,14 +15,20 @@ const getTeamsOfCommunity = async (
       method: 'GET',
     })
 
+    const responseData: ApiResponse<TeamInCommunity[]> = await response.json()
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`)
+      console.error(
+        'API Error Detail:',
+        (responseData as any).detail || 'No detail available',
+      )
+      throw new Error(
+        responseData.message || 'Failed to get teams of community',
+      )
     }
 
-    const data: TeamInCommunity[] = await response.json()
-    return data
+    return responseData.data
   } catch (error) {
-    console.error('Error fetching data:', error)
     throw error
   }
 }

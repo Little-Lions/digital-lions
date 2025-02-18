@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from models import team as models
 from models.generic import APIResponse, Message, RecordCreated
-from routers._responses import with_default_responses
 from services import TeamService
 
 from routers._responses import with_default_responses

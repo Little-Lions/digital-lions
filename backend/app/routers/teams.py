@@ -7,7 +7,6 @@ from fastapi import status as http_status
 from fastapi.responses import JSONResponse
 from models import team as models
 from models.generic import APIResponse
-from routers._responses import with_default_responses
 from services import TeamService
 
 from routers._responses import with_default_responses

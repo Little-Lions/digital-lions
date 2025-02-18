@@ -1,5 +1,3 @@
-from unittest.mock import Base
-
 """Custom exceptions for the app."""
 
 from fastapi import status
@@ -31,43 +29,36 @@ class ChildHasAttendanceError(Exception):
 
 
 class ChildNotFoundError(BaseAPIException):
-
     message = "Child not found"
     status_code = status.HTTP_404_NOT_FOUND
 
 
 class ChildNotInTeam(BaseAPIException):
-
     message = "Child not in team"
     status_code = status.HTTP_400_BAD_REQUEST
 
 
 class CommunityAlreadyExistsError(BaseAPIException):
-
     message = "Community already exists!"
     status_code = status.HTTP_409_CONFLICT
 
 
 class CommunityHasTeamsError(BaseAPIException):
-
     message = "Community has teams"
     status_code = status.HTTP_409_CONFLICT
 
 
 class CommunityNotFoundError(BaseAPIException):
-
     message = "Community not found"
     status_code = status.HTTP_404_NOT_FOUND
 
 
 class ImplementingPartnerNotFoundError(BaseAPIException):
-
     message = "Implementing partner not found"
     status_code = status.HTTP_404_NOT_FOUND
 
 
 class ImplementingPartnerAlreadyExistsError(BaseAPIException):
-
     message = "Implementing partner exists"
     status_code = status.HTTP_409_CONFLICT
 
@@ -80,8 +71,9 @@ class InternalServerError(Exception):
     pass
 
 
-class InsufficientPermissionsError(Exception):
-    pass
+class InsufficientPermissionsError(BaseAPIException):
+    message = "User has no permission"
+    status_code = status.HTTP_403_FORBIDDEN
 
 
 class ItemAlreadyExistsError(Exception):
@@ -113,25 +105,21 @@ class TeamAlreadyExistsError(Exception):
 
 
 class TeamHasChildrenError(BaseAPIException):
-
     message = "Team has children!"
     status_code = status.HTTP_409_CONFLICT
 
 
 class TeamNotFoundError(BaseAPIException):
-
     message = "Team not found"
     status_code = status.HTTP_404_NOT_FOUND
 
 
 class UserEmailExistsError(BaseAPIException):
-
     message = "User email already exists"
     status_code = status.HTTP_409_CONFLICT
 
 
 class UserNotFoundError(BaseAPIException):
-
     message = "User not found"
     status_code = status.HTTP_404_NOT_FOUND
 
@@ -141,13 +129,11 @@ class UserUnauthorizedError(Exception):
 
 
 class WorkshopExistsError(BaseAPIException):
-
     message = "Workshop already exists!"
     status_code = status.HTTP_409_CONFLICT
 
 
 class WorkshopIncompleteAttendance(BaseAPIException):
-
     message = "Missing child attendance"
     status_code = status.HTTP_400_BAD_REQUEST
 
@@ -157,6 +143,5 @@ class WorkshopNotFoundError(Exception):
 
 
 class WorkshopNumberInvalidError(BaseAPIException):
-
     message = "Workshop number invalid!"
     status_code = status.HTTP_400_BAD_REQUEST

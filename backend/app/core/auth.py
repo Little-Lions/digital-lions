@@ -3,11 +3,12 @@ from typing import Any
 
 import httpx
 import jwt
+from fastapi import HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from core.context import CurrentUser
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
-from fastapi import HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,8 @@ class BearerTokenHandler(HTTPBearer):
         )
         if pub_key is None:
             raise HTTPException(
-                status_code=403, detail="Could not get public key for token"
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not get public key for token",
             )
 
         jwt_token_decoded = self._verify_jwt(

@@ -134,7 +134,6 @@ def test_role_resources(client):
     roles = client.get("/roles")
     assert roles.status_code == status.HTTP_200_OK, roles.text
     for role in roles.json().get("data"):
-
         levels = client.get("/roles/levels", params={"role": role})
         assert levels.status_code == status.HTTP_200_OK, levels.text
 

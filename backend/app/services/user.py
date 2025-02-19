@@ -9,7 +9,6 @@ from core.database.session import SessionDependency
 from core.settings import SettingsDependency
 from fastapi import Depends
 from repositories.auth0 import Auth0Repository
-
 from services._base import BaseService
 
 logger = logging.getLogger(__name__)

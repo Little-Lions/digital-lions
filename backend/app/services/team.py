@@ -12,7 +12,6 @@ from models.team import (
     TeamPostWorkshopIn,
     TeamStatus,
 )
-
 from services._base import BaseService
 
 logger = logging.getLogger(__name__)

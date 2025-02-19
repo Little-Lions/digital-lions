@@ -5,3 +5,4 @@ tests/
 scripts/
 Makefile
 *.md
+.venv/

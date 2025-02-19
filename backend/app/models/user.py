@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
-
 from models._metadata import _UpdatePropertiesIn
 from models.role import Level, Role
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserCurrentGetOut(BaseModel):

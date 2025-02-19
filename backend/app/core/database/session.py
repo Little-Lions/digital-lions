@@ -1,10 +1,9 @@
 from functools import lru_cache
 from typing import Annotated
 
+from core.settings import get_settings
 from fastapi import Depends
 from sqlmodel import Session, SQLModel, create_engine
-
-from core.settings import get_settings
 
 
 @lru_cache

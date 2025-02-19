@@ -1,18 +1,13 @@
-FROM python:3.11.5-slim
-
-ARG POETRY_VERSION=1.8.2
-
-WORKDIR /home
-
-COPY pyproject.toml poetry.lock /home/
-
-RUN pip3 install poetry==${POETRY_VERSION}
-RUN poetry config virtualenvs.create false \
-    && poetry install --without dev --no-root --no-interaction
-
-COPY . /home/
+FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y curl && apt-get clean
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+COPY . /app
+
+WORKDIR /app
+RUN uv sync --no-dev --frozen
 
 EXPOSE ${PORT}
 

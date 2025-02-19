@@ -6,9 +6,8 @@ from fastapi.responses import JSONResponse
 from models import community as models
 from models.community import VALID_IMPLEMENTING_PARTNER_ID
 from models.generic import APIResponse
-from services import CommunityService
-
 from routers._responses import with_default_responses
+from services import CommunityService
 
 router = APIRouter(prefix="/communities")
 

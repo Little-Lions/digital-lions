@@ -6,9 +6,8 @@ from fastapi.responses import JSONResponse
 from models import role as models
 from models.generic import APIResponse
 from repositories.database import ImplementingPartnerRepository
-from services import CommunityService, TeamService, UserService
-
 from routers._responses import with_default_responses
+from services import CommunityService, TeamService, UserService
 
 logger = logging.getLogger()
 

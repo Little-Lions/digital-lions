@@ -1,5 +1,5 @@
 import pytest
-from core.auth import BearerTokenHandlerInst
+from app.core.auth import BearerTokenHandlerInst
 from core.database.session import get_session
 from core.settings import Settings, get_settings
 from fastapi import status

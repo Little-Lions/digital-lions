@@ -3,12 +3,11 @@ from typing import Any
 
 import httpx
 import jwt
-from fastapi import HTTPException, Request, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-
 from core.context import CurrentUser
 from core.database.session import SessionDependency
 from core.settings import SettingsDependency
+from fastapi import HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 logger = logging.getLogger(__name__)
 

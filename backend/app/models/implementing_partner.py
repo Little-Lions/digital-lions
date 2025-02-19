@@ -1,7 +1,6 @@
+from models._metadata import _CreatePropertiesIn, _MetadataPropertiesOut
 from pydantic import BaseModel
 from sqlmodel import Field
-
-from models._metadata import _CreatePropertiesIn, _MetadataPropertiesOut
 
 
 class ImplementingPartnerPostIn(BaseModel, _CreatePropertiesIn):

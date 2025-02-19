@@ -6,9 +6,8 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from models import user as models
 from models.generic import APIResponse
-from services import UserService
-
 from routers._responses import with_default_responses
+from services import UserService
 
 logger = logging.getLogger(__name__)
 

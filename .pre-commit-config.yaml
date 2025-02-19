@@ -55,9 +55,9 @@ repos:
           ]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.1
-    hooks:
+    hooks:                       
       - id: mypy
         name: "🆎 Static type checking backend using mypy"
         pass_filenames: true
-        entry: bash -c 'poetry -C backend run mypy backend/app'
+        entry: bash -c 'uv --directory backend run mypy backend/app'
 

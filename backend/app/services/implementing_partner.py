@@ -3,7 +3,6 @@ import logging
 from core import exceptions
 from models.generic import APIResponse
 from models.implementing_partner import ImplementingPartnerPostIn
-
 from services._base import BaseService
 
 logger = logging.getLogger(__name__)

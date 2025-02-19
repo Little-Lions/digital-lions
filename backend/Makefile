@@ -31,7 +31,7 @@ format:
 	uv run isort app tests
 	uv run black app tests
 
-lint: 
+lint:
 	MYPYPATH=app uv run mypy app
 
 db.check:

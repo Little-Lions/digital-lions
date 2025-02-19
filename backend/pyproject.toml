@@ -41,5 +41,3 @@ dev = [
     "pytest-bdd<9.0.0,>=8.1.0",
 ]
 
-[tool.uv.workspace]
-members = ["app"]

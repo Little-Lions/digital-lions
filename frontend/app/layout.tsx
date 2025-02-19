@@ -17,6 +17,7 @@ import { Poppins } from 'next/font/google'
 import Navigation from '@/components/Navigation'
 import Footer from '@/components/Footer'
 import PageLayout from '@/components/PageLayout'
+import { ImplementingPartnerProvider } from '@/context/ImplementingPartnerContext'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -48,19 +49,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <UserProvider>
             <CustomUserProvider>
               <CommunityProvider>
-                <Navigation />
-                <main className="flex-1">
-                  <div className="container mx-auto px-4 py-4 flex-1">
-                    <div className="grid grid-cols-12 gap-4">
-                      <div className="col-span-12 md:col-start-1 lg:col-span-8 xl:col-span-6">
-                        <div ref={wrapperRef}>
-                          <PageLayout>{children}</PageLayout>
+                <ImplementingPartnerProvider>
+                  <Navigation />
+                  <main className="flex-1">
+                    <div className="container mx-auto px-4 py-4 flex-1">
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-12 md:col-start-1 lg:col-span-8 xl:col-span-6">
+                          <div ref={wrapperRef}>
+                            <PageLayout>{children}</PageLayout>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </main>
-                <Footer />
+                  </main>
+                  <Footer />
+                </ImplementingPartnerProvider>
               </CommunityProvider>
             </CustomUserProvider>
           </UserProvider>

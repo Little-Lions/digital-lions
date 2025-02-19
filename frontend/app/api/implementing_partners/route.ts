@@ -3,34 +3,21 @@ import { getAccessToken } from '@auth0/nextjs-auth0'
 import { apiRequest } from '@/utils/apiRequest'
 
 // Handle GET requests
-export async function GET(request: Request): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
     const { accessToken } = await getAccessToken()
     if (!accessToken) {
       throw new Error('Access token is undefined')
     }
 
-    const url = new URL(request.url)
-    const teamId = url.searchParams.get('team_id')
-    const communityId = url.searchParams.get('community_id')
-    const status = url.searchParams.get('status')
-
-    // Determine the endpoint based on query parameters
-    let endpoint = '/teams'
-    if (teamId) {
-      endpoint = `/teams/${teamId}`
-    } else if (communityId) {
-      endpoint = `/teams?community_id=${communityId}`
-    } else if (status) {
-      endpoint = `/teams?status=${status}`
-    }
+    let endpoint = '/implementing_partners'
 
     const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in GET /api/teams:', error)
+      console.error('Error in GET /api/implementing_partners:', error)
     }
     return NextResponse.json(
       {
@@ -54,7 +41,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const body = await request.json()
 
     const { message, data } = await apiRequest(
-      '/teams',
+      '/implementing_partners',
       'POST',
       accessToken,
       body,
@@ -63,7 +50,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in POST /api/teams:', error)
+      console.error('Error in POST /api/implementingPartners:', error)
     }
     return NextResponse.json(
       {
@@ -85,24 +72,28 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     }
 
     const url = new URL(request.url)
-    const teamId = url.searchParams.get('team_id')
-    const cascade = url.searchParams.get('cascade')
+    const implementingPartnerId = url.searchParams.get(
+      'implementing_partner_id',
+    )
 
-    if (!teamId) {
+    if (!implementingPartnerId) {
       return NextResponse.json(
-        { error: 'Missing `teamId` in query parameters' },
+        { error: 'Missing `implementingPartnerId` in query parameters' },
         { status: 400 },
       )
     }
 
-    const endpoint = `/teams/${teamId}?cascade=${cascade || 'false'}`
+    const endpoint = `/implementing_partners/${implementingPartnerId}`
 
     const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in DELETE /api/teams:', error)
+      console.error(
+        'Error in DELETE /api/implementingPartners/${implementing_partner_id}:',
+        error,
+      )
     }
     return NextResponse.json(
       {

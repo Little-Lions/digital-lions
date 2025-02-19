@@ -146,7 +146,7 @@ const TeamsPage: React.FC = () => {
         </>
       ) : (
         <>
-          {teams?.length ? (
+          {teams?.length > 0 ? (
             <>
               {customUser?.permissions.includes('teams:write') && (
                 <CustomButton

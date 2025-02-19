@@ -8,6 +8,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 
 import { useCustomUser } from '@/context/UserContext'
 import CustomButton from './CustomButton'
+import SwitchImplementingPartnerDropDown from './SwitchImplementingPartnerDropDown'
 
 const Navigation: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -96,7 +97,7 @@ const Navigation: React.FC = () => {
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex space-x-4">
+          <div className="hidden md:flex space-x-2 items-center">
             {/* Conditionally render navigation links if the user is authenticated */}
             {user && (
               <>
@@ -113,6 +114,7 @@ const Navigation: React.FC = () => {
                   className="text-white bg-gray-700 hover:bg-gray-600 py-0"
                   isBusy={isLoggingOut}
                 />
+                <SwitchImplementingPartnerDropDown />
               </>
             )}
           </div>
@@ -155,9 +157,9 @@ const Navigation: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Menu Links (Full-Screen Overlay) */}
+        {/* Mobile Menu Links */}
         {isOpen && (
-          <div className="md:hidden z-10 bg-gray-800 rounded-b-lg w-full flex flex-col items-start mt-4">
+          <div className="md:hidden absolute top-full left-0 bg-gray-800 rounded-b-lg w-full flex flex-col items-start shadow-lg">
             {user && (
               <>
                 <NavLink
@@ -190,12 +192,11 @@ const Navigation: React.FC = () => {
                     Users
                   </NavLink>
                 )}
-                {/* <div className="border-t-2 border-gray-700 w-full" /> */}
                 <NavigationButton
                   href="/api/auth/logout"
                   label="Logout"
                   variant="none"
-                  className="text-white pt-4 !min-w-0"
+                  className="text-white pt-4 !min-w-0 py-4"
                   closeMenu={toggleMenu}
                 />
               </>

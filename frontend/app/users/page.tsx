@@ -29,8 +29,6 @@ import deleteUser from '@/api/services/users/deleteUser'
 import assignRoleToUser from '@/api/services/users/assignRoleToUser'
 import getRolesPerUser from '@/api/services/users/getRolesPerUser'
 
-// import getCommunities from "@/api/services/communities/getCommunities";
-
 import { User } from '@/types/user.interface'
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'

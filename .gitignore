@@ -19,6 +19,8 @@ dist
 # database
 db/data/*   
 db/logfile
+backend/scripts/db/*
+*.zip
 
 # frontend (tidy up later)
 # Logs

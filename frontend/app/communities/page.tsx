@@ -105,7 +105,7 @@ const CommunityPage: React.FC = () => {
     }
 
     try {
-      return await createCommunity(trimmedName)
+      return await createCommunity(trimmedName, selectedImplementingPartnerId)
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message)

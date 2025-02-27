@@ -199,6 +199,7 @@ const Navigation: React.FC = () => {
                   className="text-white pt-4 !min-w-0 py-4"
                   closeMenu={toggleMenu}
                 />
+                <SwitchImplementingPartnerDropDown isMobile={true} />
               </>
             )}
           </div>

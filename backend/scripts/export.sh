@@ -23,4 +23,4 @@ for table in $tables; do
 done
 
 # Zip all CSV files
-zip -r database_export.zip csv_export/
+zip -r database_export.zip db/exports/

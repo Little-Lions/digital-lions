@@ -11,13 +11,10 @@ interface AccordionProps {
   id: string
   children: React.ReactNode
   className?: string
-  bgClass?: string
-  headingClass?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7'
   index?: number
   totalItems?: number
   accordionRefs?: React.MutableRefObject<(HTMLButtonElement | null)[]>
   isDisabled?: boolean
-  isOpen?: boolean
   onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 }
 
@@ -26,23 +23,21 @@ const Accordion: React.FC<AccordionProps> = ({
   description,
   id,
   children,
-  className = '',
-  bgClass = 'bg-card',
-  headingClass,
+  className,
   index,
   totalItems,
   accordionRefs,
   isDisabled,
   onClick,
-  isOpen: externalIsOpen,
 }) => {
-  const [isOpen, setIsOpen] = useState(externalIsOpen || false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const toggleAccordion = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => {
-    setIsOpen((prev) => !prev)
-    if (onClick) {
+  ): void => {
+    setIsOpen(!isOpen)
+
+    if (onClick && !isOpen) {
       onClick(e)
     }
   }
@@ -77,7 +72,7 @@ const Accordion: React.FC<AccordionProps> = ({
     <div
       id="accordion-open"
       data-accordion="open"
-      className={`rounded-lg ${className}`}
+      className={`${className} rounded-lg`}
     >
       <button
         ref={(el) => {
@@ -94,13 +89,9 @@ const Accordion: React.FC<AccordionProps> = ({
         aria-disabled={isDisabled ? 'true' : undefined}
         tabIndex={isDisabled ? -1 : 0}
         type="button"
-        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} ${bgClass} flex items-center justify-between w-full p-5 font-medium text-white hover:bg-opacity-80 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <Heading
-          level={headingClass || 'h6'}
-          hasNoMargin={true}
-          className="flex items-center"
-        >
+        <Heading level="h6" hasNoMargin={true} className="flex items-center">
           {title}
         </Heading>
         <svg
@@ -124,12 +115,16 @@ const Accordion: React.FC<AccordionProps> = ({
         id={`${id}-body`}
         aria-labelledby={`${id}-header`}
         role="region"
-        className={`transition-max-height duration-50 ease-in-out ${isOpen ? 'max-h-screen' : 'max-h-0'}`}
-        style={{ overflow: isOpen ? 'visible' : 'hidden' }}
+        className={`transition-max-height duration-50 ease-in-out ${
+          isOpen ? 'max-h-screen' : 'max-h-0'
+        }`}
+        style={{
+          overflow: isOpen ? 'visible' : 'hidden',
+        }}
       >
-        <div className={`${bgClass} p-5 rounded-b-lg`}>
+        <div className="bg-card p-5 rounded-b-lg">
           {description && (
-            <Text className="mb-2 text-gray-500">{description}</Text>
+            <Text className="mb-2 text-gray-500 ">{description}</Text>
           )}
           <div>{children}</div>
         </div>

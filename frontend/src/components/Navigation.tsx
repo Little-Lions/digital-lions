@@ -11,18 +11,29 @@ import CustomButton from './CustomButton'
 import SwitchImplementingPartnerDropDown from './SwitchImplementingPartnerDropDown'
 
 const Navigation: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const { user } = useUser()
   const { customUser } = useCustomUser()
 
-  const toggleMenu = (): void => {
-    setIsOpen((prevState) => !prevState)
+  const toggleMenu = () => {
+    setMenuOpen((prev) => {
+      if (!prev) setDropdownOpen(false)
+      return !prev
+    })
+  }
+
+  const toggleDropdown = () => {
+    setDropdownOpen((prev) => {
+      if (!prev) setMenuOpen(false)
+      return !prev
+    })
   }
 
   const closeMenu = (): void => {
-    setIsOpen(false)
+    setMenuOpen(false)
   }
 
   const handleLogout = async (): Promise<void> => {
@@ -107,6 +118,11 @@ const Navigation: React.FC = () => {
                 {customUser?.permissions.includes('users:write') && (
                   <NavLink href="/users">Users</NavLink>
                 )}
+                <SwitchImplementingPartnerDropDown
+                  dropdownOpen={dropdownOpen}
+                  toggleDropdown={toggleDropdown}
+                />
+
                 <CustomButton
                   label="Logout"
                   onClick={handleLogout}
@@ -114,95 +130,104 @@ const Navigation: React.FC = () => {
                   className="text-white bg-gray-700 hover:bg-gray-600 py-0"
                   isBusy={isLoggingOut}
                 />
-                <SwitchImplementingPartnerDropDown />
               </>
             )}
           </div>
 
           {/* Mobile Hamburger Menu Button */}
           {user && (
-            <div className="md:hidden">
-              <button
-                data-collapse-toggle="navbar-hamburger"
-                type="button"
-                className="bg-white inline-flex items-center justify-center p-2 w-10 h-10 text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200   "
-                aria-controls="navbar-hamburger"
-                aria-expanded="false"
-                onClick={toggleMenu}
-              >
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+            <div className="flex items-center md:hidden gap-4">
+              <div>
+                <SwitchImplementingPartnerDropDown
+                  dropdownOpen={dropdownOpen}
+                  toggleDropdown={toggleDropdown}
+                />
+              </div>
+
+              <div className="md:hidden">
+                <button
+                  data-collapse-toggle="navbar-hamburger"
+                  type="button"
+                  className="bg-white inline-flex items-center justify-center p-2 w-10 h-10 text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200   "
+                  aria-controls="navbar-hamburger"
+                  aria-expanded="false"
+                  onClick={toggleMenu}
                 >
-                  {isOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
-                </svg>
-              </button>
+                  <svg
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    {menuOpen ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    ) : (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
+                    )}
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </div>
 
         {/* Mobile Menu Links */}
-        {isOpen && (
-          <div className="md:hidden absolute top-full left-0 bg-gray-800 rounded-b-lg w-full flex flex-col items-start shadow-lg">
-            {user && (
-              <>
-                <NavLink
-                  href="/"
-                  onClick={toggleMenu}
-                  className="text-white py-4"
-                >
-                  Home
-                </NavLink>
-                <NavLink
-                  href="/program-tracker"
-                  onClick={toggleMenu}
-                  className="text-white py-4"
-                >
-                  Program tracker
-                </NavLink>
-                <NavLink
-                  href="/communities"
-                  onClick={toggleMenu}
-                  className="text-white py-4"
-                >
-                  Communities
-                </NavLink>
-                {customUser?.permissions.includes('users:write') && (
+        {menuOpen && (
+          <>
+            <div className="md:hidden absolute top-full left-0 bg-gray-800 rounded-b-lg w-full flex flex-col items-start shadow-lg">
+              {user && (
+                <>
                   <NavLink
-                    href="/users"
+                    href="/"
                     onClick={toggleMenu}
                     className="text-white py-4"
                   >
-                    Users
+                    Home
                   </NavLink>
-                )}
-                <NavigationButton
-                  href="/api/auth/logout"
-                  label="Logout"
-                  variant="none"
-                  className="text-white pt-4 !min-w-0 py-4"
-                  closeMenu={toggleMenu}
-                />
-                <SwitchImplementingPartnerDropDown isMobile={true} />
-              </>
-            )}
-          </div>
+                  <NavLink
+                    href="/program-tracker"
+                    onClick={toggleMenu}
+                    className="text-white py-4"
+                  >
+                    Program tracker
+                  </NavLink>
+                  <NavLink
+                    href="/communities"
+                    onClick={toggleMenu}
+                    className="text-white py-4"
+                  >
+                    Communities
+                  </NavLink>
+                  {customUser?.permissions.includes('users:write') && (
+                    <NavLink
+                      href="/users"
+                      onClick={toggleMenu}
+                      className="text-white py-4"
+                    >
+                      Users
+                    </NavLink>
+                  )}
+                  <NavigationButton
+                    href="/api/auth/logout"
+                    label="Logout"
+                    variant="none"
+                    className="text-white pt-4 !min-w-0 py-4"
+                    closeMenu={toggleMenu}
+                  />
+                </>
+              )}
+            </div>
+          </>
         )}
       </div>
     </nav>

@@ -3,7 +3,7 @@
 import React from 'react'
 
 interface HeadingProps {
-  level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'h7'
+  level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
   className?: string
   children: React.ReactNode
   hasNoMargin?: boolean
@@ -16,7 +16,7 @@ const Heading: React.FC<HeadingProps> = ({
   children,
   hasNoMargin = false,
 }) => {
-  const Tag = level === 'h7' ? 'p' : level
+  const Tag = level
 
   const baseStyles = {
     h1: 'text-4xl md:text-5xl font-extrabold',
@@ -25,7 +25,6 @@ const Heading: React.FC<HeadingProps> = ({
     h4: 'text-xl md:text-2xl font-medium',
     h5: 'text-lg md:text-xl font-medium',
     h6: 'text-base md:text-lg font-normal',
-    h7: 'text-sm md:text-base font-normal', // h7 styles applied to <p> or <span>
   }
 
   const marginStyles = {
@@ -35,7 +34,6 @@ const Heading: React.FC<HeadingProps> = ({
     h4: 'mb-3',
     h5: 'mb-2',
     h6: 'mb-1',
-    h7: 'mb-1',
   }
 
   return (

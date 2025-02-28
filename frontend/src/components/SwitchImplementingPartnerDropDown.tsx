@@ -1,6 +1,6 @@
 'use-client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import { useQuery } from 'react-query'
 
@@ -11,6 +11,8 @@ import getImplementingPartners from '@/api/services/implementingPartners/getImpl
 import { useImplementingPartner } from '@/context/ImplementingPartnerContext'
 
 import { ImplementingPartner } from '@/types/implementingPartner.interface'
+
+import { useRouter } from 'next/navigation'
 
 import Spinner from './Spinner'
 import CustomButton from './CustomButton'
@@ -29,6 +31,7 @@ const SwitchImplementingPartnerDropDown: React.FC<
     useImplementingPartner()
   const [showDropDown, setShowDropDown] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
 
   const fetchImplementingPartners = async (): Promise<
     ImplementingPartner[]
@@ -55,7 +58,12 @@ const SwitchImplementingPartnerDropDown: React.FC<
     staleTime: 5 * 60 * 1000,
   })
 
-  const toggleDropDown = (event?: React.MouseEvent) => {
+  const handleSelectImplementingPartner = (partnerId: number): void => {
+    setSelectedImplementingPartnerId(partnerId)
+    router.push('/')
+  }
+
+  const toggleDropDown = (event?: React.MouseEvent): void => {
     if (event) {
       event.stopPropagation()
     }
@@ -92,7 +100,7 @@ const SwitchImplementingPartnerDropDown: React.FC<
                   ) : null
                 }
                 className="text-white hover:bg-gray-600 py-0 justify-start"
-                onClick={() => setSelectedImplementingPartnerId(partner.id)}
+                onClick={() => handleSelectImplementingPartner(partner.id)}
               />
             ))}
           </DropDown>

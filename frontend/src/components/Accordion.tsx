@@ -42,7 +42,7 @@ const Accordion: React.FC<AccordionProps> = ({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>): void => {
     if (!accordionRefs || index === undefined || totalItems === undefined)
       return
 

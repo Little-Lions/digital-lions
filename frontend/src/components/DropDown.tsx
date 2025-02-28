@@ -16,7 +16,7 @@ const DropDown: React.FC<DropDownProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
@@ -29,7 +29,8 @@ const DropDown: React.FC<DropDownProps> = ({
       document.addEventListener('mousedown', handleClickOutside)
     }
 
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    return (): void =>
+      document.removeEventListener('mousedown', handleClickOutside)
   }, [showDropDown, toggleDropdown])
 
   if (!showDropDown) return null // Don't render when hidden

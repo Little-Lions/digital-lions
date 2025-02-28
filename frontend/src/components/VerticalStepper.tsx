@@ -7,7 +7,7 @@ import CustomButton from './CustomButton'
 import DatePicker from './DatePicker'
 import EmptyState from './EmptyState'
 
-import { UsersIcon } from '@heroicons/react/20/solid'
+import { UsersIcon } from '@heroicons/react/24/solid'
 
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 import { WorkshopInfo } from '@/types/workshopInfo.interface'

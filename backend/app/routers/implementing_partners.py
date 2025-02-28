@@ -8,8 +8,6 @@ from models import implementing_partner as models
 from models.generic import APIResponse
 from services.implementing_partner import ImplementingPartnerService
 
-from app.models import implementing_partner
-
 router = APIRouter(prefix="/implementing_partners")
 
 

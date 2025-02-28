@@ -1,5 +1,3 @@
-from typing import Literal
-
 from models._metadata import (
     _CreatePropertiesIn,
     _MetadataPropertiesOut,

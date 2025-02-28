@@ -1,5 +1,3 @@
-from unittest.mock import Base
-
 """Custom exceptions for the app."""
 
 from fastapi import status

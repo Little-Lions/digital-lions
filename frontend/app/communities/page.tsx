@@ -4,10 +4,11 @@ import React, { useState } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
-import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
+import { TrashIcon, PencilIcon, UsersIcon } from '@heroicons/react/16/solid'
 
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
+import { useImplementingPartner } from '@/context/ImplementingPartnerContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
 import createCommunity from '@/api/services/communities/createCommunity'
@@ -23,12 +24,14 @@ import SkeletonLoader from '@/components/SkeletonLoader'
 import Toast from '@/components/Toast'
 import ConfirmModal from '@/components/ConfirmModal'
 import AlertBanner from '@/components/AlertBanner'
+import EmptyState from '@/components/EmptyState'
 
 import { Community } from '@/types/community.interface'
 
 const CommunityPage: React.FC = () => {
   const queryClient = useQueryClient()
   const { communityName, setCommunityName } = useCommunity()
+  const { selectedImplementingPartnerId } = useImplementingPartner()
 
   const { customUser } = useCustomUser()
 
@@ -53,7 +56,7 @@ const CommunityPage: React.FC = () => {
 
   const fetchCommunities = async (): Promise<Community[]> => {
     try {
-      return await getCommunities()
+      return await getCommunities(selectedImplementingPartnerId)
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message)
@@ -65,12 +68,17 @@ const CommunityPage: React.FC = () => {
   }
 
   const {
-    data: communities = [], // Data from the query
-    isLoading, // Loading state
-    error: hasErrorFetchingCommunities, // Error state
-  } = useQuery<Community[]>('communities', fetchCommunities, {
-    staleTime: 5 * 60 * 1000, // Cache data for 5 minutes
-  })
+    data: communities = [],
+    isLoading,
+    error: hasErrorFetchingCommunities,
+  } = useQuery<Community[], Error>(
+    ['communities', selectedImplementingPartnerId],
+    fetchCommunities,
+    {
+      enabled: !!selectedImplementingPartnerId,
+      staleTime: 5 * 60 * 1000,
+    },
+  )
 
   const handleOpenCommunityModal = (): void => {
     setOpenAddCommunityModal(true)
@@ -90,11 +98,14 @@ const CommunityPage: React.FC = () => {
   }
 
   const addCommunity = async (): Promise<{ id: number }> => {
-    if (!communityName || communityName.trim() === '') {
-      throw new Error('Community name cannot be empty')
+    const trimmedName = (communityName ?? '').trim()
+
+    if (!trimmedName) {
+      throw new Error('Community name cannot be empty or spaces only')
     }
+
     try {
-      return await createCommunity(communityName)
+      return await createCommunity(trimmedName, selectedImplementingPartnerId)
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message)
@@ -212,42 +223,60 @@ const CommunityPage: React.FC = () => {
         </>
       ) : (
         <>
-          {customUser?.permissions.includes('communities:write') && (
-            <CustomButton
-              label="Add Community"
-              onClick={handleOpenCommunityModal}
-              variant="outline"
-              isFullWidth
-              className="hover:bg-card-dark hover:text-white mb-4"
+          {communities.length > 0 ? (
+            <>
+              {/* Show "Add Community" button if the user has permission */}
+              {customUser?.permissions.includes('communities:write') && (
+                <CustomButton
+                  label="Add Community"
+                  onClick={handleOpenCommunityModal}
+                  variant="outline"
+                  isFullWidth
+                  className="mb-4"
+                />
+              )}
+
+              {/* Render Community List */}
+              {communities.map((community) => (
+                <LinkCard
+                  key={community.id}
+                  title={community.name}
+                  href={`/communities/${community.id}/teams`}
+                  onClick={() => setCommunityName(community.name)}
+                  className="mb-2"
+                >
+                  {/* Edit and Delete Buttons (Only for users with permission) */}
+                  {customUser?.permissions.includes('communities:write') && (
+                    <ButtonGroup>
+                      <CustomButton
+                        label="Edit"
+                        variant="secondary"
+                        icon={<PencilIcon />}
+                        onClick={() =>
+                          handleOpenEditCommunityModal(community.id)
+                        }
+                      />
+                      <CustomButton
+                        label="Delete"
+                        variant="error"
+                        icon={<TrashIcon />}
+                        onClick={() =>
+                          handleOpenDeleteCommunityModal(community.id)
+                        }
+                      />
+                    </ButtonGroup>
+                  )}
+                </LinkCard>
+              ))}
+            </>
+          ) : (
+            <EmptyState
+              title="No communities available"
+              text="This implementing partner has no communities"
+              pictogram={<UsersIcon />}
             />
           )}
-          {communities.map((community) => (
-            <LinkCard
-              key={community.id}
-              title={community.name}
-              href={`/communities/${community.id}/teams`}
-              onClick={() => setCommunityName(community.name)}
-              className="mb-2"
-            >
-              {/* Edit and Delete Buttons */}
-              <ButtonGroup>
-                <CustomButton
-                  label="Edit"
-                  variant="secondary"
-                  icon={<PencilIcon />}
-                  onClick={() => {
-                    handleOpenEditCommunityModal(community.id)
-                  }}
-                />
-                <CustomButton
-                  label="Delete"
-                  variant="error"
-                  icon={<TrashIcon />}
-                  onClick={() => handleOpenDeleteCommunityModal(community.id)}
-                />
-              </ButtonGroup>
-            </LinkCard>
-          ))}
+
           {openAddCommunityModal && (
             <Modal
               onClose={handleCloseCommunityModal}
@@ -266,7 +295,7 @@ const CommunityPage: React.FC = () => {
                 <TextInput
                   className="mb-2"
                   label="Community name"
-                  value={''} // Controlled input
+                  value={''}
                   onChange={handleCommunityNameChange}
                   onBlur={handleCommunityNameBlur}
                   autoFocus

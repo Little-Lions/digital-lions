@@ -12,10 +12,17 @@ export async function GET(request: Request): Promise<NextResponse> {
 
     const url = new URL(request.url)
     const communityId = url.searchParams.get('community_id')
+    const implementingPartnerId = url.searchParams.get(
+      'implementing_partner_id',
+    )
 
-    const endpoint = communityId
-      ? `/communities/${communityId}`
-      : '/communities'
+    let endpoint = '/communities'
+
+    if (communityId) {
+      endpoint = `/communities/${communityId}`
+    } else if (implementingPartnerId) {
+      endpoint = `/communities?implementing_partner_id=${implementingPartnerId}`
+    }
 
     const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 

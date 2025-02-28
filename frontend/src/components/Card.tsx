@@ -8,7 +8,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ className, children }) => {
   return (
     <div
-      className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 text-white cursor-pointer`}
+      className={`${className} rounded-lg bg-card flex items-center justify-between w-full p-5 text-white`}
     >
       <div className="flex flex-row items-center w-full">
         <div className="flex-1">{children}</div>

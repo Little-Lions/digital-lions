@@ -46,6 +46,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   // Fetch team details when teamId changes
+  // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
     queryKey,
   }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {

@@ -42,7 +42,10 @@ class ImplementingPartnerService(BaseService):
                 user_id=self.current_user.user_id
             )
         )
-        return implementing_partners
+        return sorted(
+            implementing_partners,
+            key=lambda implementing_partner: implementing_partner.name,
+        )
 
     def get(self, object_id):
         """Get an implementing partner from the table by id."""

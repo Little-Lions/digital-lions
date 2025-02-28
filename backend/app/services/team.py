@@ -202,8 +202,7 @@ class TeamService(BaseService):
         teams_progresses = self.database.workshops.get_last_workshop_per_team(
             team_ids=team_ids
         )
-
-        return [
+        teams = [
             TeamGetOut(
                 **team.model_dump(),
                 community=team.community.model_dump(),
@@ -219,6 +218,7 @@ class TeamService(BaseService):
             )
             for team in teams
         ]
+        return sorted(teams, key=lambda team: team.name)
 
     def get(self, object_id: int) -> TeamGetByIdOut:
         """Get a team from the table by id.
@@ -235,9 +235,10 @@ class TeamService(BaseService):
         # if the team has no workshops yet, its ID will not be in the dict
         team_progress = teams_progresses[team.id] if team.id in teams_progresses else 0
 
+        children = [child.model_dump() for child in team.children]
         return TeamGetByIdOut(
             **team.model_dump(),
-            children=[child.model_dump() for child in team.children],
+            children=sorted(children, key=lambda child: child.first_name),
             community=team.community.model_dump(),
             program={"progress": {"current": team_progress}},
         )

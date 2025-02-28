@@ -13,7 +13,6 @@ interface Community {
 const getCommunities = async (
   selectedImplementingPartnerId?: number | null,
 ): Promise<Community[]> => {
-  console.log('selectedImplementingPartnerId', selectedImplementingPartnerId)
   try {
     const response = await fetch(
       `/api/communities?implementing_partner_id=${selectedImplementingPartnerId}`,

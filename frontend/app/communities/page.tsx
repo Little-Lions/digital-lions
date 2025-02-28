@@ -4,7 +4,9 @@ import React, { useState } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
-import { TrashIcon, PencilIcon, UsersIcon } from '@heroicons/react/16/solid'
+import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
+
+import { UsersIcon } from '@heroicons/react/24/solid'
 
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'

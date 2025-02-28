@@ -235,10 +235,10 @@ class TeamService(BaseService):
         # if the team has no workshops yet, its ID will not be in the dict
         team_progress = teams_progresses[team.id] if team.id in teams_progresses else 0
 
-        children = [child.model_dump() for child in team.children]
+        children = sorted(team.children, key=lambda child: child.first_name)
         return TeamGetByIdOut(
             **team.model_dump(),
-            children=sorted(children, key=lambda child: child.first_name),
+            children=[child.model_dump() for child in children],
             community=team.community.model_dump(),
             program={"progress": {"current": team_progress}},
         )

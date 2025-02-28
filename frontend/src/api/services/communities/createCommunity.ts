@@ -8,12 +8,18 @@ interface Community {
   id: number
 }
 
-const createCommunity = async (communityName: string): Promise<Community> => {
+const createCommunity = async (
+  communityName: string,
+  selectedImplementingPartnerId?: number | null,
+): Promise<Community> => {
   try {
-    const response = await fetch('/api/communities', {
-      method: 'POST',
-      body: JSON.stringify({ name: communityName }),
-    })
+    const response = await fetch(
+      `/api/communities?implementing_partner_id=${selectedImplementingPartnerId}`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ name: communityName }),
+      },
+    )
 
     const responseData: ApiResponse<Community> = await response.json()
 

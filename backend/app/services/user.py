@@ -76,7 +76,9 @@ class UserService(BaseService):
     def get_all(self) -> list[models.user.UserGetOut] | None:
         """Get all users from the table."""
         users = self.auth0.list_users()["users"]
-        return [models.user.UserGetOut(**u) for u in users]
+        return sorted(
+            [models.user.UserGetOut(**u) for u in users], key=lambda u: u.nickname
+        )
 
     def get(self, user_id: str = None) -> models.user.UserGetOut | None:
         """Get a user.

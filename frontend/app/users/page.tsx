@@ -1,13 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryFunctionContext,
-} from 'react-query'
+import { useQuery, useMutation, useQueryClient } from 'react-query'
 
 import TextInput from '@/components/TextInput'
 import CustomButton from '@/components/CustomButton'
@@ -18,36 +13,37 @@ import Accordion from '@/components/Accordion'
 import SelectInput from '@/components/SelectInput'
 import Toast from '@/components/Toast'
 import Text from '@/components/Text'
-
-// import Loader from '@/components/Loader'
+import AlertBanner from '@/components/AlertBanner'
+import ConfirmModal from '@/components/ConfirmModal'
 
 import { TrashIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/16/solid'
 
 import getRoles from '@/api/services/roles/getRoles'
 import getLevels from '@/api/services/roles/getLevels'
 import getResources from '@/api/services/roles/getResources'
-import getUser from '@/api/services/users/getUser'
+// import getUser from '@/api/services/users/getUser'
 import getUsers from '@/api/services/users/getUsers'
 import createUser from '@/api/services/users/createUser'
 // import createUserInvite from '@/api/services/users/createUserInvite'
 import deleteUser from '@/api/services/users/deleteUser'
 import assignRoleToUser from '@/api/services/users/assignRoleToUser'
-
-// import getCommunities from "@/api/services/communities/getCommunities";
+import getRolesPerUser from '@/api/services/users/getRolesPerUser'
 
 import { User } from '@/types/user.interface'
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
-import AlertBanner from '@/components/AlertBanner'
-import ConfirmModal from '@/components/ConfirmModal'
+import { UserRoles } from '@/types/userRoles.interface'
+import LoadingOverlay from '@/components/LoadingOverlay'
 
 const UsersPage: React.FC = () => {
   const queryClient = useQueryClient()
+
+  const accordionRefs = useRef<(HTMLButtonElement | null)[]>([])
   //   const [user, setUser] = useState<User | null>(null);
   // const [isLoading, setIsLoading] = useState(false)
 
-  const [modalType, setModalType] = useState<'edit' | 'delete' | null>(null)
+  // const [modalType, setModalType] = useState<'edit' | 'delete' | null>(null)
 
   const [isAssigningUser, setIsAssigningUser] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
@@ -67,7 +63,7 @@ const UsersPage: React.FC = () => {
 
   const [addUserError, setAddUserError] = useState<string | null>(null)
 
-  const [nickName, setNickName] = useState<string>('')
+  // const [nickName, setNickName] = useState<string>('')
   const [emailAddress, setEmailAddress] = useState<string>('')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [availableRoles, setAvailableRoles] = useState<Role[] | null>(null)
@@ -123,9 +119,36 @@ const UsersPage: React.FC = () => {
     staleTime: 5 * 60 * 1000,
   })
 
-  const fetchUser = async (userId: string): Promise<User> => {
+  // const fetchUser = async (userId: string): Promise<User> => {
+  //   try {
+  //     return await getUser(userId)
+  //   } catch (error) {
+  //     if (error instanceof Error) {
+  //       setErrorMessage(error.message)
+  //       throw error
+  //     } else {
+  //       throw error
+  //     }
+  //   }
+  // }
+
+  // const {
+  //   data: selectedUser,
+  //   isLoading: isLoadingUser,
+  //   error: hasErrorFetchingUser,
+  // } = useQuery<User, Error>(
+  //   ['user', selectedUserId],
+  //   () => fetchUser(selectedUserId!),
+  //   {
+  //     enabled: Boolean(selectedUserId),
+  //     staleTime: 5 * 60 * 1000,
+  //   },
+  // )
+
+  const fetchRolesPerUser = async (userId: string): Promise<UserRoles[]> => {
     try {
-      return await getUser(userId)
+      const roles = await getRolesPerUser(userId)
+      return roles
     } catch (error) {
       if (error instanceof Error) {
         setErrorMessage(error.message)
@@ -137,17 +160,21 @@ const UsersPage: React.FC = () => {
   }
 
   const {
-    data: selectedUser,
-    isLoading: isLoadingUser,
-    error: hasErrorFetchingUser,
-  } = useQuery<User, Error>(
-    ['user', selectedUserId],
-    () => fetchUser(selectedUserId!),
+    data: rolesPerUser = [],
+    isLoading: isLoadingRolesPerUser,
+    error: hasErrorFetchingRolesPerUser,
+  } = useQuery<UserRoles[], Error>(
+    ['rolesPerUser', selectedUserId],
+    () => fetchRolesPerUser(selectedUserId as string),
     {
-      enabled: Boolean(selectedUserId),
+      enabled: !!selectedUserId,
       staleTime: 5 * 60 * 1000,
     },
   )
+
+  const handleAccordionClick = (userId: string): void => {
+    setSelectedUserId(userId)
+  }
 
   //   const handleSaveUser = async () => {
   //     if (!selectedUserId) return; // Ensure there's a user selected
@@ -171,9 +198,9 @@ const UsersPage: React.FC = () => {
   //     }
   //   };
 
-  const handleNicknameChange = (value: string): void => {
-    setNickName(value)
-  }
+  // const handleNicknameChange = (value: string): void => {
+  //   setNickName(value)
+  // }
 
   const handleEmailAddressChange = (value: string): void => {
     setEmailAddress(value)
@@ -380,50 +407,93 @@ const UsersPage: React.FC = () => {
             onClick={handleOpenAddUserModal}
             variant="outline"
             isFullWidth
-            className="hover:bg-card-dark hover:text-white mb-4"
+            className="mb-4"
           />
-          {users.map((user) => (
-            <Accordion
-              key={user.user_id}
-              title={user.nickname}
-              className="mb-2"
-            >
-              <div>
-                <Text>{`Nickname: ${user.nickname}`}</Text>
-                <Text>{`Email: ${user.email}`}</Text>
-              </div>
-              <div className="border-t mt-4 border-gray-200 " />
+          {users.map((user, index) => {
+            const cachedRoles =
+              queryClient.getQueryData<UserRoles[]>([
+                'rolesPerUser',
+                user.user_id,
+              ]) ?? []
+            return (
+              <Accordion
+                key={user.user_id}
+                title={user.nickname}
+                index={index}
+                id={`accordion-item-${index}`}
+                totalItems={users.length}
+                accordionRefs={accordionRefs}
+                className="mb-2"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (user.user_id) {
+                    handleAccordionClick(user.user_id)
+                  }
+                }}
+              >
+                <LoadingOverlay
+                  loading={
+                    selectedUserId === user.user_id && isLoadingRolesPerUser
+                  }
+                >
+                  <div>
+                    <Text>{`Nickname: ${user.nickname}`}</Text>
+                    <Text>{`Email: ${user.email}`}</Text>
 
-              <ButtonGroup>
-                <CustomButton
-                  className="mt-4"
-                  label="Assign"
-                  variant="outline"
-                  icon={<UserPlusIcon />}
-                  onClick={() =>
-                    user.user_id && handleOpenAssignUserModal(user.user_id)
-                  }
-                />
-                {/* <CustomButton
-                  className="mt-4"
-                  label="Edit"
-                  variant="secondary"
-                  isBusy={selectedUserId === user.user_id && isLoadingUser}
-                  icon={<PencilIcon />}
-                  onClick={() => handleOpenEditUserModal(user.user_id)}
-                /> */}
-                <CustomButton
-                  className="mt-4"
-                  label="Delete"
-                  variant="error"
-                  icon={<TrashIcon />}
-                  onClick={() =>
-                    user.user_id && handleOpenDeleteUserModal(user.user_id)
-                  }
-                />
-              </ButtonGroup>
-            </Accordion>
-          ))}
+                    <ul>
+                      {(selectedUserId === user.user_id
+                        ? (rolesPerUser ?? cachedRoles)
+                        : cachedRoles
+                      )?.map(({ id, role }) => (
+                        <li key={id}>
+                          <p>{`Role: ${role}`}</p>
+                        </li>
+                      ))}
+                    </ul>
+                    {!!hasErrorFetchingRolesPerUser && (
+                      <AlertBanner
+                        variant="error"
+                        message={errorMessage ?? ''}
+                      />
+                    )}
+
+                    <div className="border-t mt-4 border-gray-200 " />
+
+                    <ButtonGroup>
+                      <CustomButton
+                        className="mt-4"
+                        label="Assign"
+                        variant="outline"
+                        icon={<UserPlusIcon />}
+                        onClick={() =>
+                          user.user_id &&
+                          handleOpenAssignUserModal(user.user_id)
+                        }
+                      />
+                      {/* <CustomButton
+    className="mt-4"
+    label="Edit"
+    variant="secondary"
+    isBusy={selectedUserId === user.user_id && isLoadingUser}
+    icon={<PencilIcon />}
+    onClick={() => handleOpenEditUserModal(user.user_id)}
+  /> */}
+                      <CustomButton
+                        className="mt-4"
+                        label="Delete"
+                        variant="error"
+                        icon={<TrashIcon />}
+                        onClick={() =>
+                          user.user_id &&
+                          handleOpenDeleteUserModal(user.user_id)
+                        }
+                      />
+                    </ButtonGroup>
+                  </div>
+                </LoadingOverlay>
+              </Accordion>
+            )
+          })}
 
           {addUserModalVisible && (
             <Modal

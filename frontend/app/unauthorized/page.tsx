@@ -1,18 +1,35 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import Card from '@/components/Card'
 import NavigationButton from '@/components/NavigationButton'
 import ButtonGroup from '@/components/ButtonGroup'
 import Heading from '@/components/Heading'
 import Text from '@/components/Text'
+import CustomButton from '@/components/CustomButton'
 
 const UnauthorizedPage: React.FC = () => {
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+
+  const handleLogin = async (): Promise<void> => {
+    setIsLoggingIn(true)
+    try {
+      setTimeout(() => {
+        window.location.href = '/api/auth/login'
+      }, 10)
+    } catch (error) {
+      console.error('Login failed:', error)
+      setIsLoggingIn(false)
+    }
+  }
+
   return (
-    <Card className="bg-white">
+    <Card className="bg-white pointer">
       <div className="mx-auto max-w-screen-sm text-center">
-        <Heading level="h2">401</Heading>
+        <Heading level="h2" className="text-red-500">
+          401
+        </Heading>
         <Text className="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl">
           Unauthorized Access
         </Text>
@@ -22,12 +39,12 @@ const UnauthorizedPage: React.FC = () => {
         </Text>
         <div className="border-t border-gray-200">
           <ButtonGroup className="mt-4">
-            <NavigationButton
+            <CustomButton
               label="Login"
-              href="/api/auth/login"
-              isFullWidth={true}
+              onClick={handleLogin}
               variant="secondary"
-              useBackNavigation={false}
+              isFullWidth={true}
+              isBusy={isLoggingIn}
             />
             <NavigationButton
               label="Go back"

@@ -10,9 +10,14 @@ interface Community {
   name: string
 }
 
-const getCommunities = async (): Promise<Community[]> => {
+const getCommunities = async (
+  selectedImplementingPartnerId?: number | null,
+): Promise<Community[]> => {
   try {
-    const response = await fetch('/api/communities', { method: 'GET' })
+    const response = await fetch(
+      `/api/communities?implementing_partner_id=${selectedImplementingPartnerId}`,
+      { method: 'GET' },
+    )
 
     const responseData: ApiResponse<Community[]> = await response.json()
 

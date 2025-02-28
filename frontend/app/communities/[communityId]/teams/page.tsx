@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
@@ -146,7 +146,7 @@ const TeamsPage: React.FC = () => {
         </>
       ) : (
         <>
-          {teams?.length ? (
+          {teams?.length > 0 ? (
             <>
               {customUser?.permissions.includes('teams:write') && (
                 <CustomButton
@@ -154,7 +154,7 @@ const TeamsPage: React.FC = () => {
                   isFullWidth
                   onClick={handleOpenTeamModal}
                   variant="outline"
-                  className="hover:bg-card-dark hover:text-white mb-4"
+                  className="mb-4"
                 />
               )}
               <div className="flex justify-between mb-2">
@@ -187,7 +187,6 @@ const TeamsPage: React.FC = () => {
                     label="Add team"
                     onClick={handleOpenTeamModal}
                     variant="primary"
-                    className="hover:bg-card-dark hover:text-white mb-4"
                   />
                 ) : null
               }

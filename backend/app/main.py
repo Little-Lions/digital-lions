@@ -4,6 +4,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
+from core import exceptions
 from core.database.session import init_db
 from core.settings import get_settings
 from fastapi import FastAPI, HTTPException, Request, status
@@ -51,14 +52,38 @@ app = FastAPI(
 )
 
 
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
+async def unauthorized_exception_handler(request: Request, exc: HTTPException) -> Any:
+    """Handle 401 unauthorized exceptions."""
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content=APIResponse(
+            message="User is not authorized",
+            detail=str(exc),
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(exceptions.InsufficientPermissionsError)
+@app.exception_handler(status.HTTP_403_FORBIDDEN)
+async def forbidden_exception_handler(request: Request, exc: HTTPException) -> Any:
+    """Handle 403 forbidden exceptions."""
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content=APIResponse(
+            message="User does not have access",
+            detail=str(exc),
+        ).model_dump(),
+    )
+
+
 @app.exception_handler(Exception)
 async def catch_any_exception(request: Request, exc) -> Any:
     """
     Catch all internal exceptions that are not explicitly raised
     and raise them as proper HTTPExceptions.
     """
-    logger.error(exc)
-
+    logger.exception(exc)
     try:
         return JSONResponse(
             status_code=exc.status_code,
@@ -69,7 +94,7 @@ async def catch_any_exception(request: Request, exc) -> Any:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=APIResponse(
-                message="Something went wrong!", detail=str(exc)
+                message="Something went wrong.", detail=str(exc)
             ).model_dump(),
         )
 

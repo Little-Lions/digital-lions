@@ -86,7 +86,7 @@ const Navigation: React.FC = () => {
               {isHomePage && (
                 <NavLink
                   href="/"
-                  className={`text-white font-bold text-xl ${
+                  className={`text-white font-bold text-xl leading-none ${
                     !user && 'pointer-events-none'
                   }`}
                 >

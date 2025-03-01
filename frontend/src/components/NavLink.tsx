@@ -16,32 +16,30 @@ const NavLink: React.FC<NavLinkProps> = ({
   onClick,
   isExternal = false,
 }) => {
-  // Combine base classes
   const baseClasses =
     'text-white hover:bg-gray-700 relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center min-h-[2.5rem]'
 
-  // Merge className only if it exists
   const combinedClasses = className
     ? `${baseClasses} ${className}`
     : baseClasses
 
-  // Handle external links (such as Auth0 logout) with a regular <a> tag
+  // Handle external links using <a> instead of <Link>
   if (isExternal) {
     return (
-      <Link
-        prefetch={false}
+      <a
         href={href}
         className={combinedClasses}
         onClick={onClick}
+        rel="noopener noreferrer"
       >
         {children}
-      </Link>
+      </a>
     )
   }
 
   // Default internal links
   return (
-    <Link href={href} className={combinedClasses} onClick={onClick}>
+    <Link href={href} className={combinedClasses}>
       {children}
     </Link>
   )

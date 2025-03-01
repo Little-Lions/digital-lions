@@ -18,46 +18,35 @@ const LinkCard: React.FC<LinkCardProps> = ({
   children,
 }) => {
   return (
-    <div
-      className={`${className} rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors`}
-      onClick={onClick}
-    >
-      {/* Title Section */}
-      <Link href={href} className="flex-grow">
+    <Link href={href} prefetch={false} className="w-full" onClick={onClick}>
+      <div
+        className={`${className} rounded-lg bg-card flex justify-between gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors`}
+      >
+        {/* Title section */}
         <Heading level="h6" hasNoMargin={true}>
           {title}
         </Heading>
-      </Link>
-
-      {/* Children Section */}
-      {children && (
-        <div
-          className="flex items-center gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {children}
+        <div className="flex items-center gap-2">
+          {children && <div>{children}</div>}
+          {/* Chevron right icon */}
+          <svg
+            className="w-3 h-3 ml-auto transition-transform"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 6 10"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M1 1l4 4-4 4"
+            />
+          </svg>
         </div>
-      )}
-
-      {/* Right Arrow */}
-      <Link href={href}>
-        <svg
-          className="w-3 h-3 ml-auto transition-transform"
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 6 10"
-        >
-          <path
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M1 1l4 4-4 4"
-          />
-        </svg>
-      </Link>
-    </div>
+      </div>
+    </Link>
   )
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
@@ -36,6 +36,8 @@ const CommunityPage: React.FC = () => {
   const { selectedImplementingPartnerId } = useImplementingPartner()
 
   const { customUser } = useCustomUser()
+
+  const latestSelectedElement = useRef<HTMLButtonElement | null>(null)
 
   const [communityId, setCommunityId] = useState<number | null>(null)
 
@@ -83,12 +85,16 @@ const CommunityPage: React.FC = () => {
   )
 
   const handleOpenCommunityModal = (): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setOpenAddCommunityModal(true)
   }
 
   const handleCloseCommunityModal = (): void => {
     setCommunityName('')
     setOpenAddCommunityModal(false)
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   const handleCommunityNameChange = (value: string): void => {
@@ -132,12 +138,16 @@ const CommunityPage: React.FC = () => {
     })
 
   const handleOpenDeleteCommunityModal = (CommunityId: number): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setCommunityId(CommunityId)
     setDeleteCommunityModalVisible(true)
   }
 
   const handleCloseDeleteCommunityModal = (): void => {
     setDeleteCommunityModalVisible(false)
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   const removeCommunity = async (): Promise<void> => {
@@ -175,12 +185,16 @@ const CommunityPage: React.FC = () => {
     })
 
   const handleOpenEditCommunityModal = (CommunityId: number): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setCommunityId(CommunityId)
     setOpenEditCommunityModal(true)
   }
 
   const handleCloseEditCommunityModal = (): void => {
     setOpenEditCommunityModal(false)
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   const editCommunity = async (): Promise<void> => {
@@ -353,6 +367,7 @@ const CommunityPage: React.FC = () => {
               onClose={handleCloseDeleteCommunityModal}
               acceptText="Delete"
               closeText="Cancel"
+              autoFocusAccept
               isBusy={isDeletingCommunity}
             />
           )}

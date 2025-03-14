@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 
@@ -32,6 +32,8 @@ const TeamsPage: React.FC = () => {
   const queryClient = useQueryClient()
   const params = useParams()
   const communityId = params?.communityId as string
+
+  const latestSelectedElement = useRef<HTMLButtonElement | null>(null)
 
   const [teamName, setTeamName] = useState('')
   const [isActive, setIsActive] = useState(true)
@@ -71,12 +73,19 @@ const TeamsPage: React.FC = () => {
     : teams
 
   const handleOpenTeamModal = (): void => {
+    // Save the currently focused element to restore focus when modal closes
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setOpenAddTeamModal(true)
   }
 
   const handleCloseTeamModal = (): void => {
     setTeamName('')
     setOpenAddTeamModal(false)
+
+    // Restore focus when modal closes, using a timeout to ensure React's state update completes first
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   const handleTeamNameChange = (value: string): void => {

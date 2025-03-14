@@ -45,6 +45,8 @@ const UsersPage: React.FC = () => {
 
   // const [modalType, setModalType] = useState<'edit' | 'delete' | null>(null)
 
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+
   const [isAssigningUser, setIsAssigningUser] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
 
@@ -415,6 +417,7 @@ const UsersPage: React.FC = () => {
                 'rolesPerUser',
                 user.user_id,
               ]) ?? []
+
             return (
               <Accordion
                 key={user.user_id}
@@ -422,12 +425,14 @@ const UsersPage: React.FC = () => {
                 index={index}
                 id={`accordion-item-${index}`}
                 totalItems={users.length}
-                accordionRefs={accordionRefs}
+                buttonRefs={accordionRefs}
                 className="mb-2"
+                isOpen={openIndex === index}
                 onClick={(e) => {
                   e.stopPropagation()
                   if (user.user_id) {
                     handleAccordionClick(user.user_id)
+                    setOpenIndex(openIndex === index ? null : index)
                   }
                 }}
               >

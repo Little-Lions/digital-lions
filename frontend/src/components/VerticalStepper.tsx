@@ -6,6 +6,8 @@ import { useRouter, useParams } from 'next/navigation'
 import CustomButton from './CustomButton'
 import DatePicker from './DatePicker'
 import EmptyState from './EmptyState'
+import Accordion from './Accordion'
+import LoadingOverlay from './LoadingOverlay'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -13,6 +15,7 @@ import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
 import { AttendanceRecord } from '@/types/workshopAttendance.interface'
 import { AttendanceStatus } from '@/types/attendanceStatus.enum'
+import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 import { Child } from '@/types/child.interface'
 
 interface VerticalStepperProps {
@@ -21,12 +24,15 @@ interface VerticalStepperProps {
   onAttendanceChange: (childId: number, status: AttendanceStatus) => void
   onSaveAttendance: () => void
   onDateChange: (date: string) => void
+  fetchWorkshopById: (workshopId: number) => void
   teamDetails: TeamWithChildren
   workshopDetails: WorkshopInfo[]
+  workshopById: WorkshopAttendance | null
   childs: Child[]
   animationDuration?: number
   isSavingAttendance: boolean
   isSaved: boolean
+  isLoadingAttendanceData: boolean
 }
 
 const VerticalStepper: React.FC<VerticalStepperProps> = ({
@@ -35,11 +41,14 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   onAttendanceChange,
   onSaveAttendance,
   onDateChange,
+  fetchWorkshopById,
   workshopDetails,
+  workshopById,
   childs,
   animationDuration = 1,
   isSavingAttendance,
   isSaved,
+  isLoadingAttendanceData,
 }) => {
   const router = useRouter()
   const params = useParams()
@@ -51,6 +60,13 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
   const [animatedSteps, setAnimatedSteps] = useState<number[]>([])
   const stepRefs = useRef<Array<React.RefObject<HTMLDivElement>>>([])
+
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const panelRefs = useRef<(HTMLDivElement | null)[]>([])
+  const [accordionHeights, setAccordionHeights] = useState<number[]>(
+    Array(12).fill(64),
+  )
+  const [lastKnownHeights, setLastKnownHeights] = useState<number[]>([])
 
   const handleAttendanceChange = (
     childId: number,
@@ -73,23 +89,94 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
     onAttendanceChange(childId, newAttendance)
   }
 
-  // const handleAccordionToggle = (index: number) => {
-  //   setOpenIndex(openIndex === index ? null : index);
-  // };
+  const handleAccordionToggle = (index: number) => {
+    const isCurrentlyOpen = openIndex === index
+    const isPreviousWorkshop = index < currentWorkshop
+
+    requestAnimationFrame(() => {
+      if (buttonRefs.current[index] && panelRefs.current[index]) {
+        const buttonHeight = buttonRefs.current[index]?.offsetHeight || 64
+        const panelHeight = panelRefs.current[index]?.scrollHeight || 0
+        const totalHeight = isCurrentlyOpen ? 64 : buttonHeight + panelHeight
+
+        setAccordionHeights((prev) => {
+          const newHeights = [...prev]
+          newHeights[index] = totalHeight
+          return newHeights
+        })
+
+        if (!isCurrentlyOpen) {
+          setLastKnownHeights((prev) => {
+            const newLastHeights = [...prev]
+            newLastHeights[index] = totalHeight
+            return newLastHeights
+          })
+
+          if (isPreviousWorkshop) {
+            fetchWorkshopById(index + 1)
+          }
+        }
+      }
+    })
+
+    setOpenIndex(isCurrentlyOpen ? null : index)
+  }
+
+  useEffect(() => {
+    if (workshopById) {
+      setAttendanceData(workshopById.attendance)
+    }
+  }, [workshopById])
 
   const itemAnimationDuration = animationDuration / workshops.length
-
-  // const hasAnimated = useRef(false)
 
   useEffect(() => {
     const animateToCurrentWorkshop = (): void => {
       setChecked(0)
       setAnimatedSteps([])
+
       for (let i = 0; i < currentWorkshop; i++) {
         setTimeout(
           () => {
             setAnimatedSteps((prev) => [...prev, i])
             setChecked((prev) => Math.min(prev + 1, currentWorkshop))
+
+            if (i === currentWorkshop - 1) {
+              // ✅ Open the correct workshop
+              setOpenIndex(currentWorkshop)
+
+              // ✅ Scroll to the current step
+              stepRefs.current[currentWorkshop]?.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              })
+
+              // ✅ Update accordion height dynamically
+              requestAnimationFrame(() => {
+                if (
+                  buttonRefs.current[currentWorkshop] &&
+                  panelRefs.current[currentWorkshop]
+                ) {
+                  const buttonHeight =
+                    buttonRefs.current[currentWorkshop]?.offsetHeight || 64
+                  const panelHeight =
+                    panelRefs.current[currentWorkshop]?.scrollHeight || 0
+                  const totalHeight = buttonHeight + panelHeight
+
+                  setAccordionHeights((prev) => {
+                    const newHeights = [...prev]
+                    newHeights[currentWorkshop] = totalHeight
+                    return newHeights
+                  })
+
+                  setLastKnownHeights((prev) => {
+                    const newLastHeights = [...prev]
+                    newLastHeights[currentWorkshop] = totalHeight
+                    return newLastHeights
+                  })
+                }
+              })
+            }
           },
           itemAnimationDuration * (i + 1) * 1200,
         )
@@ -179,102 +266,97 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
           const isCurrent =
             index === currentWorkshop && checked === currentWorkshop
           const isPrevious = index < currentWorkshop
-          const isOpen = index === openIndex && isCurrent
+          const isOpen = index === openIndex
 
           return (
             <div key={index} className="relative pb-2 pl-7">
-              <div
-                // onClick={
-                //   isCurrent ? () => handleAccordionToggle(index) : undefined
-                // }
+              {/* <div
+                onClick={
+                  isPrevious ? () => handleAccordionToggle(index) : undefined
+                }
                 className={`bg-card flex items-center justify-between w-full p-5 font-medium text-white transition-colors ${
                   isCurrent ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'
                 } ${isCurrent && 'cursor-pointer hover:bg-card-dark '}`}
-              >
-                {/* Draw circle for each step */}
-                <span
-                  className={`absolute left-0 w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
-                    isCurrent
-                      ? 'bg-blue-500 border-blue-500' // Adjusted: Current step with blue border and white background
-                      : isPrevious && animatedSteps.includes(index)
-                        ? 'bg-green-500 border-green-500' // Completed step
-                        : 'bg-gray-300 border-gray-300' // Uncompleted step
-                  }`}
-                >
-                  {isPrevious && animatedSteps.includes(index) ? (
-                    <svg
-                      className="h-4 w-4 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : isCurrent ? (
-                    // Ensure the white dot is shown for the current step
-                    <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
-                  ) : (
+              ></div> */}
+
+              <Accordion
+                key={index}
+                index={index}
+                id={`accordion-item-${index}`}
+                isOpen={openIndex === index}
+                onClick={() => handleAccordionToggle(index)}
+                buttonRefs={buttonRefs}
+                panelRefs={panelRefs}
+                isDisabled={index > checked}
+                title={
+                  <div className="relative flex items-center">
+                    {/* Step Circle */}
                     <span
-                      className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
-                        animatedSteps.includes(index)
-                          ? 'opacity-0'
-                          : 'opacity-100'
+                      className={`absolute left-[-3rem] w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
+                        isCurrent
+                          ? 'bg-blue-500 border-blue-500' // Current step with blue border and white background
+                          : isPrevious && animatedSteps.includes(index)
+                            ? 'bg-green-500 border-green-500' // Completed step
+                            : 'bg-gray-300 border-gray-300' // Uncompleted step
                       }`}
-                    ></span>
-                  )}
-                </span>
-                {/* Draw line between steps */}
-                {index < workshops.length - 1 && (
-                  <span
-                    className={`absolute left-[9px] top-[2.7rem] bottom-[-25px] w-[2px] ${
-                      index < checked
-                        ? 'bg-green-500'
-                        : index === checked
-                          ? 'bg-blue-500'
-                          : 'bg-gray-300'
-                    } `}
-                  />
-                )}
+                    >
+                      {isPrevious && animatedSteps.includes(index) ? (
+                        <svg
+                          className="h-4 w-4 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      ) : isCurrent ? (
+                        // Ensure the white dot is shown for the current step
+                        <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
+                      ) : (
+                        <span
+                          className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
+                            animatedSteps.includes(index)
+                              ? 'opacity-0'
+                              : 'opacity-100'
+                          }`}
+                        ></span>
+                      )}
+                    </span>
 
-                <div className={`${isCurrent ? 'font-bold' : ''}`}>
-                  {workshop}
-                </div>
-
-                {isCurrent && <DatePicker onDateChange={onDateChange} />}
-
-                {/* <div
-                    className={`flex items-center space-x-2 ${
-                      isCurrent ? "font-bold" : ""
-                    }`}
-                  >
-                    {isPrevious && workshopDetails[index]?.attendance && (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Badge variant="success">
-                          Present: {workshopDetails[index].attendance.present || 0}
-                        </Badge>
-                        <Badge variant="warning">
-                          Absent: {workshopDetails[index].attendance.absent || 0}
-                        </Badge>
-                        <Badge variant="error">
-                          Cancelled: {workshopDetails[index].attendance.cancelled || 0}
-                        </Badge>
-                      </div>
+                    {/* Draw vertical line ONLY for steps before the last one */}
+                    {index < workshops.length - 1 && (
+                      <span
+                        className={`absolute left-[-39px] top-[1.1rem] w-[2px] transition-all duration-300 ${
+                          index < checked
+                            ? 'bg-green-500'
+                            : index === checked
+                              ? 'bg-blue-500'
+                              : 'bg-gray-300'
+                        }`}
+                        style={{
+                          height: isOpen
+                            ? `${accordionHeights[index] || 64}px`
+                            : `${lastKnownHeights[index] || 64}px`, // Keep last height when closing
+                        }}
+                      />
                     )}
-                  </div> */}
-              </div>
-              <div
-                className={`card-content ${
-                  isOpen && isCurrent ? 'open' : 'closed'
-                }`}
-                ref={stepRefs.current[index]}
+
+                    {/* Step Title */}
+                    <span className="ml-6">{workshop}</span>
+                    {/* {isCurrent && <DatePicker onDateChange={onDateChange} />} */}
+                  </div>
+                }
               >
-                {isOpen && isCurrent && (
-                  <div className="p-4 rounded-b-lg bg-card transition-all duration-300 ease-in-out">
+                <LoadingOverlay loading={isLoadingAttendanceData}>
+                  <div
+                    ref={stepRefs.current[index]}
+                    className="p-4 rounded-b-lg bg-card transition-all duration-300 ease-in-out"
+                  >
                     {childs.map((entry: Child) => {
                       const { id, first_name, last_name } = entry
                       const attendanceEntry = attendanceData.find(
@@ -285,7 +367,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                         : null
                       return (
                         <div
-                          key={id}
+                          key={`${id}-${workshop}`}
                           className="flex flex-col sm:flex-row my-2"
                         >
                           <span className="flex-1 min-w-0 mb-2 sm:mb-0 sm:mr-4">
@@ -300,7 +382,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                                 >
                                   <input
                                     type="radio"
-                                    name={`attendance-${id}`}
+                                    name={`attendance-${id}-${workshop}`}
                                     value={status}
                                     checked={
                                       currentAttendance === status &&
@@ -346,8 +428,8 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                       </div>
                     }
                   </div>
-                )}
-              </div>
+                </LoadingOverlay>
+              </Accordion>
             </div>
           )
         })

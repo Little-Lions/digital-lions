@@ -1,21 +1,24 @@
 'use client'
 
 import React, { useState } from 'react'
+import clsx from 'clsx'
 
 import Heading from './Heading'
 import Text from './Text'
 
 interface AccordionProps {
-  title?: string
+  title: string | React.ReactNode
   description?: string
   id: string
   children: React.ReactNode
   className?: string
   index?: number
   totalItems?: number
-  accordionRefs?: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  buttonRefs?: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  panelRefs?: React.MutableRefObject<(HTMLDivElement | null)[]>
   isDisabled?: boolean
   onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  isOpen?: boolean
 }
 
 const Accordion: React.FC<AccordionProps> = ({
@@ -26,42 +29,44 @@ const Accordion: React.FC<AccordionProps> = ({
   className,
   index,
   totalItems,
-  accordionRefs,
+  buttonRefs = { current: [] },
+  panelRefs = { current: [] },
   isDisabled,
   onClick,
+  isOpen,
 }) => {
-  const [isOpen, setIsOpen] = useState(false)
-
   const toggleAccordion = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ): void => {
-    setIsOpen(!isOpen)
-
-    if (onClick && !isOpen) {
+    if (onClick) {
       onClick(e)
     }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>): void => {
-    if (!accordionRefs || index === undefined || totalItems === undefined)
+    if (!buttonRefs.current || index === undefined || totalItems === undefined)
       return
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        accordionRefs.current[(index + 1) % totalItems]?.focus()
+        if (index < totalItems - 1) {
+          buttonRefs.current[index + 1]?.focus()
+        }
         break
       case 'ArrowUp':
         e.preventDefault()
-        accordionRefs.current[(index - 1 + totalItems) % totalItems]?.focus()
+        if (index > 0) {
+          buttonRefs.current[index - 1]?.focus()
+        }
         break
       case 'Home':
         e.preventDefault()
-        accordionRefs.current[0]?.focus()
+        buttonRefs.current[0]?.focus()
         break
       case 'End':
         e.preventDefault()
-        accordionRefs.current[totalItems - 1]?.focus()
+        buttonRefs.current[totalItems - 1]?.focus()
         break
       default:
         break
@@ -72,46 +77,53 @@ const Accordion: React.FC<AccordionProps> = ({
     <div
       id="accordion-open"
       data-accordion="open"
-      className={`${className} rounded-lg`}
+      className={clsx(className, 'rounded-lg')}
     >
       <button
         ref={(el) => {
-          if (accordionRefs?.current && index !== undefined) {
-            accordionRefs.current[index] = el
+          if (buttonRefs.current && index !== undefined) {
+            buttonRefs.current[index] = el
           }
         }}
         id={`${id}-header`}
         aria-expanded={isOpen}
         aria-controls={`${id}-body`}
         onClick={toggleAccordion}
-        onKeyDown={handleKeyDown}
         disabled={isDisabled}
         aria-disabled={isDisabled ? 'true' : undefined}
         tabIndex={isDisabled ? -1 : 0}
         type="button"
-        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        onKeyDown={handleKeyDown}
+        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white ${!isDisabled && 'hover:bg-card-dark'}`}
       >
-        <Heading level="h6" hasNoMargin={true} className="flex items-center">
+        <Heading level="default" hasNoMargin={true}>
           {title}
         </Heading>
-        <svg
-          data-accordion-icon
-          className={`w-3 h-3 ${!isOpen ? 'rotate-180' : ''} transition-transform`}
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 10 6"
-        >
-          <path
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M9 5 5 1 1 5"
-          />
-        </svg>
+        {!isDisabled && (
+          <svg
+            data-accordion-icon
+            className={`w-3 h-3 ${!isOpen ? 'rotate-180' : ''} transition-transform`}
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 10 6"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 5 5 1 1 5"
+            />
+          </svg>
+        )}
       </button>
       <div
+        ref={(el) => {
+          if (panelRefs.current && index !== undefined) {
+            panelRefs.current[index] = el
+          }
+        }}
         id={`${id}-body`}
         aria-labelledby={`${id}-header`}
         role="region"
@@ -132,5 +144,4 @@ const Accordion: React.FC<AccordionProps> = ({
     </div>
   )
 }
-
 export default Accordion

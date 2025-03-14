@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import clsx from 'clsx'
 
 interface CustomButtonProps {
   label: string
@@ -10,6 +11,7 @@ interface CustomButtonProps {
   isDisabled?: boolean
   isFullWidth?: boolean
   icon?: React.ReactNode
+  ref?: React.RefObject<HTMLButtonElement>
   variant?:
     | 'primary'
     | 'secondary'
@@ -22,59 +24,43 @@ interface CustomButtonProps {
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   label,
-  className = '',
+  className,
   isBusy = false,
   isDisabled = false,
   isFullWidth = false,
   icon,
+  ref,
   variant = 'primary',
   onClick,
 }) => {
-  let buttonClass =
+  const baseClass =
     'relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center min-w-[6rem] min-h-[2.5rem]'
-  let buttonColorClass = ''
-  let textColorClass = 'text-primary'
-  let borderColorClass = 'border-transparent'
 
-  switch (variant) {
-    case 'primary':
-      buttonColorClass = 'bg-button-primary hover:bg-primary-dark'
-      textColorClass = 'text-primary-light'
-      break
-    case 'secondary':
-      buttonColorClass = 'bg-button-secondary hover:bg-secondary-dark'
-      textColorClass = 'text-primary-light'
-      break
-    case 'success':
-      buttonColorClass = 'bg-button-success hover:bg-success-dark'
-      textColorClass = 'text-primary-light'
-      break
-    case 'error':
-      buttonColorClass = 'bg-button-error hover:bg-error-dark'
-      textColorClass = 'text-primary-light'
-      break
-    case 'warning':
-      buttonColorClass = 'bg-button-warning hover:bg-warning-dark'
-      textColorClass = 'text-primary-light'
-      break
-    case 'outline':
-      buttonClass += ' border'
-      buttonColorClass = 'hover:bg-neutral-light'
-      textColorClass = 'hover:text-gray-600'
-      borderColorClass = 'border-neutral-500'
-      break
-    case 'none':
-      break
-    default:
-      break
+  const variantClasses: Record<
+    NonNullable<CustomButtonProps['variant']>,
+    string
+  > = {
+    primary: 'bg-button-primary hover:bg-primary-dark text-primary-light',
+    secondary: 'bg-button-secondary hover:bg-secondary-dark text-primary-light',
+    success: 'bg-button-success hover:bg-success-dark text-primary-light',
+    error: 'bg-button-error hover:bg-error-dark text-primary-light',
+    warning: 'bg-button-warning hover:bg-warning-dark text-primary-light',
+    outline:
+      'border border-neutral-500 hover:bg-neutral-light hover:text-gray-600',
+    none: '',
   }
 
   return (
     <button
+      ref={ref}
       type="button"
-      className={`${buttonClass} ${buttonColorClass} ${borderColorClass} ${
-        isFullWidth ? 'w-full sm:w-auto' : ''
-      } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''} ${textColorClass} ${className}`}
+      className={clsx(
+        baseClass,
+        variantClasses[variant],
+        isFullWidth && 'w-full sm:w-auto',
+        isDisabled && 'opacity-50 cursor-not-allowed',
+        className,
+      )}
       onClick={onClick}
       disabled={isBusy || isDisabled}
       aria-busy={isBusy}
@@ -104,7 +90,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
         </div>
       ) : (
         <div className="flex gap-1 items-center">
-          {/* Render icon if provided */}
           {icon && <span className="h-4 w-4">{icon}</span>}
           <span>{label}</span>
         </div>

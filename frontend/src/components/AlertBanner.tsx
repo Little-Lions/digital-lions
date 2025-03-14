@@ -1,4 +1,5 @@
 import React from 'react'
+import clsx from 'clsx'
 
 interface AlertBannerProps {
   message: string
@@ -22,7 +23,10 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
 
   return (
     <div
-      className={`flex items-center p-4 mb-2 border-t-4 rounded-md ${variantClasses[variant]}`}
+      className={clsx(
+        'flex items-center p-4 mb-2 border-t-4 rounded-md',
+        variantClasses[variant],
+      )}
       role="alert"
     >
       {/* Icon */}

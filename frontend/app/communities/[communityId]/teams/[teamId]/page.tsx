@@ -49,6 +49,7 @@ const TeamsDetailPage: React.FC = () => {
   const params = useParams()
 
   const accordionRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const latestSelectedElement = useRef<HTMLButtonElement | null>(null)
 
   const communityId = params?.communityId as string
   const teamId = params?.teamId as string
@@ -70,6 +71,8 @@ const TeamsDetailPage: React.FC = () => {
   const [isDeletingChildComplete, setIsDeletingChildComplete] = useState(false)
 
   const [editMode, setEditMode] = useState<'add' | 'edit'>('add')
+
+  const [openChildIndex, setOpenChildIndex] = useState<number | null>(null)
 
   // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
@@ -112,13 +115,10 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useQuery(
-    'teams',
-    fetchTeams,
-    {
+  const { data: teamsByCommunity = [], isLoading: isLoadingTeamsByCommunity } =
+    useQuery('teamsByCommunity', fetchTeams, {
       staleTime: 5 * 60 * 1000,
-    },
-  )
+    })
 
   // Mutation to add a child
   const addChild = async () => {
@@ -236,6 +236,10 @@ const TeamsDetailPage: React.FC = () => {
     setEditLastName('')
     setEditAge(null)
     setEditGender(null)
+
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   const openEditChildModal = (child: {
@@ -245,6 +249,7 @@ const TeamsDetailPage: React.FC = () => {
     age?: number
     gender?: string
   }): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setEditChildId(child.id)
     setEditFirstName(child.first_name)
     setEditLastName(child.last_name)
@@ -255,6 +260,7 @@ const TeamsDetailPage: React.FC = () => {
   }
 
   const openAddChildModal = (): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setEditChildId(null)
     setEditFirstName('')
     setEditLastName('')
@@ -265,6 +271,7 @@ const TeamsDetailPage: React.FC = () => {
   }
 
   const openDeleteChildModal = (childId: number): void => {
+    latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setEditChildId(childId)
     setDeleteChildModalVisible(true)
   }
@@ -272,11 +279,14 @@ const TeamsDetailPage: React.FC = () => {
   const handleCloseDeleteChildModal = (): void => {
     setDeleteChildModalVisible(false)
     setErrorMessage('')
+    setTimeout(() => {
+      latestSelectedElement?.current?.focus()
+    }, 0)
   }
 
   return (
     <>
-      {isLoadingTeams ? (
+      {isLoadingTeamsByCommunity ? (
         <>
           <SkeletonLoader type="input" />
           <SkeletonLoader width="142px" type="button" />
@@ -294,7 +304,7 @@ const TeamsDetailPage: React.FC = () => {
             onChange={handleTeamChange}
           >
             <option value="">Select a team</option>
-            {teams.map((team) => (
+            {teamsByCommunity.map((team) => (
               <option key={team.id} value={team.id}>
                 {team.name}
               </option>
@@ -332,9 +342,14 @@ const TeamsDetailPage: React.FC = () => {
                   index={index}
                   id={`accordion-item-${index}`}
                   totalItems={selectedTeam.children.length}
-                  accordionRefs={accordionRefs}
+                  buttonRefs={accordionRefs}
                   title={`${child.first_name} ${child.last_name}`}
                   className="mb-2"
+                  isOpen={openChildIndex === index} // ✅ Controlled by parent
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setOpenChildIndex(openChildIndex === index ? null : index) // ✅ Toggle open/close state
+                  }}
                 >
                   <div>
                     <Text>{`First Name: ${child.first_name}`}</Text>
@@ -372,6 +387,7 @@ const TeamsDetailPage: React.FC = () => {
               onClose={handleCloseDeleteChildModal}
               acceptText="Delete"
               closeText="Cancel"
+              autoFocusAccept
               isBusy={isDeletingChild}
               errorMessage={errorMessage}
             />
@@ -398,6 +414,7 @@ const TeamsDetailPage: React.FC = () => {
                   value={editFirstName}
                   onChange={(value) => setEditFirstName(value)}
                   required
+                  autoFocus
                   errorMessage="Please enter your first name"
                 />
                 <TextInput

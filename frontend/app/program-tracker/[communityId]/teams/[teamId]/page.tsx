@@ -14,7 +14,10 @@ import VerticalStepper from '@/components/VerticalStepper'
 import getTeamById from '@/api/services/teams/getTeamById'
 import addWorkshopToTeam from '@/api/services/workshops/addWorkshopToTeam'
 import getWorkshopsByTeam from '@/api/services/workshops/getWorkshopsByTeam'
+import getWorkshopById from '@/api/services/workshops/getWorkshopById'
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
+
+import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
 
@@ -42,6 +45,12 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const [attendance, setAttendance] = useState<Record<number, string>>({})
   const [isSaved, setIsSaved] = useState<boolean>(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
+
+  const [workshopById, setWorkshopById] = useState<WorkshopAttendance | null>(
+    null,
+  )
+
+  const [isLoadingAttendanceData, setIsLoadingAttendanceData] = useState(false)
 
   const [errorMessage, setErrorMessage] = useState<string | null>('')
 
@@ -85,6 +94,22 @@ const ProgramTrackerAttendancePage: React.FC = () => {
       ...prev,
       [childId]: status,
     }))
+  }
+
+  const fetchWorkshopById = async (index: number) => {
+    setIsLoadingAttendanceData(true)
+    const workshopId = index
+    if (!teamId || !workshopId) {
+      throw new Error('Invalid team or workshop ID')
+    }
+    console.log(teamId, workshopId)
+    try {
+      const response = await getWorkshopById(Number(teamId), workshopId)
+      setWorkshopById(response)
+      setIsLoadingAttendanceData(false)
+    } catch {
+      setIsLoadingAttendanceData(false)
+    }
   }
 
   const saveAttendance = async (): Promise<void> => {
@@ -156,7 +181,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     'Workshop 11',
     'Workshop 12',
   ]
-
   const currentWorkshop = selectedTeam?.program.progress.current ?? 0
 
   return (
@@ -175,9 +199,12 @@ const ProgramTrackerAttendancePage: React.FC = () => {
             childs={selectedTeam.children}
             onDateChange={handleDateChange}
             onAttendanceChange={handleAttendanceChange}
+            fetchWorkshopById={fetchWorkshopById}
             onSaveAttendance={handleSaveAttendance}
             teamDetails={selectedTeam}
             workshopDetails={workshopDetails}
+            workshopById={workshopById}
+            isLoadingAttendanceData={isLoadingAttendanceData}
             isSavingAttendance={isSavingAttendance}
             isSaved={isSaved}
           />

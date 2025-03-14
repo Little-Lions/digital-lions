@@ -24,8 +24,6 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   isDisabledButton = false,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null)
-
   // Close on Escape
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -40,22 +38,11 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [onClose])
 
-  // Return focus to the previous element on close
-  useEffect(() => {
-    const previousActiveElement = document.activeElement as HTMLElement
-    modalRef.current?.focus()
-
-    return (): void => {
-      previousActiveElement?.focus()
-    }
-  }, [])
-
   const modalContent = (
     <div
       id="default-modal"
       tabIndex={-1}
       className="fixed inset-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50"
-      ref={modalRef}
     >
       <div className="relative p-4 w-full max-w-2xl max-h-full">
         <div className="relative bg-white rounded-lg shadow">

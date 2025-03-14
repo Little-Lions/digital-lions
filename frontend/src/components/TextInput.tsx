@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 interface TextInputProps {
   className?: string
@@ -27,8 +27,15 @@ const TextInput: React.FC<TextInputProps> = ({
   id = 'text-input',
   autoFocus = false,
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
   const [inputValue, setInputValue] = useState(value)
   const [isTouched, setIsTouched] = useState(false)
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [autoFocus])
 
   useEffect(() => {
     setInputValue(value)
@@ -60,6 +67,7 @@ const TextInput: React.FC<TextInputProps> = ({
         </label>
       )}
       <input
+        ref={inputRef}
         type="text"
         id={id}
         value={inputValue}

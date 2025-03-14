@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react'
+import clsx from 'clsx'
 
 interface SectionProps {
-  className?: string // Tailwind utility classes or custom styles
-  children: ReactNode // Content of the section
+  className?: string
+  children: ReactNode
 }
 
-const Section: React.FC<SectionProps> = ({ className = '', children }) => {
-  return <section className={`w-full ${className}`}>{children}</section>
+const Section: React.FC<SectionProps> = ({ className, children }) => {
+  return <section className={clsx('w-full', className)}>{children}</section>
 }
 
 export default Section

@@ -94,7 +94,11 @@ const Accordion: React.FC<AccordionProps> = ({
         tabIndex={isDisabled ? -1 : 0}
         type="button"
         onKeyDown={handleKeyDown}
-        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white ${!isDisabled && 'hover:bg-card-dark'}`}
+        className={clsx(
+          'bg-card flex items-center justify-between w-full p-5 font-medium text-white',
+          isOpen ? ' rounded-t-lg' : 'rounded-lg rounded-t-lg',
+          !isDisabled && 'hover:bg-card-dark',
+        )}
       >
         <Heading level="default" hasNoMargin={true}>
           {title}

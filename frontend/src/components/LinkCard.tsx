@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import clsx from 'clsx'
 import Heading from './Heading'
 
 interface LinkCardProps {
@@ -18,12 +19,16 @@ const LinkCard: React.FC<LinkCardProps> = ({
   children,
 }) => {
   return (
-    <Link href={href} prefetch={false} className="w-full" onClick={onClick}>
-      <div
-        className={`${className} rounded-lg bg-card flex justify-between gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors`}
-      >
-        {/* Title section */}
-        <Heading level="h6" hasNoMargin={true}>
+    <div
+      className={clsx(
+        'rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors',
+        className,
+      )}
+      onClick={onClick}
+    >
+      {/* Title Section */}
+      <Link href={href} className="flex-grow">
+        <Heading level="h6" hasNoMargin>
           {title}
         </Heading>
         <div className="flex items-center gap-2">
@@ -45,8 +50,8 @@ const LinkCard: React.FC<LinkCardProps> = ({
             />
           </svg>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }
 

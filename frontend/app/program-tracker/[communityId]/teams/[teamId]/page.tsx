@@ -102,7 +102,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     if (!teamId || !workshopId) {
       throw new Error('Invalid team or workshop ID')
     }
-    console.log(teamId, workshopId)
     try {
       const response = await getWorkshopById(Number(teamId), workshopId)
       setWorkshopById(response)

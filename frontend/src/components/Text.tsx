@@ -1,4 +1,5 @@
 import React from 'react'
+import clsx from 'clsx'
 
 // Text variants
 type TextVariant =
@@ -29,7 +30,6 @@ type TextWeight =
   | 'bold'
   | 'extrabold'
 
-// Props interface
 interface TextProps {
   variant?: TextVariant
   size?: TextSize
@@ -79,14 +79,18 @@ const Text: React.FC<TextProps> = ({
   variant = 'default',
   size = 'md',
   weight = 'normal',
-  className = '',
+  className,
   children,
 }) => {
-  const baseStyles = `leading-relaxed ${className}`
-
   return (
     <p
-      className={`${baseStyles} ${variantClasses[variant]} ${sizeClasses[size]} ${weightClasses[weight]}`}
+      className={clsx(
+        'leading-relaxed',
+        variantClasses[variant],
+        sizeClasses[size],
+        weightClasses[weight],
+        className,
+      )}
     >
       {children}
     </p>

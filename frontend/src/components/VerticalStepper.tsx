@@ -8,6 +8,7 @@ import DatePicker from './DatePicker'
 import EmptyState from './EmptyState'
 import Accordion from './Accordion'
 import LoadingOverlay from './LoadingOverlay'
+import Text from './Text'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -270,15 +271,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
           return (
             <div key={index} className="relative pb-2 pl-7">
-              {/* <div
-                onClick={
-                  isPrevious ? () => handleAccordionToggle(index) : undefined
-                }
-                className={`bg-card flex items-center justify-between w-full p-5 font-medium text-white transition-colors ${
-                  isCurrent ? 'rounded-t-lg rounded-b-none' : 'rounded-lg'
-                } ${isCurrent && 'cursor-pointer hover:bg-card-dark '}`}
-              ></div> */}
-
               <Accordion
                 key={index}
                 index={index}
@@ -331,7 +323,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                     {/* Draw vertical line ONLY for steps before the last one */}
                     {index < workshops.length - 1 && (
                       <span
-                        className={`absolute left-[-39px] top-[1.1rem] w-[2px] transition-all duration-300 ${
+                        className={`absolute left-[-39px] top-[1.4rem] w-[2px] transition-all duration-300 ${
                           index < checked
                             ? 'bg-green-500'
                             : index === checked
@@ -347,15 +339,23 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                     )}
 
                     {/* Step Title */}
-                    <span className="ml-6">{workshop}</span>
-                    {/* {isCurrent && <DatePicker onDateChange={onDateChange} />} */}
+                    <span>{workshop}</span>
+                    {/* Right Section: DatePicker */}
+                    {isCurrent && (
+                      <div
+                        className="ml-4 sm:ml-8"
+                        onClick={(e) => e.stopPropagation()} // Prevents the click from reaching the button
+                      >
+                        <DatePicker onDateChange={onDateChange} />
+                      </div>
+                    )}
                   </div>
                 }
               >
                 <LoadingOverlay loading={isLoadingAttendanceData}>
                   <div
                     ref={stepRefs.current[index]}
-                    className="p-4 rounded-b-lg bg-card transition-all duration-300 ease-in-out"
+                    className="transition-all duration-300 ease-in-out"
                   >
                     {childs.map((entry: Child) => {
                       const { id, first_name, last_name } = entry
@@ -370,16 +370,13 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                           key={`${id}-${workshop}`}
                           className="flex flex-col sm:flex-row my-2"
                         >
-                          <span className="flex-1 min-w-0 mb-2 sm:mb-0 sm:mr-4">
+                          <Text size="md" className="flex-1">
                             {first_name} {last_name}
-                          </span>
+                          </Text>
                           <div className="flex space-x-4">
                             {['present', 'absent', 'cancelled'].map(
                               (status) => (
-                                <label
-                                  key={status}
-                                  className="flex items-center cursor-pointer"
-                                >
+                                <Text key={status} size="sm">
                                   <input
                                     type="radio"
                                     name={`attendance-${id}-${workshop}`}
@@ -399,7 +396,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                                   <span className="ml-2 capitalize">
                                     {status}
                                   </span>
-                                </label>
+                                </Text>
                               ),
                             )}
                           </div>
@@ -414,7 +411,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                           variant="secondary"
                           onClick={onSaveAttendance}
                           isBusy={isSavingAttendance}
-                          // disabled when there are no childs or if attendnance is not checked fo all childs
+                          // disabled when there are no childs or if attendance is not checked fo all childs
                           isDisabled={
                             childs.length === 0 ||
                             attendanceData.length === 0 || // If there's no attendance data, disable the button

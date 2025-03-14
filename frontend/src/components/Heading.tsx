@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import clsx from 'clsx'
 
 interface HeadingProps {
   level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'default'
@@ -41,9 +42,12 @@ const Heading: React.FC<HeadingProps> = ({
 
   return (
     <Tag
-      className={`inline-block ${baseStyles[level]} ${
-        hasNoMargin ? '' : marginStyles[level]
-      } ${className}`}
+      className={clsx(
+        'inline-block',
+        baseStyles[level],
+        !hasNoMargin && marginStyles[level],
+        className,
+      )}
     >
       {children}
     </Tag>

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 
 import {
   useQuery,
@@ -48,6 +48,8 @@ const TeamsDetailPage: React.FC = () => {
   const router = useRouter()
   const params = useParams()
 
+  const accordionRefs = useRef<(HTMLButtonElement | null)[]>([])
+
   const communityId = params?.communityId as string
   const teamId = params?.teamId as string
 
@@ -69,6 +71,7 @@ const TeamsDetailPage: React.FC = () => {
 
   const [editMode, setEditMode] = useState<'add' | 'edit'>('add')
 
+  // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
     queryKey,
   }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
@@ -316,7 +319,6 @@ const TeamsDetailPage: React.FC = () => {
                   label="Add child"
                   onClick={openAddChildModal}
                   variant="primary"
-                  className="hover:bg-card-dark hover:text-white mb-4"
                 />
               }
             />
@@ -327,6 +329,10 @@ const TeamsDetailPage: React.FC = () => {
               {selectedTeam.children.map((child, index) => (
                 <Accordion
                   key={index}
+                  index={index}
+                  id={`accordion-item-${index}`}
+                  totalItems={selectedTeam.children.length}
+                  accordionRefs={accordionRefs}
                   title={`${child.first_name} ${child.last_name}`}
                   className="mb-2"
                 >

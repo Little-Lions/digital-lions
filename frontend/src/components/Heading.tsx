@@ -7,6 +7,7 @@ interface HeadingProps {
   className?: string
   children: React.ReactNode
   hasNoMargin?: boolean
+  onClick?: () => void
 }
 
 const Heading: React.FC<HeadingProps> = ({

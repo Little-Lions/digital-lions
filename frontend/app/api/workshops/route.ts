@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAccessToken } from '@auth0/nextjs-auth0'
-import { apiRequest } from '@/utils/apiRequest' // Reuse the utility function for API calls
+import { apiRequest } from '@/utils/apiRequest'
 
 // Handle GET requests
 export async function GET(request: Request): Promise<NextResponse> {

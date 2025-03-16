@@ -39,7 +39,7 @@ class CommunityService(BaseService):
         communities = self.database.communities.read_all_by_user_access(
             user_id=self.current_user.user_id, filters=filters
         )
-        return communities
+        return sorted(communities, key=lambda community: community.name)
 
     def get(self, object_id):
         """Get an object from the table by id."""

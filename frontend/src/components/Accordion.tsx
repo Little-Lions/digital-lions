@@ -1,27 +1,71 @@
 'use client'
+
 import React, { useState } from 'react'
 
 import Heading from './Heading'
 import Text from './Text'
 
 interface AccordionProps {
-  title: string
+  title?: string
   description?: string
+  id: string
   children: React.ReactNode
   className?: string
-  disabled?: boolean
+  index?: number
+  totalItems?: number
+  accordionRefs?: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  isDisabled?: boolean
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
 }
 
 const Accordion: React.FC<AccordionProps> = ({
   title,
   description,
+  id,
   children,
   className,
+  index,
+  totalItems,
+  accordionRefs,
+  isDisabled,
+  onClick,
 }) => {
   const [isOpen, setIsOpen] = useState(false)
 
-  const toggleAccordion = (): void => {
+  const toggleAccordion = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ): void => {
     setIsOpen(!isOpen)
+
+    if (onClick && !isOpen) {
+      onClick(e)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>): void => {
+    if (!accordionRefs || index === undefined || totalItems === undefined)
+      return
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        accordionRefs.current[(index + 1) % totalItems]?.focus()
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        accordionRefs.current[(index - 1 + totalItems) % totalItems]?.focus()
+        break
+      case 'Home':
+        e.preventDefault()
+        accordionRefs.current[0]?.focus()
+        break
+      case 'End':
+        e.preventDefault()
+        accordionRefs.current[totalItems - 1]?.focus()
+        break
+      default:
+        break
+    }
   }
 
   return (
@@ -31,12 +75,21 @@ const Accordion: React.FC<AccordionProps> = ({
       className={`${className} rounded-lg`}
     >
       <button
-        onClick={toggleAccordion}
-        type="button"
-        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark`}
-        data-accordion-target="#accordion-open-body-1"
+        ref={(el) => {
+          if (accordionRefs?.current && index !== undefined) {
+            accordionRefs.current[index] = el
+          }
+        }}
+        id={`${id}-header`}
         aria-expanded={isOpen}
-        aria-controls="accordion-open-body-1"
+        aria-controls={`${id}-body`}
+        onClick={toggleAccordion}
+        onKeyDown={handleKeyDown}
+        disabled={isDisabled}
+        aria-disabled={isDisabled ? 'true' : undefined}
+        tabIndex={isDisabled ? -1 : 0}
+        type="button"
+        className={`rounded-t-lg ${isOpen ? 'rounded-none' : 'rounded-lg'} bg-card flex items-center justify-between w-full p-5 font-medium text-white hover:bg-card-dark ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <Heading level="h6" hasNoMargin={true} className="flex items-center">
           {title}
@@ -59,7 +112,9 @@ const Accordion: React.FC<AccordionProps> = ({
         </svg>
       </button>
       <div
-        id="accordion-open-body-1"
+        id={`${id}-body`}
+        aria-labelledby={`${id}-header`}
+        role="region"
         className={`transition-max-height duration-50 ease-in-out ${
           isOpen ? 'max-h-screen' : 'max-h-0'
         }`}
@@ -68,7 +123,9 @@ const Accordion: React.FC<AccordionProps> = ({
         }}
       >
         <div className="bg-card p-5 rounded-b-lg">
-          <Text className="mb-2 text-gray-500 ">{description}</Text>
+          {description && (
+            <Text className="mb-2 text-gray-500 ">{description}</Text>
+          )}
           <div>{children}</div>
         </div>
       </div>

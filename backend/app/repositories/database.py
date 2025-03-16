@@ -58,6 +58,29 @@ class ImplementingPartnerRepository(BaseRepository[schema.ImplementingPartner]):
 
     _model = schema.ImplementingPartner
 
+    def read_all_by_user_access(self, user_id: str) -> list:
+        """Get all implementing partners but only the ones a user has access to
+        by scoped role. Optionally add a WHERE clause."""
+        query = (
+            select(self._model)
+            .distinct(self._model.id)
+            .join(
+                schema.Role,
+                # match both parent and child
+                or_(
+                    schema.Role.resource_path.like(self._model.resource_path + "%"),
+                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                ),
+            )
+            .where(schema.Role.user_id == user_id)
+        )
+        results = self._session.exec(query).all()
+
+        # with a join the returned object are somehow
+        # tuples, even if we only select one model.
+        # so we need to get the first index value of each
+        return [r[0] for r in results]
+
 
 class ProgramRepository(BaseRepository[schema.Program]):
     """Repository to interact with Program table."""

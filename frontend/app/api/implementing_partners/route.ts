@@ -2,25 +2,22 @@ import { NextResponse } from 'next/server'
 import { getAccessToken } from '@auth0/nextjs-auth0'
 import { apiRequest } from '@/utils/apiRequest'
 
-// Handle GET (single user or all users based on query)
-export async function GET(request: Request): Promise<NextResponse> {
+// Handle GET requests
+export async function GET(): Promise<NextResponse> {
   try {
     const { accessToken } = await getAccessToken()
     if (!accessToken) {
       throw new Error('Access token is undefined')
     }
 
-    const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
-
-    const endpoint = userId ? `/users/${userId}` : '/users'
+    let endpoint = '/implementing_partners'
 
     const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in GET /api/users:', error)
+      console.error('Error in GET /api/implementing_partners:', error)
     }
     return NextResponse.json(
       {
@@ -32,23 +29,19 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 }
 
-// Handle POST (create user or resend invite based on payload)
+// Handle POST requests
 export async function POST(request: Request): Promise<NextResponse> {
   try {
     const { accessToken } = await getAccessToken()
+
     if (!accessToken) {
       throw new Error('Access token is undefined')
     }
 
-    const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
-
     const body = await request.json()
 
-    const endpoint = userId ? `/resend-invite/${userId}` : '/users'
-
     const { message, data } = await apiRequest(
-      endpoint,
+      '/implementing_partners',
       'POST',
       accessToken,
       body,
@@ -57,7 +50,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ message, data }, { status: 201 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in POST /api/users:', error)
+      console.error('Error in POST /api/implementingPartners:', error)
     }
     return NextResponse.json(
       {
@@ -69,36 +62,38 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 }
 
-// Handle DELETE (delete a specific user)
+// Handle DELETE requests
 export async function DELETE(request: Request): Promise<NextResponse> {
   try {
     const { accessToken } = await getAccessToken()
+
     if (!accessToken) {
       throw new Error('Access token is undefined')
     }
 
     const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
+    const implementingPartnerId = url.searchParams.get(
+      'implementing_partner_id',
+    )
 
-    if (!userId) {
+    if (!implementingPartnerId) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: 'Missing `implementingPartnerId` in query parameters' },
         { status: 400 },
       )
     }
 
-    const encodedUserId = encodeURIComponent(userId)
-    const endpoint = `/users/${encodedUserId}`
+    const endpoint = `/implementing_partners/${implementingPartnerId}`
 
-    // const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
+    const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
 
-    await apiRequest(endpoint, 'DELETE', accessToken)
-    // Return a 204 response without a body
-    return new NextResponse(null, { status: 204 })
-    // return NextResponse.json({ message, data }, { status: 200 })
+    return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error in DELETE /api/users:', error)
+      console.error(
+        'Error in DELETE /api/implementingPartners/${implementing_partner_id}:',
+        error,
+      )
     }
     return NextResponse.json(
       {

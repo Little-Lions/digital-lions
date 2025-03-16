@@ -19,12 +19,13 @@ def test_post_child_non_existing_team(client):
 
 
 @pytest.fixture(name="client")
-def client_with_community_and_team(client):
+def client_with_community_and_team(client, implementing_partner):
     # arrange a community with a team without children
     client.post(
         "/communities",
         json={
             "name": "Community 1",
+            "implementing_partner_id": implementing_partner["id"],
         },
     )
     client.post(

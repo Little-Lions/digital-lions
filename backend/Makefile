@@ -39,3 +39,11 @@ db.check:
 
 token:
 	$(MAKE) -C .. token
+
+# wipe local database via API script
+scripts.wipe:
+	$(eval BEARER := $(shell $(MAKE) token))
+	BEARER="$(BEARER)" poetry run python scripts/utils.py wipe
+
+scripts.populate:
+	cd scripts; poetry run python utils.py populate

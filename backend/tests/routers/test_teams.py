@@ -12,15 +12,17 @@ def test_get_team_not_found(client):
 
 
 @pytest.fixture(name="client")
-def client_with_communities(client):
+def client_with_communities(client, implementing_partner):
     # arrange two communities
     for i in range(2):
-        client.post(
+        r = client.post(
             "/communities",
             json={
                 "name": f"Community {i}",
+                "implementing_partner_id": implementing_partner["id"],
             },
         )
+        r.raise_for_status()
     return client
 
 
@@ -127,12 +129,9 @@ def client_with_community_and_team(client):
     )
     # add teams
     for team in teams:
-        id_ = (
-            client.post("/teams", json={"community_id": 1, "name": team})
-            .json()
-            .get("data")
-            .get("id")
-        )
+        r = client.post("/teams", json={"community_id": 1, "name": team})
+        r.raise_for_status()
+        id_ = r.json().get("data").get("id")
         # add children to team
         for child in children:
             client.post("/children", json={**child, "team_id": id_})

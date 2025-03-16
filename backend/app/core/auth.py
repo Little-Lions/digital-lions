@@ -49,6 +49,8 @@ class BearerTokenHandler(HTTPBearer):
         """Verify the bearer token and optionally the scopes,
         and return the decoded token."""
         self.settings = settings
+        if not self.settings.FEATURE_AUTH0:
+            return
 
         token, kid = await self._verify_request(request)
         verified_token = await self._verify_token(token=token, kid=kid)

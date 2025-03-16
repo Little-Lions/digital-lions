@@ -23,7 +23,7 @@ URL = "http://localhost:8000/api/v1"
 # URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
 
 fake = Faker(LOCALE)
-Faker.seed(random.randint(0, 10))
+Faker.seed(random.randint(0, 100))
 
 
 def get_headers():
@@ -38,7 +38,11 @@ def cli():
 @cli.command()
 def wipe():
     """Wipe all records in database except the Implementing Partner."""
-    r = requests.get(f"{URL}/communities", headers=get_headers())
+    r = requests.get(
+        f"{URL}/communities",
+        params={"implementing_partner_id": 1},
+        headers=get_headers(),
+    )
     r.raise_for_status()
 
     communities = r.json().get("data")
@@ -47,8 +51,12 @@ def wipe():
     for community in communities:
         id_ = community.get("id")
 
-        logger.info(f"Deleting community ith ID {id_}")
-        r_ = requests.delete(f"{URL}/communities/{id_}", headers=get_headers())
+        logger.info(f"Deleting community with ID {id_}")
+        r_ = requests.delete(
+            f"{URL}/communities/{id_}",
+            params={"cascade": True},
+            headers=get_headers(),
+        )
         r_.raise_for_status()
 
 
@@ -79,7 +87,11 @@ def populate(communities: int, children: int, teams: int):
 
     community_ids = [
         r["id"]
-        for r in requests.get(f"{URL}/communities", headers=get_headers())
+        for r in requests.get(
+            f"{URL}/communities",
+            headers=get_headers(),
+            params={"implementing_partner_id": ip_id},
+        )
         .json()
         .get("data")
     ]

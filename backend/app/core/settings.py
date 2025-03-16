@@ -1,8 +1,7 @@
 from functools import lru_cache
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import Depends
-from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +16,6 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE_URL: str
 
     # feature flags
-    FEATURE_AUTH0: bool | None = True
     FEATURE_VERIFY_PERMISSIONS: bool | None = True
 
     # Auth0
@@ -37,15 +35,6 @@ class Settings(BaseSettings):
     def model_post_init(self, __context) -> None:
         """Post init hook."""
         self.ALLOWED_ORIGINS = self.ALLOWED_ORIGINS.split(",")
-
-    @model_validator(mode="after")
-    def validate_oauth_settings(self) -> Any:
-        """Validate the OAuth settings."""
-        if self.FEATURE_AUTH0 and not self.AUTH0_SERVER:
-            raise ValueError("FEATURE_AUTH0 is True but AUTH0_SERVER is not set")
-        if self.FEATURE_AUTH0 and not self.AUTH0_AUDIENCE:
-            raise ValueError("FEATURE_AUTH0 is True but AUTH0_AUDIENCE is not set")
-        return
 
 
 @lru_cache

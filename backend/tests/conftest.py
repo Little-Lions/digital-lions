@@ -10,7 +10,6 @@ from sqlmodel.pool import StaticPool
 
 DefaultTestSettings = Settings(
     POSTGRES_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/digitallions",
-    FEATURE_AUTH0=False,
     FEATURE_VERIFY_PERMISSIONS=False,
     AUTH0_SERVER="digitallions.eu.auth0.com",
     AUTH0_AUDIENCE="https://digitallions.eu.auth0.com/api/v2/",

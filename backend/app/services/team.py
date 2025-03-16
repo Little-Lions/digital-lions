@@ -2,7 +2,6 @@ import logging
 from enum import Enum
 
 from core import exceptions
-from models.generic import Message
 from models.team import (
     TeamGetByIdOut,
     TeamGetOut,
@@ -165,6 +164,28 @@ class TeamService(BaseService):
         self.commit()
         return workshop_record
 
+    def update_workshop(self, workshop_id, workshop) -> None:
+        """Update the attendance of a workshop.
+
+        Args:
+            workshop_id (int): ID of workshop to update.
+            workshop (Workshop): workshop object.
+        """
+
+        self.current_user.verify_permission(self.permissions.workshops_write)
+
+        # verify workshop exists
+        if not self.database.workshops.where(
+            [
+                ("id", workshop_id),
+            ]
+        ):
+            error_msg = f"Workshop {workshop_id} does not exist"
+            logger.error(error_msg)
+            raise exceptions.WorkshopNotFoundError(error_msg)
+
+        # update the attendance for all workshops
+
     def get_all(
         self,
         community_id: int = None,
@@ -290,7 +311,7 @@ class TeamService(BaseService):
         workshops = self.database.workshops.where([("team_id", team_id)])
 
         # TODO this is quite inefficient because we do a query for each workshop (at most 12)
-        # we could do a single query to get all the scores at once and let the db do the lifting
+        # we should do a single query to get all the scores at once and let the db do the lifting
         workshops_out = [
             TeamGetWorkshopOut(
                 **{

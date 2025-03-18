@@ -15,9 +15,17 @@ class CommunityService(BaseService):
         """Create a new community in the database.
 
         Args:
+            implementing_partner_id (int): IP ID to create community in.
             obj (CommunityPostIn): Community object to create.
         """
         self.current_user.verify_permission(self.permissions.communities_write)
+
+        if not self.database.implementing_partners.where(
+            [("id", obj.implementing_partner_id)]
+        ):
+            raise exceptions.ImplementingPartnerNotFoundError(
+                f"Implementing partner with ID {obj.implementing_partner_id} does not exist"
+            )
 
         if self.database.communities.where([("name", obj.name)]):
             raise exceptions.CommunityAlreadyExistsError(
@@ -69,13 +77,17 @@ class CommunityService(BaseService):
         # TODO: this should be managed by database cascading setting
         if self.database.teams.where([("community_id", object_id)]):
             if not cascade:
-                raise exceptions.CommunityHasTeamsError(
-                    f"Community with ID {object_id} has teams assigned to it."
+                error_msg = (
+                    "Attempted deletion of community with "
+                    f"ID {object_id}, but has teams assigned to it."
                 )
+                logger.error(error_msg)
+                raise exceptions.CommunityHasTeamsError(error_msg)
 
         self.database.communities.delete(object_id=object_id)
         self.commit()
         msg = f"Community with ID {object_id} deleted."
+        logger.info(msg)
         return Message(detail=msg)
 
     def _validate_community_exists(self, community_id: int) -> None:

@@ -11,10 +11,13 @@ def test_get_community_not_found(client):
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_post_community_success(client):
+def test_post_community_success(client, implementing_partner):
     # test successfull creation of a community
     community_name = "Community 1"
-    data = {"name": community_name}
+    data = {
+        "name": community_name,
+        "implementing_partner_id": implementing_partner["id"],
+    }
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
     id_ = response.json().get("data").get("id")
@@ -26,9 +29,12 @@ def test_post_community_success(client):
     assert response_get.json().get("data").get("is_active")
 
 
-def test_post_community_duplicate(client):
+def test_post_community_duplicate(client, implementing_partner):
     # test that we can't create the same community twice
-    data = {"name": "Community 2"}
+    data = {
+        "name": "Community 2",
+        "implementing_partner_id": implementing_partner["id"],
+    }
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -36,9 +42,12 @@ def test_post_community_duplicate(client):
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
-def test_patch_community_success(client):
+def test_patch_community_success(client, implementing_partner):
     # assert that a community can be updated
-    data = {"name": "Community 3"}
+    data = {
+        "name": "Community 3",
+        "implementing_partner_id": implementing_partner["id"],
+    }
     response = client.post(ENDPOINT, json=data)
     assert response.status_code == status.HTTP_201_CREATED
     id_ = response.json().get("data").get("id")

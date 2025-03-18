@@ -31,7 +31,6 @@ services:
     environment:
       POSTGRES_DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
       ALLOWED_ORIGINS: 
-      FEATURE_AUTH0: 
       AUTH0_SERVER: 
       AUTH0_AUDIENCE:
       AUTH0_CLIENT_ID: ${BACKEND_AUTH0_CLIENT_ID}
@@ -61,5 +60,4 @@ services:
       PORT: 3000
     ports:
       - 3000:3000
-
 

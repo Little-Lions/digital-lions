@@ -136,11 +136,43 @@ async def post_workshop(
         )
 
 
+@router.get(
+    "/workshops/{workshop_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Get workshop by ID",
+    response_model=APIResponse[models.TeamGetWorkshopByNumberOut],
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": APIResponse,
+            },
+        }
+    ),
+)
+def get_workshop_by_id(
+    team_service: Annotated[TeamService, Depends(TeamService)], workshop_id: int
+):
+    """Get workshop by ID.
+
+    ** Required scopes**
+    - `workshops:read`
+
+    """
+    try:
+        workshop = team_service.get_workshop_by_id(workshop_id)
+        return APIResponse(data=workshop)
+    except exceptions.WorkshopNotFoundError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
+
+
 @router.patch(
-    "/{workshop_id}",
-    status_code=status.HTTP_201_CREATED,
+    "/workshops/{workshop_id}",
+    status_code=status.HTTP_200_OK,
     summary="Add workshop to team",
-    response_model=APIResponse[RecordCreated],
+    response_model=APIResponse,
     responses=with_default_responses(
         {
             status.HTTP_404_NOT_FOUND: {
@@ -158,11 +190,12 @@ async def patch_workshop(
     Update a workshop of a team.
 
     ** Required scopes**
-    - `workshiops:write`
+    - `workshops:write`
 
     """
     try:
         team_service.update_workshop(workshop_id, workshop)
+        return APIResponse(message="Successfull updated workshop!")
     except exceptions.WorkshopNotFoundError as exc:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -11,6 +11,7 @@ from models.team import (
     TeamPostIn,
     TeamPostWorkshopIn,
     TeamStatus,
+    _TeamPatchWorkshopIn,
 )
 from services._base import BaseService
 
@@ -174,17 +175,34 @@ class TeamService(BaseService):
 
         self.current_user.verify_permission(self.permissions.workshops_write)
 
-        # verify workshop exists
-        if not self.database.workshops.where(
-            [
-                ("id", workshop_id),
-            ]
-        ):
-            error_msg = f"Workshop {workshop_id} does not exist"
-            logger.error(error_msg)
+        # get workshop
+        workshops_in_db = self.database.workshops.where([("id", workshop_id)])
+        if not workshops_in_db:
+            error_msg = f"Workshop {workshop_id} not found."
             raise exceptions.WorkshopNotFoundError(error_msg)
 
-        # update the attendance for all workshops
+        workshop_in_db = workshops_in_db[0]
+
+        # update date
+        self.database.workshops.update(
+            object_id=workshop_id,
+            obj=_TeamPatchWorkshopIn(
+                date=workshop.date,
+                team_id=workshop_in_db.team_id,
+                workshop_number=workshop_in_db.workshop_number,
+            ),
+        )
+
+        # update the attendance
+        # attendance = workshop.attendance
+        # for child_attendance in attendance:
+        #     self.database.attendances.update(
+        #         object_id=workshop_id,
+        #         child_id=attendance.child_id,
+        #         attendance=attendance.attendance,
+        #     )
+
+        return None
 
     def get_all(
         self,
@@ -241,6 +259,37 @@ class TeamService(BaseService):
             for team in teams
         ]
         return sorted(teams, key=lambda team: team.name)
+
+    def get_workshop_by_id(self, workshop_id):
+        """Get a workshop from a team, with attendance."""
+        # TODO: lots of duplicate code here with get_workshop_by_number
+        workshop = self.database.workshops.where([("id", workshop_id)])
+        if not workshop:
+            error_msg = f"Workshop with ID {workshop_id} not found."
+            raise exceptions.WorkshopNotFoundError(error_msg)
+
+        # get per child attendance for the workshop
+        workshop = workshop[0]
+        attendance = self.database.attendances.where([("workshop_id", workshop_id)])
+
+        workshop = TeamGetWorkshopByNumberOut(
+            workshop={
+                "id": workshop_id,
+                "number": workshop.workshop_number,
+                "date": workshop.date,
+                "name": f"Workshop {workshop.workshop_number}",
+            },
+            attendance=[
+                {
+                    "child_id": a.child.id,
+                    "attendance": a.attendance,
+                    "first_name": a.child.first_name,
+                    "last_name": a.child.last_name,
+                }
+                for a in attendance
+            ],
+        )
+        return workshop
 
     def get(self, object_id: int) -> TeamGetByIdOut:
         """Get a team from the table by id.

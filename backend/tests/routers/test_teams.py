@@ -23,7 +23,7 @@ def client_with_communities(client, implementing_partner):
             },
         )
         r.raise_for_status()
-    return client
+    yield client
 
 
 def test_post_team_success(client):
@@ -135,7 +135,7 @@ def client_with_community_and_team(client):
         # add children to team
         for child in children:
             client.post("/children", json={**child, "team_id": id_})
-    return client
+    yield client
 
 
 def test_add_workshop_with_attendance(client_with_team):
@@ -170,6 +170,60 @@ def test_add_workshop_with_attendance(client_with_team):
 
     response_workshop = client_with_team.get(f"{ENDPOINT}/{team_id}/workshops")
     assert response_workshop.json().get("data")[0].get("workshop").get("number") == 1
+
+
+def test_update_workshop_attendance(client_with_team):
+    # test that we can update the attendance of a workshop to a team
+    team_id = 1
+    attendance = [
+        {"attendance": "present", "child_id": 1},
+        {"attendance": "absent", "child_id": 2},
+    ]
+    payload = {
+        "date": "2021-01-01",
+        "workshop_number": 1,
+        "attendance": attendance,
+    }
+
+    response = client_with_team.post(f"{ENDPOINT}/{team_id}/workshops", json=payload)
+    assert response.status_code == status.HTTP_201_CREATED, response.text
+
+    id_ = response.json().get("data").get("id")
+    response_workshop = client_with_team.get(f"{ENDPOINT}/workshops/{id_}")
+    response_workshop.raise_for_status()
+    workshop = response_workshop.json().get("data")
+    child_1_attendance = [a for a in workshop["attendance"] if a["child_id"] == 1][0]
+    assert child_1_attendance["attendance"] == "present"
+
+    # update workshop
+    attendance = [
+        {"attendance": "absent", "child_id": 1},
+        {"attendance": "absent", "child_id": 2},
+    ]
+    payload = {
+        "date": "2021-01-02",
+        "workshop_number": 1,
+        "attendance": attendance,
+    }
+    response_update = client_with_team.patch(
+        f"{ENDPOINT}/workshops/{id_}", json=payload
+    )
+    assert response_update.status_code == status.HTTP_200_OK
+
+    # check that it was updated correctly
+    response_updated_workshop = client_with_team.get(f"{ENDPOINT}/workshops/{id_}")
+    response_updated_workshop.raise_for_status()
+    updated_workshop = response_updated_workshop.json().get("data")
+    assert (
+        updated_workshop["workshop"]["date"] == "2021-01-02"
+    ), "Workshop date not update correctly"
+
+    child_1_attendance = [
+        a for a in updated_workshop["attendance"] if a["child_id"] == 1
+    ][0]
+    assert (
+        child_1_attendance["attendance"] == "absent"
+    ), "Workshop attendance not updated correctly"
 
 
 def test_add_workshop_missing_child_id(client_with_team):

@@ -240,3 +240,15 @@ class TeamPostWorkshopIn(BaseModel):
         if v is not None:
             v = v.strftime("%Y-%m-%d")
         return v
+
+
+class _TeamPatchWorkshopIn(BaseModel):
+    """Internal model for updating a workshop."""
+
+    date: datetime.date = Field(
+        description="The date of the workshop in the format YYYY-MM-DD"
+    )
+    workshop_number: int = Field(
+        description="The number of the workshop in the program, which must be between 1 and 12."
+    )
+    team_id: int = Field(description="Team ID")

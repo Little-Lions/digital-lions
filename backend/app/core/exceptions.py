@@ -150,8 +150,10 @@ class WorkshopIncompleteAttendance(BaseAPIException):
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class WorkshopNotFoundError(Exception):
-    pass
+class WorkshopNotFoundError(BaseAPIException):
+
+    message = "Workshsop not found."
+    status_code = status.HTTP_404_NOT_FOUND
 
 
 class WorkshopNumberInvalidError(BaseAPIException):

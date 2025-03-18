@@ -20,10 +20,10 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
-# URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
+URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
 
 fake = Faker(LOCALE)
-Faker.seed(random.randint(0, 10))
+Faker.seed(random.randint(0, 100))
 
 
 def get_headers():
@@ -38,17 +38,25 @@ def cli():
 @cli.command()
 def wipe():
     """Wipe all records in database except the Implementing Partner."""
-    r = requests.get(f"{URL}/communities", headers=get_headers())
+    r = requests.get(
+        f"{URL}/communities",
+        params={"implementing_partner_id": 1},
+        headers=get_headers(),
+    )
     r.raise_for_status()
 
-    communities = r.json()
+    communities = r.json().get("data")
 
     logger.info(f"Found {len(communities)} implementing partners")
     for community in communities:
         id_ = community.get("id")
 
-        logger.info(f"Deleting community ith ID {id_}")
-        r_ = requests.delete(f"{URL}/communities/{id_}", headers=get_headers())
+        logger.info(f"Deleting community with ID {id_}")
+        r_ = requests.delete(
+            f"{URL}/communities/{id_}",
+            params={"cascade": True},
+            headers=get_headers(),
+        )
         r_.raise_for_status()
 
 
@@ -74,12 +82,18 @@ def populate(communities: int, children: int, teams: int):
         logger.info(response.json())
         response.raise_for_status()
         logger.info(
-            f"Community {community['name']} created with id {response.json()['id']}"
+            f"Community {community['name']} created with id {response.json().get('data').get('id')}"
         )
 
     community_ids = [
         r["id"]
-        for r in requests.get(f"{URL}/communities", headers=get_headers()).json()
+        for r in requests.get(
+            f"{URL}/communities",
+            headers=get_headers(),
+            params={"implementing_partner_id": ip_id},
+        )
+        .json()
+        .get("data")
     ]
 
     logger.info(f"Adding {teams} teams to the db")
@@ -92,7 +106,7 @@ def populate(communities: int, children: int, teams: int):
         try:
             response = requests.post(f"{URL}/teams", json=team, headers=get_headers())
             response.raise_for_status()
-            id_ = response.json().get("id")
+            id_ = response.json().get("data").get("id")
         except requests.exceptions.HTTPError as exc:
             logger.error(f"Error creating team: {exc}, {response.text}")
 
@@ -115,12 +129,15 @@ def populate(communities: int, children: int, teams: int):
     # for each team add some workshops
     logger.info("Adding workshops to teams")
     team_ids = [
-        x["id"] for x in requests.get(f"{URL}/teams", headers=get_headers()).json()
+        x["id"]
+        for x in requests.get(f"{URL}/teams", headers=get_headers()).json().get("data")
     ]
 
     for id_ in team_ids:
         logger.info(f"Getting team info for team {id_}")
-        team = requests.get(f"{URL}/teams/{id_}", headers=get_headers()).json()
+        team = (
+            requests.get(f"{URL}/teams/{id_}", headers=get_headers()).json().get("data")
+        )
         children = team["children"]
 
         workshops = random.randint(3, 9)

@@ -134,3 +134,72 @@ async def post_workshop(
             status_code=status.HTTP_400_BAD_REQUEST,
             content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
         )
+
+
+@router.get(
+    "/workshops/{workshop_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Get workshop by ID",
+    response_model=APIResponse[models.TeamGetWorkshopByNumberOut],
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": APIResponse,
+            },
+        }
+    ),
+)
+def get_workshop_by_id(
+    team_service: Annotated[TeamService, Depends(TeamService)], workshop_id: int
+):
+    """Get workshop by ID.
+
+    ** Required scopes**
+    - `workshops:read`
+
+    """
+    try:
+        workshop = team_service.get_workshop_by_id(workshop_id)
+        return APIResponse(data=workshop)
+    except exceptions.WorkshopNotFoundError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
+
+
+@router.patch(
+    "/workshops/{workshop_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Update a workshop of a team",
+    response_model=APIResponse,
+    responses=with_default_responses(
+        {
+            status.HTTP_404_NOT_FOUND: {
+                "model": APIResponse,
+            },
+        }
+    ),
+)
+async def patch_workshop(
+    team_service: Annotated[TeamService, Depends(TeamService)],
+    workshop_id: int,
+    workshop: models.TeamPostWorkshopIn,
+):
+    """
+    Update a workshop of a team. This can be either the date of the workshop
+    or the attendance of the children. Payload should contain the attendance
+    for all children.
+
+    ** Required scopes**
+    - `workshops:write`
+
+    """
+    try:
+        team_service.update_workshop(workshop_id, workshop)
+        return APIResponse(message="Successfull updated workshop!")
+    except exceptions.WorkshopNotFoundError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )

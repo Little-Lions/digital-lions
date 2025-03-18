@@ -4,7 +4,6 @@ from core import exceptions
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
 from models import community as models
-from models.community import VALID_IMPLEMENTING_PARTNER_ID
 from models.generic import APIResponse
 from routers._responses import with_default_responses
 from services import CommunityService
@@ -58,7 +57,7 @@ async def get_community(
 )
 async def get_communities(
     service: Annotated[CommunityService, Depends(CommunityService)],
-    implementing_partner_id: int | None = VALID_IMPLEMENTING_PARTNER_ID,
+    implementing_partner_id: int,
 ):
     """
     List all communities that a user has access to, optionally
@@ -87,7 +86,8 @@ async def get_communities(
     responses={
         status.HTTP_409_CONFLICT: {
             "model": APIResponse,
-        }
+        },
+        status.HTTP_404_NOT_FOUND: {"model": APIResponse},
     },
 )
 async def post_community(
@@ -104,6 +104,11 @@ async def post_community(
     try:
         data = service.create(community)
         return APIResponse(message="Community successfully created!", data=data)
+    except exceptions.ImplementingPartnerNotFoundError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content=APIResponse(message=exc.message, detail=exc.detail).model_dump(),
+        )
     except exceptions.CommunityAlreadyExistsError as exc:
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT,

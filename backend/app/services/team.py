@@ -11,6 +11,8 @@ from models.team import (
     TeamPostIn,
     TeamPostWorkshopIn,
     TeamStatus,
+    _TeamPatchAttendancePerChildIn,
+    _TeamPatchWorkshopIn,
 )
 from services._base import BaseService
 
@@ -164,6 +166,68 @@ class TeamService(BaseService):
         self.commit()
         return workshop_record
 
+    def update_workshop(self, workshop_id, workshop) -> str:
+        """Update the attendance of a workshop.
+
+        Args:
+            workshop_id (int): ID of workshop to update.
+            workshop (Workshop): workshop object.
+        """
+
+        self.current_user.verify_permission(self.permissions.workshops_write)
+
+        # get workshop
+        workshops_in_db = self.database.workshops.where([("id", workshop_id)])
+        if not workshops_in_db:
+            error_msg = f"Workshop {workshop_id} not found."
+            raise exceptions.WorkshopNotFoundError(error_msg)
+
+        workshop_in_db = workshops_in_db[0]
+        # update date
+        self.database.workshops.update(
+            object_id=workshop_id,
+            obj=_TeamPatchWorkshopIn(
+                date=workshop.date,
+                team_id=workshop_in_db.team_id,
+                workshop_number=workshop_in_db.workshop_number,
+            ),
+        )
+
+        # update the attendance
+        attendance = workshop.attendance
+
+        # Get existing attendance records for this workshop
+        existing_attendances = {
+            a.child_id: a
+            for a in self.database.attendances.where([("workshop_id", workshop_id)])
+        }
+
+        # Update each attendance record
+        for child_attendance in attendance:
+            if child_attendance.child_id in existing_attendances:
+                # Get the attendance record ID
+                attendance_id = existing_attendances[child_attendance.child_id].id
+
+                # Update the existing record
+                self.database.attendances.update(
+                    object_id=attendance_id,
+                    obj=_TeamPatchAttendancePerChildIn(
+                        workshop_id=workshop_id,
+                        child_id=child_attendance.child_id,
+                        attendance=child_attendance.attendance,
+                    ),
+                )
+            else:
+                # Create a new attendance record if it doesn't exist
+                msg = "Added attendance that was not in DB yet"
+                logger.warning(msg)
+                raise NotImplementedError(msg)
+
+        msg = f"Succesfully updated workshop {workshop_id}"
+        logger.info(msg)
+        self.commit()
+        return msg
+
     def get_all(
         self,
         community_id: int = None,
@@ -173,8 +237,8 @@ class TeamService(BaseService):
 
         Args:
             community_id (str, optional): Filter by community ID. Defaults to None.
-            status (TeamStatus, optional): Filter by status. Defaults to "active". Ohter options
-                are "inactive" and "all".
+            status (TeamStatus, optional): Filter by status. Defaults to "active".
+                Other options are "inactive" and "all".
 
         Returns:
             list: List of teams.
@@ -219,6 +283,37 @@ class TeamService(BaseService):
             for team in teams
         ]
         return sorted(teams, key=lambda team: team.name)
+
+    def get_workshop_by_id(self, workshop_id):
+        """Get a workshop from a team, with attendance."""
+        # TODO: lots of duplicate code here with get_workshop_by_number
+        workshop = self.database.workshops.where([("id", workshop_id)])
+        if not workshop:
+            error_msg = f"Workshop with ID {workshop_id} not found."
+            raise exceptions.WorkshopNotFoundError(error_msg)
+
+        # get per child attendance for the workshop
+        workshop = workshop[0]
+        attendance = self.database.attendances.where([("workshop_id", workshop_id)])
+
+        workshop = TeamGetWorkshopByNumberOut(
+            workshop={
+                "id": workshop_id,
+                "number": workshop.workshop_number,
+                "date": workshop.date,
+                "name": f"Workshop {workshop.workshop_number}",
+            },
+            attendance=[
+                {
+                    "child_id": a.child.id,
+                    "attendance": a.attendance,
+                    "first_name": a.child.first_name,
+                    "last_name": a.child.last_name,
+                }
+                for a in attendance
+            ],
+        )
+        return workshop
 
     def get(self, object_id: int) -> TeamGetByIdOut:
         """Get a team from the table by id.
@@ -290,7 +385,7 @@ class TeamService(BaseService):
         workshops = self.database.workshops.where([("team_id", team_id)])
 
         # TODO this is quite inefficient because we do a query for each workshop (at most 12)
-        # we could do a single query to get all the scores at once and let the db do the lifting
+        # we should do a single query to get all the scores at once and let the db do the lifting
         workshops_out = [
             TeamGetWorkshopOut(
                 **{

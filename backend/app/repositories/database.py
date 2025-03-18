@@ -28,6 +28,7 @@ class CommunityRepository(BaseRepository[schema.Community]):
     ) -> list:
         """Get all communities but only the ones a user has access to
         by scoped role. Optionally add a WHERE clause."""
+        # TODO add link to README for explanation
         query = (
             select(self._model)
             .distinct(self._model.id)
@@ -35,8 +36,12 @@ class CommunityRepository(BaseRepository[schema.Community]):
                 schema.Role,
                 # match both parent and child
                 or_(
-                    schema.Role.resource_path.like(self._model.resource_path + "%"),
-                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                    # match child paths (Role's path is parent of model's path)
+                    schema.Role.resource_path.like(self._model.resource_path + "/%"),
+                    schema.Role.resource_path == self._model.resource_path,
+                    # match parent paths (Model's path is a descendant of Role's path)
+                    self._model.resource_path.like(schema.Role.resource_path + "/%"),
+                    self._model.resource_path == schema.Role.resource_path,
                 ),
             )
             .where(schema.Role.user_id == user_id)
@@ -68,8 +73,12 @@ class ImplementingPartnerRepository(BaseRepository[schema.ImplementingPartner]):
                 schema.Role,
                 # match both parent and child
                 or_(
-                    schema.Role.resource_path.like(self._model.resource_path + "%"),
-                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                    # match child paths (Role's path is parent of model's path)
+                    schema.Role.resource_path.like(self._model.resource_path + "/%"),
+                    schema.Role.resource_path == self._model.resource_path,
+                    # match parent paths (Model's path is a descendant of Role's path)
+                    self._model.resource_path.like(schema.Role.resource_path + "/%"),
+                    self._model.resource_path == schema.Role.resource_path,
                 ),
             )
             .where(schema.Role.user_id == user_id)
@@ -111,8 +120,12 @@ class TeamRepository(BaseRepository[schema.Team]):
                 schema.Role,
                 # match both parent and child
                 or_(
-                    schema.Role.resource_path.like(self._model.resource_path + "%"),
-                    self._model.resource_path.like(schema.Role.resource_path + "%"),
+                    # match child paths (Role's path is parent of model's path)
+                    schema.Role.resource_path.like(self._model.resource_path + "/%"),
+                    schema.Role.resource_path == self._model.resource_path,
+                    # match parent paths (Model's path is a descendant of Role's path)
+                    self._model.resource_path.like(schema.Role.resource_path + "/%"),
+                    self._model.resource_path == schema.Role.resource_path,
                 ),
             )
             .where(schema.Role.user_id == user_id)

@@ -252,3 +252,9 @@ class _TeamPatchWorkshopIn(BaseModel):
         description="The number of the workshop in the program, which must be between 1 and 12."
     )
     team_id: int = Field(description="Team ID")
+
+
+class _TeamPatchAttendancePerChildIn(TeamPostWorkshopIn.Attendance):
+    """Internal model for updating attendance of workshop."""
+
+    workshop_id: int

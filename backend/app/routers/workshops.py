@@ -171,7 +171,7 @@ def get_workshop_by_id(
 @router.patch(
     "/workshops/{workshop_id}",
     status_code=status.HTTP_200_OK,
-    summary="Add workshop to team",
+    summary="Update a workshop of a team",
     response_model=APIResponse,
     responses=with_default_responses(
         {
@@ -187,7 +187,9 @@ async def patch_workshop(
     workshop: models.TeamPostWorkshopIn,
 ):
     """
-    Update a workshop of a team.
+    Update a workshop of a team. This can be either the date of the workshop
+    or the attendance of the children. Payload should contain the attendance
+    for all children.
 
     ** Required scopes**
     - `workshops:write`

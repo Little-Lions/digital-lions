@@ -11,6 +11,7 @@ from models.team import (
     TeamPostIn,
     TeamPostWorkshopIn,
     TeamStatus,
+    _TeamPatchAttendancePerChildIn,
     _TeamPatchWorkshopIn,
 )
 from services._base import BaseService
@@ -165,7 +166,7 @@ class TeamService(BaseService):
         self.commit()
         return workshop_record
 
-    def update_workshop(self, workshop_id, workshop) -> None:
+    def update_workshop(self, workshop_id, workshop) -> str:
         """Update the attendance of a workshop.
 
         Args:
@@ -182,7 +183,6 @@ class TeamService(BaseService):
             raise exceptions.WorkshopNotFoundError(error_msg)
 
         workshop_in_db = workshops_in_db[0]
-
         # update date
         self.database.workshops.update(
             object_id=workshop_id,
@@ -194,15 +194,39 @@ class TeamService(BaseService):
         )
 
         # update the attendance
-        # attendance = workshop.attendance
-        # for child_attendance in attendance:
-        #     self.database.attendances.update(
-        #         object_id=workshop_id,
-        #         child_id=attendance.child_id,
-        #         attendance=attendance.attendance,
-        #     )
+        attendance = workshop.attendance
 
-        return None
+        # Get existing attendance records for this workshop
+        existing_attendances = {
+            a.child_id: a
+            for a in self.database.attendances.where([("workshop_id", workshop_id)])
+        }
+
+        # Update each attendance record
+        for child_attendance in attendance:
+            if child_attendance.child_id in existing_attendances:
+                # Get the attendance record ID
+                attendance_id = existing_attendances[child_attendance.child_id].id
+
+                # Update the existing record
+                self.database.attendances.update(
+                    object_id=attendance_id,
+                    obj=_TeamPatchAttendancePerChildIn(
+                        workshop_id=workshop_id,
+                        child_id=child_attendance.child_id,
+                        attendance=child_attendance.attendance,
+                    ),
+                )
+            else:
+                # Create a new attendance record if it doesn't exist
+                msg = "Added attendance that was not in DB yet"
+                logger.warning(msg)
+                raise NotImplementedError(msg)
+
+        msg = f"Succesfully updated workshop {workshop_id}"
+        logger.info(msg)
+        self.commit()
+        return msg
 
     def get_all(
         self,
@@ -213,8 +237,8 @@ class TeamService(BaseService):
 
         Args:
             community_id (str, optional): Filter by community ID. Defaults to None.
-            status (TeamStatus, optional): Filter by status. Defaults to "active". Ohter options
-                are "inactive" and "all".
+            status (TeamStatus, optional): Filter by status. Defaults to "active".
+                Other options are "inactive" and "all".
 
         Returns:
             list: List of teams.

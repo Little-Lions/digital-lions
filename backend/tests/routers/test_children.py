@@ -25,8 +25,8 @@ def client_with_community_and_team(client, implementing_partner):
         "/communities",
         json={
             "name": "Community 1",
-            "implementing_partner_id": implementing_partner["id"],
         },
+        params={"implementing_partner_id": implementing_partner["id"]},
     )
     client.post(
         "/teams",

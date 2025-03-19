@@ -10,9 +10,10 @@ class CommunityPostIn(BaseModel, _CreatePropertiesIn):
     """API payload model for POST /communities endpoint."""
 
     name: str = Field(description="Name of the community")
-    implementing_partner_id: int = Field(
-        description="Implementing partner in which to create the community.",
-    )
+
+    class Config:
+        # useful for setting the implementing partner ID
+        extra = "allow"
 
 
 class CommunityPatchIn(BaseModel, _UpdatePropertiesIn):

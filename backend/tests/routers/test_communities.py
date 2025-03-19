@@ -16,9 +16,12 @@ def test_post_community_success(client, implementing_partner):
     community_name = "Community 1"
     data = {
         "name": community_name,
-        "implementing_partner_id": implementing_partner["id"],
     }
-    response = client.post(ENDPOINT, json=data)
+    response = client.post(
+        ENDPOINT,
+        json=data,
+        params={"implementing_partner_id": implementing_partner["id"]},
+    )
     assert response.status_code == status.HTTP_201_CREATED
     id_ = response.json().get("data").get("id")
 
@@ -33,12 +36,19 @@ def test_post_community_duplicate(client, implementing_partner):
     # test that we can't create the same community twice
     data = {
         "name": "Community 2",
-        "implementing_partner_id": implementing_partner["id"],
     }
-    response = client.post(ENDPOINT, json=data)
+    response = client.post(
+        ENDPOINT,
+        json=data,
+        params={"implementing_partner_id": implementing_partner["id"]},
+    )
     assert response.status_code == status.HTTP_201_CREATED
 
-    response = client.post(ENDPOINT, json=data)
+    response = client.post(
+        ENDPOINT,
+        json=data,
+        params={"implementing_partner_id": implementing_partner["id"]},
+    )
     assert response.status_code == status.HTTP_409_CONFLICT
 
 
@@ -46,9 +56,12 @@ def test_patch_community_success(client, implementing_partner):
     # assert that a community can be updated
     data = {
         "name": "Community 3",
-        "implementing_partner_id": implementing_partner["id"],
     }
-    response = client.post(ENDPOINT, json=data)
+    response = client.post(
+        ENDPOINT,
+        json=data,
+        params={"implementing_partner_id": implementing_partner["id"]},
+    )
     assert response.status_code == status.HTTP_201_CREATED
     id_ = response.json().get("data").get("id")
 
@@ -79,8 +92,8 @@ def community_fixture(client, implementing_partner):
         "/communities",
         json={
             "name": "Community 1",
-            "implementing_partner_id": implementing_partner.get("id"),
         },
+        params={"implementing_partner_id": implementing_partner.get("id")},
     )
     assert request.status_code == status.HTTP_201_CREATED
     community = request.json().get("data")

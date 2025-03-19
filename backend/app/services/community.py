@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class CommunityService(BaseService):
     """Community service layer to do anything related to communities."""
 
-    def create(self, obj: CommunityPostIn):
+    def create(self, obj: CommunityPostIn, implementing_partner_id: int):
         """Create a new community in the database.
 
         Args:
@@ -21,19 +21,22 @@ class CommunityService(BaseService):
         self.current_user.verify_permission(self.permissions.communities_write)
 
         if not self.database.implementing_partners.where(
-            [("id", obj.implementing_partner_id)]
+            [("id", implementing_partner_id)]
         ):
             raise exceptions.ImplementingPartnerNotFoundError(
-                f"Implementing partner with ID {obj.implementing_partner_id} does not exist"
+                f"Implementing partner with ID {implementing_partner_id} does not exist"
             )
 
         if self.database.communities.where([("name", obj.name)]):
             raise exceptions.CommunityAlreadyExistsError(
                 f"Community with name {obj.name} already exists."
             )
+        obj.implementing_partner_id = implementing_partner_id
         community = self.database.communities.create(obj)
         self.commit()
-        logger.info(f"Community created with name: {obj.name}, ID: {community.id}.")
+        logger.info(
+            f"Created community {obj.name} with ID {community.id} in IP {implementing_partner_id}"
+        )
         return community
 
     def get_all(self, implementing_partner_id: int = None) -> list | None:
@@ -42,6 +45,14 @@ class CommunityService(BaseService):
 
         filters = []
         if implementing_partner_id:
+
+            if not self.database.implementing_partners.where(
+                [("id", implementing_partner_id)]
+            ):
+                raise exceptions.ImplementingPartnerNotFoundError(
+                    f"Implementing partner with ID {implementing_partner_id} does not exist"
+                )
+
             filters.append(("implementing_partner_id", implementing_partner_id))
 
         communities = self.database.communities.read_all_by_user_access(

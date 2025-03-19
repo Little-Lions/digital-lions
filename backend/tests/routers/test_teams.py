@@ -19,8 +19,8 @@ def client_with_communities(client, implementing_partner):
             "/communities",
             json={
                 "name": f"Community {i}",
-                "implementing_partner_id": implementing_partner["id"],
             },
+            params={"implementing_partner_id": implementing_partner["id"]},
         )
         r.raise_for_status()
     yield client

@@ -92,17 +92,20 @@ async def get_communities(
 )
 async def post_community(
     community: models.CommunityPostIn,
+    implementing_partner_id: int,
     service: Annotated[CommunityService, Depends(CommunityService)],
 ):
     """
-    Add a community.
+    Add a community to an Implementing Partner.
 
     **Requires scopes**
     - `communities:write`
 
     """
     try:
-        data = service.create(community)
+        data = service.create(
+            obj=community, implementing_partner_id=implementing_partner_id
+        )
         return APIResponse(message="Community successfully created!", data=data)
     except exceptions.ImplementingPartnerNotFoundError as exc:
         return JSONResponse(

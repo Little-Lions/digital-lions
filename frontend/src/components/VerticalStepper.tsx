@@ -22,6 +22,7 @@ import { Child } from '@/types/child.interface'
 interface VerticalStepperProps {
   workshops: string[]
   currentWorkshop: number
+  setSelectedWorkshop: (workshop: number) => void
   onAttendanceChange: (childId: number, status: AttendanceStatus) => void
   onSaveAttendance: () => void
   onDateChange: (date: string) => void
@@ -50,11 +51,12 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   isSavingAttendance,
   isSaved,
   isLoadingAttendanceData,
+  setSelectedWorkshop,
 }) => {
   const router = useRouter()
   const params = useParams()
-  const communityId = params?.communityId as string
-  const teamId = params?.teamId as string
+
+  const { communityId, teamId } = params
 
   const [checked, setChecked] = useState(1)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
@@ -74,22 +76,22 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
     newAttendance: AttendanceStatus,
   ): void => {
     setAttendanceData((prevData) => {
-      const updatedAttendanceData = prevData.map((entry) =>
-        entry.child_id === childId
-          ? { ...entry, attendance: newAttendance }
-          : entry,
+      const existingIndex = prevData.findIndex(
+        (entry) => entry.child_id === childId,
       )
-      if (!updatedAttendanceData.some((entry) => entry.child_id === childId)) {
-        updatedAttendanceData.push({
-          child_id: childId,
-          attendance: newAttendance,
-        })
+
+      if (existingIndex !== -1) {
+        return prevData.map((entry, index) =>
+          index === existingIndex
+            ? { ...entry, attendance: newAttendance }
+            : entry,
+        )
+      } else {
+        return [...prevData, { child_id: childId, attendance: newAttendance }]
       }
-      return updatedAttendanceData
     })
     onAttendanceChange(childId, newAttendance)
   }
-
   const handleAccordionToggle = (index: number) => {
     const isCurrentlyOpen = openIndex === index
     const isPreviousWorkshop = index < currentWorkshop
@@ -143,16 +145,16 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
             setChecked((prev) => Math.min(prev + 1, currentWorkshop))
 
             if (i === currentWorkshop - 1) {
-              // ✅ Open the correct workshop
+              // Open the correct workshop
               setOpenIndex(currentWorkshop)
 
-              // ✅ Scroll to the current step
+              // Scroll to the current step
               stepRefs.current[currentWorkshop]?.current?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
               })
 
-              // ✅ Update accordion height dynamically
+              // Update accordion height dynamically
               requestAnimationFrame(() => {
                 if (
                   buttonRefs.current[currentWorkshop] &&
@@ -386,12 +388,13 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                                       currentAttendance !== '' &&
                                       currentAttendance !== null
                                     }
-                                    onChange={() =>
+                                    onChange={() => {
                                       handleAttendanceChange(
                                         id,
                                         status as AttendanceStatus,
                                       )
-                                    }
+                                      setSelectedWorkshop(index + 1)
+                                    }}
                                   />
                                   <span className="ml-2 capitalize">
                                     {status}

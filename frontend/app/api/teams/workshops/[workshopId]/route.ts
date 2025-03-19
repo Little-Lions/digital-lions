@@ -4,39 +4,43 @@ import { apiRequest } from '@/utils/apiRequest'
 
 interface Params {
   params: {
-    teamId: string
     workshopId: string
   }
 }
 
-export async function GET(
+export async function PATCH(
   request: Request,
   context: Params,
 ): Promise<NextResponse> {
   try {
-    const params = await context.params
-    const { teamId, workshopId } = params
+    const { accessToken } = await getAccessToken()
 
-    if (!teamId || !workshopId) {
+    if (!accessToken) throw new Error('Access token is undefined')
+
+    const body = await request.json()
+
+    const params = await context.params
+    const { workshopId } = params
+
+    if (!workshopId) {
       return NextResponse.json(
-        { error: 'Missing `teamId` or `workshopId` in path' },
+        { error: 'Missing `workshopId` in path' },
         { status: 400 },
       )
     }
 
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) throw new Error('Access token is undefined')
+    const endpoint = `/teams/workshops/${workshopId}`
 
-    const endpoint = `/teams/${teamId}/workshops/${workshopId}`
-
-    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
+    const { message, data } = await apiRequest(
+      endpoint,
+      'PATCH',
+      accessToken,
+      body,
+    )
 
     return NextResponse.json({ message, data }, { status: 200 })
   } catch (error) {
-    console.error(
-      'Error in GET /api/teams/[teamId]/workshops/[workshopId]:',
-      error,
-    )
+    console.error('Error in PATCH /api/teams/workshops/[workshopId]:', error)
     return NextResponse.json(
       {
         message:

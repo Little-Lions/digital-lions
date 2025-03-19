@@ -15,6 +15,8 @@ import getTeamById from '@/api/services/teams/getTeamById'
 import addWorkshopToTeam from '@/api/services/workshops/addWorkshopToTeam'
 import getWorkshopsByTeam from '@/api/services/workshops/getWorkshopsByTeam'
 import getWorkshopById from '@/api/services/workshops/getWorkshopById'
+import updateWorkshopByTeam from '@/api/services/workshops/updateWorkshopByTeam'
+
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
@@ -41,6 +43,8 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const queryClient = useQueryClient()
   const params = useParams()
   const teamId = params?.teamId as string
+
+  const [selectedWorkshop, setSelectedWorkshop] = useState<number>(0)
 
   const [attendance, setAttendance] = useState<Record<number, string>>({})
   const [isSaved, setIsSaved] = useState<boolean>(false)
@@ -99,14 +103,25 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const fetchWorkshopById = async (index: number) => {
     setIsLoadingAttendanceData(true)
     const workshopId = index
+
     if (!teamId || !workshopId) {
       throw new Error('Invalid team or workshop ID')
     }
+
     try {
       const response = await getWorkshopById(Number(teamId), workshopId)
       setWorkshopById(response)
-      setIsLoadingAttendanceData(false)
-    } catch {
+
+      if (response?.attendance) {
+        const attendanceRecord: Record<number, string> = {}
+        response.attendance.forEach(({ child_id, attendance }) => {
+          attendanceRecord[child_id] = attendance
+        })
+        setAttendance(attendanceRecord)
+      }
+    } catch (error) {
+      console.error('Error fetching workshop:', error)
+    } finally {
       setIsLoadingAttendanceData(false)
     }
   }
@@ -118,14 +133,18 @@ const ProgramTrackerAttendancePage: React.FC = () => {
 
     const apiBody: Attendance = {
       date: selectedDate || new Date().toISOString().split('T')[0],
-      workshop_number: selectedTeam.program.progress.current + 1,
+      workshop_number: selectedWorkshop,
       attendance: Object.entries(attendance).map(([childId, status]) => ({
         attendance: status,
         child_id: parseInt(childId, 10),
       })),
     }
 
-    await addWorkshopToTeam(selectedTeam.id, apiBody)
+    if (selectedWorkshop === selectedTeam?.program.progress.current + 1) {
+      await addWorkshopToTeam(selectedTeam.id, apiBody)
+    } else {
+      await updateWorkshopByTeam(selectedTeam.id, apiBody)
+    }
   }
 
   const fetchWorkshops = async (): Promise<WorkshopInfo[]> => {
@@ -180,6 +199,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     'Workshop 11',
     'Workshop 12',
   ]
+
   const currentWorkshop = selectedTeam?.program.progress.current ?? 0
 
   return (
@@ -194,6 +214,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
         selectedTeam && (
           <VerticalStepper
             workshops={workshops}
+            setSelectedWorkshop={setSelectedWorkshop}
             currentWorkshop={currentWorkshop}
             childs={selectedTeam.children}
             onDateChange={handleDateChange}

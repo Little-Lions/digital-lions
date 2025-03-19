@@ -5,17 +5,13 @@ from models._metadata import (
 )
 from pydantic import BaseModel, Field
 
-# TODO: remove once we support multiple Implementing Partners
-DEFAULT_IMPLEMENTING_PARTNER_ID = 1
-
 
 class CommunityPostIn(BaseModel, _CreatePropertiesIn):
     """API payload model for POST /communities endpoint."""
 
     name: str = Field(description="Name of the community")
-    implementing_partner_id: int | None = Field(
+    implementing_partner_id: int = Field(
         description="Implementing partner in which to create the community.",
-        default=DEFAULT_IMPLEMENTING_PARTNER_ID,
     )
 
 

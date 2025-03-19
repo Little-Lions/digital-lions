@@ -14,7 +14,7 @@ interface AttendanceRecord {
 
 export interface ApiBody {
   date: string
-  workshop_number: number
+  workshop_number?: number
   attendance: AttendanceRecord[]
 }
 

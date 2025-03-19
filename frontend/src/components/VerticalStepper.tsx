@@ -18,6 +18,7 @@ import { AttendanceRecord } from '@/types/workshopAttendance.interface'
 import { AttendanceStatus } from '@/types/attendanceStatus.enum'
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 import { Child } from '@/types/child.interface'
+import Toast from './Toast'
 
 interface VerticalStepperProps {
   workshops: string[]
@@ -34,6 +35,7 @@ interface VerticalStepperProps {
   animationDuration?: number
   isSavingAttendance: boolean
   isSaved: boolean
+  savedWorkshop: boolean
   isLoadingAttendanceData: boolean
 }
 
@@ -50,6 +52,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   animationDuration = 1,
   isSavingAttendance,
   isSaved,
+  savedWorkshop,
   isLoadingAttendanceData,
   setSelectedWorkshop,
 }) => {
@@ -121,132 +124,69 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         }
       }
     })
+    if (index === currentWorkshop || isCurrentlyOpen) {
+      setAttendanceData((prev) =>
+        prev.map((record) => ({ ...record, attendance: '' })),
+      )
+    }
 
     setOpenIndex(isCurrentlyOpen ? null : index)
   }
 
   useEffect(() => {
-    if (workshopById) {
+    if (workshopById && !isSaved) {
       setAttendanceData(workshopById.attendance)
+    } else {
+      setAttendanceData((prev) =>
+        prev.map((record) => ({ ...record, attendance: '' })),
+      )
     }
-  }, [workshopById])
-
-  const itemAnimationDuration = animationDuration / workshops.length
+  }, [workshopById, isSaved])
 
   useEffect(() => {
     const animateToCurrentWorkshop = (): void => {
       setChecked(0)
-      setAnimatedSteps([])
 
       for (let i = 0; i < currentWorkshop; i++) {
-        setTimeout(
-          () => {
-            setAnimatedSteps((prev) => [...prev, i])
-            setChecked((prev) => Math.min(prev + 1, currentWorkshop))
+        setTimeout(() => {
+          setChecked((prev) => Math.min(prev + 1, currentWorkshop))
 
-            if (i === currentWorkshop - 1) {
-              // Open the correct workshop
-              setOpenIndex(currentWorkshop)
+          if (i === currentWorkshop - 1) {
+            // Open the correct workshop
+            setOpenIndex(currentWorkshop)
 
-              // Scroll to the current step
-              stepRefs.current[currentWorkshop]?.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-              })
+            // Update accordion height dynamically
+            requestAnimationFrame(() => {
+              if (
+                buttonRefs.current[currentWorkshop] &&
+                panelRefs.current[currentWorkshop]
+              ) {
+                const buttonHeight =
+                  buttonRefs.current[currentWorkshop]?.offsetHeight || 64
+                const panelHeight =
+                  panelRefs.current[currentWorkshop]?.scrollHeight || 0
+                const totalHeight = buttonHeight + panelHeight
 
-              // Update accordion height dynamically
-              requestAnimationFrame(() => {
-                if (
-                  buttonRefs.current[currentWorkshop] &&
-                  panelRefs.current[currentWorkshop]
-                ) {
-                  const buttonHeight =
-                    buttonRefs.current[currentWorkshop]?.offsetHeight || 64
-                  const panelHeight =
-                    panelRefs.current[currentWorkshop]?.scrollHeight || 0
-                  const totalHeight = buttonHeight + panelHeight
+                setAccordionHeights((prev) => {
+                  const newHeights = [...prev]
+                  newHeights[currentWorkshop] = totalHeight
+                  return newHeights
+                })
 
-                  setAccordionHeights((prev) => {
-                    const newHeights = [...prev]
-                    newHeights[currentWorkshop] = totalHeight
-                    return newHeights
-                  })
-
-                  setLastKnownHeights((prev) => {
-                    const newLastHeights = [...prev]
-                    newLastHeights[currentWorkshop] = totalHeight
-                    return newLastHeights
-                  })
-                }
-              })
-            }
-          },
-          itemAnimationDuration * (i + 1) * 1200,
-        )
+                setLastKnownHeights((prev) => {
+                  const newLastHeights = [...prev]
+                  newLastHeights[currentWorkshop] = totalHeight
+                  return newLastHeights
+                })
+              }
+            })
+          }
+        })
       }
     }
 
     animateToCurrentWorkshop()
-  }, [currentWorkshop, itemAnimationDuration])
-
-  useEffect(() => {
-    if (checked === currentWorkshop) {
-      setOpenIndex(currentWorkshop)
-      // Scroll to the current step
-      stepRefs.current[currentWorkshop]?.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      })
-    }
-  }, [checked, currentWorkshop])
-
-  // Initialize stepRefs array
-  useEffect(() => {
-    stepRefs.current = workshops.map(() => React.createRef<HTMLDivElement>())
-  }, [workshops])
-
-  useEffect(() => {
-    if (workshopDetails.length > 0) {
-      const newAttendanceData: AttendanceRecord[] = childs.map(
-        (child: Child) => ({
-          child_id: child.id,
-          attendance: '',
-        }),
-      )
-      setAttendanceData(newAttendanceData)
-    }
-  }, [workshopDetails, currentWorkshop, childs])
-
-  useEffect(() => {
-    if (isSaved) {
-      setChecked((prevChecked) => {
-        const nextChecked = prevChecked + 1
-
-        // Ensure `nextChecked` does not exceed available workshops
-        if (nextChecked < workshops.length) {
-          setAnimatedSteps((prev) => {
-            // Only add `nextChecked` if it's not already in the array
-            if (!prev.includes(prevChecked)) {
-              return [...prev, prevChecked]
-            }
-            if (!prev.includes(nextChecked)) {
-              return [...prev, nextChecked]
-            }
-            return prev
-          })
-
-          // Update the open index and scroll to view the next workshop
-          setOpenIndex(nextChecked)
-          stepRefs.current[nextChecked]?.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          })
-        }
-
-        return nextChecked // Increment to the next step
-      })
-    }
-  }, [isSaved, workshops.length])
+  }, [currentWorkshop])
 
   return (
     <div className="w-full mx-auto">
@@ -266,9 +206,9 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         />
       ) : (
         workshops.map((workshop, index) => {
-          const isCurrent =
-            index === currentWorkshop && checked === currentWorkshop
-          const isPrevious = index < currentWorkshop
+          const isPrevious = index < checked
+          const isCurrent = index === checked
+          const isNext = index === checked + 1
           const isOpen = index === openIndex
 
           return (
@@ -277,24 +217,24 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                 key={index}
                 index={index}
                 id={`accordion-item-${index}`}
-                isOpen={openIndex === index}
+                isOpen={isOpen}
                 onClick={() => handleAccordionToggle(index)}
                 buttonRefs={buttonRefs}
                 panelRefs={panelRefs}
-                isDisabled={index > checked}
+                isDisabled={!isCurrent && !isPrevious} // Disable future steps
                 title={
                   <div className="relative flex items-center">
                     {/* Step Circle */}
                     <span
                       className={`absolute left-[-3rem] w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ease-in-out ${
                         isCurrent
-                          ? 'bg-blue-500 border-blue-500' // Current step with blue border and white background
-                          : isPrevious && animatedSteps.includes(index)
-                            ? 'bg-green-500 border-green-500' // Completed step
-                            : 'bg-gray-300 border-gray-300' // Uncompleted step
+                          ? 'bg-blue-500 border-blue-500' // Current step: Blue
+                          : isPrevious
+                            ? 'bg-green-500 border-green-500' // Completed steps: Green
+                            : 'bg-gray-300 border-gray-300' // Uncompleted steps: Gray
                       }`}
                     >
-                      {isPrevious && animatedSteps.includes(index) ? (
+                      {isPrevious ? (
                         <svg
                           className="h-4 w-4 text-white"
                           fill="none"
@@ -309,33 +249,31 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                           />
                         </svg>
                       ) : isCurrent ? (
-                        // Ensure the white dot is shown for the current step
-                        <span className="w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out opacity-100"></span>
+                        // White inner circle for the current step
+                        <span className="w-3 h-3 bg-white rounded-full"></span>
                       ) : (
-                        <span
-                          className={`w-3 h-3 bg-white rounded-full transition-opacity duration-500 ease-in-out ${
-                            animatedSteps.includes(index)
-                              ? 'opacity-0'
-                              : 'opacity-100'
-                          }`}
-                        ></span>
+                        // Future steps just remain gray
+                        <span className="w-3 h-3 bg-white rounded-full opacity-100"></span>
                       )}
                     </span>
 
-                    {/* Draw vertical line ONLY for steps before the last one */}
+                    {/* Vertical Line between steps */}
                     {index < workshops.length - 1 && (
                       <span
                         className={`absolute left-[-39px] top-[1.4rem] w-[2px] transition-all duration-300 ${
-                          index < checked
+                          isPrevious
                             ? 'bg-green-500'
-                            : index === checked
+                            : isCurrent
                               ? 'bg-blue-500'
                               : 'bg-gray-300'
                         }`}
                         style={{
-                          height: isOpen
-                            ? `${accordionHeights[index] || 64}px`
-                            : `${lastKnownHeights[index] || 64}px`, // Keep last height when closing
+                          height:
+                            isOpen || (isCurrent && openIndex === index)
+                              ? `${accordionHeights[index] || 64}px`
+                              : isPrevious
+                                ? `${lastKnownHeights[index] || 64}px`
+                                : '64px', // Default height for future steps
                         }}
                       />
                     )}
@@ -430,6 +368,12 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                   </div>
                 </LoadingOverlay>
               </Accordion>
+              {savedWorkshop && (
+                <Toast
+                  variant="success"
+                  message="Successfull updated workshop"
+                />
+              )}
             </div>
           )
         })

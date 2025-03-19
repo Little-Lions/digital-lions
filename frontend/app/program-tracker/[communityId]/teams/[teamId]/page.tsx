@@ -35,7 +35,7 @@ interface AttendanceRecord {
 
 interface Attendance {
   date: string
-  workshop_number: number
+  workshop_number?: number
   attendance: AttendanceRecord[]
 }
 
@@ -48,6 +48,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
 
   const [attendance, setAttendance] = useState<Record<number, string>>({})
   const [isSaved, setIsSaved] = useState<boolean>(false)
+  const [savedWorkshop, setSavedWorkshop] = useState<boolean>(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
 
   const [workshopById, setWorkshopById] = useState<WorkshopAttendance | null>(
@@ -140,10 +141,15 @@ const ProgramTrackerAttendancePage: React.FC = () => {
       })),
     }
 
+    const workshopId = workshopById?.workshop.id
+    setSavedWorkshop(false)
+
     if (selectedWorkshop === selectedTeam?.program.progress.current + 1) {
       await addWorkshopToTeam(selectedTeam.id, apiBody)
+    } else if (workshopId !== undefined) {
+      await updateWorkshopByTeam(workshopId, apiBody)
     } else {
-      await updateWorkshopByTeam(selectedTeam.id, apiBody)
+      throw new Error('Workshop ID is undefined')
     }
   }
 
@@ -165,25 +171,14 @@ const ProgramTrackerAttendancePage: React.FC = () => {
       onSuccess: async () => {
         setErrorMessage(null)
         await queryClient.invalidateQueries(['team', teamId])
-        setTimeout(() => {
-          setIsSaved(false)
-        }, 50)
-        await refetchWorkshops()
+        setSavedWorkshop(true)
+        setIsSaved(true)
+        setTimeout(() => setIsSaved(false), 100)
       },
       onError: (error: Error) => {
         setErrorMessage(error.message)
       },
     })
-
-  useEffect(() => {
-    if (selectedTeam?.children?.length) {
-      const initialAttendance: Record<number, string> = {}
-      selectedTeam.children.forEach((child) => {
-        initialAttendance[child.id] = ''
-      })
-      setAttendance(initialAttendance)
-    }
-  }, [selectedTeam])
 
   const workshops = [
     'Workshop 1',
@@ -201,6 +196,16 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   ]
 
   const currentWorkshop = selectedTeam?.program.progress.current ?? 0
+
+  useEffect(() => {
+    if (selectedTeam?.children?.length) {
+      const initialAttendance: Record<number, string> = {}
+      selectedTeam.children.forEach((child) => {
+        initialAttendance[child.id] = ''
+      })
+      setAttendance(initialAttendance)
+    }
+  }, [selectedTeam, isSavingAttendance])
 
   return (
     <>
@@ -227,6 +232,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
             isLoadingAttendanceData={isLoadingAttendanceData}
             isSavingAttendance={isSavingAttendance}
             isSaved={isSaved}
+            savedWorkshop={savedWorkshop}
           />
         )
       )}

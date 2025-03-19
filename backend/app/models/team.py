@@ -1,11 +1,8 @@
 import datetime
 from enum import Enum
 
-from models._metadata import (
-    _CreatePropertiesIn,
-    _MetadataPropertiesOut,
-    _UpdatePropertiesIn,
-)
+from models._metadata import (_CreatePropertiesIn, _MetadataPropertiesOut,
+                              _UpdatePropertiesIn)
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -196,26 +193,27 @@ class TeamGetWorkshopByNumberOut(BaseModel):
     attendance: list[Attendance]
 
 
+class Attendance(BaseModel):
+    """Model for adding attendance to a workshop, part
+    of the WorkshopPostIn payload."""
+
+    attendance: str = Field(
+        description="Attendance status of the child to the workshop. "
+        "Must be 'present', 'absent', or 'cancelled'."
+    )
+    child_id: int = Field(description="ID of the child")
+
+    @field_validator("attendance")
+    def validate_attendance(cls, v):
+        if v not in ["present", "absent", "cancelled"]:
+            raise ValueError(
+                "Attendance must be either 'present' or 'absent' or 'cancelled'"
+            )
+        return v
+
+
 class TeamPostWorkshopIn(BaseModel):
     """API payload model for POST /teams/:id/workshops."""
-
-    class Attendance(BaseModel):
-        """Model for adding attendance to a workshop, part
-        of the WorkshopPostIn payload."""
-
-        attendance: str = Field(
-            description="Attendance status of the child to the workshop. "
-            "Must be 'present', 'absent', or 'cancelled'."
-        )
-        child_id: int = Field(description="ID of the child")
-
-        @field_validator("attendance")
-        def validate_attendance(cls, v):
-            if v not in ["present", "absent", "cancelled"]:
-                raise ValueError(
-                    "Attendance must be either 'present' or 'absent' or 'cancelled'"
-                )
-            return v
 
     date: datetime.date = Field(
         description="The date of the workshop in the format YYYY-MM-DD"
@@ -242,6 +240,23 @@ class TeamPostWorkshopIn(BaseModel):
         return v
 
 
+class TeamPatchWorkshopIn(BaseModel):
+
+    date: datetime.date = Field(
+        description="The date of the workshop in the format YYYY-MM-DD"
+    )
+    attendance: list[Attendance] | None = Field(
+        description="List of attendance records of all children in the team."
+    )
+
+    @field_validator("date")
+    def convert_date_to_str(cls, v) -> str:
+        """Convert date to date format YYYY-MM-DD if it is provided."""
+        if v is not None:
+            v = v.strftime("%Y-%m-%d")
+        return v
+
+
 class _TeamPatchWorkshopIn(BaseModel):
     """Internal model for updating a workshop."""
 
@@ -254,7 +269,7 @@ class _TeamPatchWorkshopIn(BaseModel):
     team_id: int = Field(description="Team ID")
 
 
-class _TeamPatchAttendancePerChildIn(TeamPostWorkshopIn.Attendance):
+class _TeamPatchAttendancePerChildIn(Attendance):
     """Internal model for updating attendance of workshop."""
 
     workshop_id: int

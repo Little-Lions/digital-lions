@@ -184,7 +184,7 @@ def get_workshop_by_id(
 async def patch_workshop(
     team_service: Annotated[TeamService, Depends(TeamService)],
     workshop_id: int,
-    workshop: models.TeamPostWorkshopIn,
+    workshop: models.TeamPatchWorkshopIn,
 ):
     """
     Update a workshop of a team. This can be either the date of the workshop

@@ -202,7 +202,6 @@ def test_update_workshop_attendance(client_with_team):
     ]
     payload = {
         "date": "2021-01-02",
-        "workshop_number": 1,
         "attendance": attendance,
     }
     response_update = client_with_team.patch(

@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { useQuery } from 'react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
+import { useCustomUser } from '@/context/UserContext'
 import { useImplementingPartner } from '@/context/ImplementingPartnerContext'
 
 import getCommunities from '@/api/services/communities/getCommunities'
@@ -12,6 +13,9 @@ import getCommunities from '@/api/services/communities/getCommunities'
 import { Community } from '@/types/community.interface'
 import { UsersIcon } from '@heroicons/react/24/solid'
 
+import { useRouter } from 'next/navigation'
+
+import CustomButton from '@/components/CustomButton'
 import LinkCard from '@/components/LinkCard'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import Badge from '@/components/Badge'
@@ -22,6 +26,9 @@ import EmptyState from '@/components/EmptyState'
 const ProgramTrackerCommunityPage: React.FC = () => {
   const { setCommunityName } = useCommunity()
   const { selectedImplementingPartnerId } = useImplementingPartner()
+  const { customUser } = useCustomUser()
+
+  const router = useRouter()
 
   const [errorMessage, setErrorMessage] = useState<string | null>('')
 
@@ -85,8 +92,21 @@ const ProgramTrackerCommunityPage: React.FC = () => {
           ) : (
             <EmptyState
               title="No communities available"
-              text="This implementing partner has no communities"
+              text={
+                customUser?.permissions.includes('communities:write')
+                  ? 'Go to the community page to add a new community'
+                  : "You don't have permission to add a new community"
+              }
               pictogram={<UsersIcon />}
+              actionButton={
+                customUser?.permissions.includes('communities:write') ? (
+                  <CustomButton
+                    label="Go"
+                    onClick={() => router.push('/communities/')}
+                    variant="primary"
+                  />
+                ) : null
+              }
             />
           )}
           {hasErrorFetchingCommunities && (

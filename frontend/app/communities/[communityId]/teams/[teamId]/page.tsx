@@ -345,17 +345,17 @@ const TeamsDetailPage: React.FC = () => {
                   buttonRefs={accordionRefs}
                   title={`${child.first_name} ${child.last_name}`}
                   className="mb-2"
-                  isOpen={openChildIndex === index} // ✅ Controlled by parent
+                  isOpen={openChildIndex === index}
                   onClick={(e) => {
                     e.stopPropagation()
-                    setOpenChildIndex(openChildIndex === index ? null : index) // ✅ Toggle open/close state
+                    setOpenChildIndex(openChildIndex === index ? null : index)
                   }}
                 >
                   <div>
                     <Text>{`First Name: ${child.first_name}`}</Text>
                     <Text>{`Last Name: ${child.last_name}`}</Text>
-                    <Text>{`Age: ${child.age}`}</Text>
-                    <Text>{`Gender: ${child.gender}`}</Text>
+                    {child.age && <Text>{`Age: ${child.age}`}</Text>}
+                    {child.gender && <Text>{`Gender: ${child.gender}`}</Text>}
                   </div>
                   <div className="border-t mt-4 border-gray-200 dark:border-gray-600" />
                   <ButtonGroup>

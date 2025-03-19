@@ -85,11 +85,13 @@ const CommunityPage: React.FC = () => {
   )
 
   const handleOpenCommunityModal = (): void => {
+    setErrorMessage(null)
     latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setOpenAddCommunityModal(true)
   }
 
   const handleCloseCommunityModal = (): void => {
+    setErrorMessage(null)
     setCommunityName('')
     setOpenAddCommunityModal(false)
     setTimeout(() => {
@@ -111,7 +113,6 @@ const CommunityPage: React.FC = () => {
     if (!trimmedName) {
       throw new Error('Community name cannot be empty or spaces only')
     }
-
     try {
       return await createCommunity(trimmedName, selectedImplementingPartnerId)
     } catch (error) {
@@ -138,12 +139,14 @@ const CommunityPage: React.FC = () => {
     })
 
   const handleOpenDeleteCommunityModal = (CommunityId: number): void => {
+    setErrorMessage(null)
     latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setCommunityId(CommunityId)
     setDeleteCommunityModalVisible(true)
   }
 
   const handleCloseDeleteCommunityModal = (): void => {
+    setErrorMessage(null)
     setDeleteCommunityModalVisible(false)
     setTimeout(() => {
       latestSelectedElement?.current?.focus()
@@ -185,13 +188,16 @@ const CommunityPage: React.FC = () => {
     })
 
   const handleOpenEditCommunityModal = (CommunityId: number): void => {
+    setErrorMessage(null)
     latestSelectedElement.current = document.activeElement as HTMLButtonElement
+    setCommunityName('')
     setCommunityId(CommunityId)
     setOpenEditCommunityModal(true)
   }
 
   const handleCloseEditCommunityModal = (): void => {
     setOpenEditCommunityModal(false)
+    setErrorMessage(null)
     setTimeout(() => {
       latestSelectedElement?.current?.focus()
     }, 0)
@@ -258,7 +264,10 @@ const CommunityPage: React.FC = () => {
                   key={community.id}
                   title={community.name}
                   href={`/communities/${community.id}/teams`}
-                  onClick={() => setCommunityName(community.name)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCommunityName(community.name)
+                  }}
                   className="mb-2"
                 >
                   {/* Edit and Delete Buttons (Only for users with permission) */}
@@ -268,17 +277,21 @@ const CommunityPage: React.FC = () => {
                         label="Edit"
                         variant="secondary"
                         icon={<PencilIcon />}
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.preventDefault() // Prevents navigation
+                          e.stopPropagation() // Stops event from reaching <LinkCard>
                           handleOpenEditCommunityModal(community.id)
-                        }
+                        }}
                       />
                       <CustomButton
                         label="Delete"
                         variant="error"
                         icon={<TrashIcon />}
-                        onClick={() =>
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
                           handleOpenDeleteCommunityModal(community.id)
-                        }
+                        }}
                       />
                     </ButtonGroup>
                   )}
@@ -290,6 +303,17 @@ const CommunityPage: React.FC = () => {
               title="No communities available"
               text="This implementing partner has no communities"
               pictogram={<UsersIcon />}
+              actionButton={
+                customUser?.permissions.includes('communities:write') ? (
+                  <CustomButton
+                    label="Add Community"
+                    onClick={handleOpenCommunityModal}
+                    variant="primary"
+                    isFullWidth
+                    className="mb-4"
+                  />
+                ) : null
+              }
             />
           )}
 
@@ -369,6 +393,7 @@ const CommunityPage: React.FC = () => {
               closeText="Cancel"
               autoFocusAccept
               isBusy={isDeletingCommunity}
+              errorMessage={errorMessage}
             />
           )}
           {isAddingCommunityComplete && (

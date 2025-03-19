@@ -68,7 +68,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
               variant="error"
               onClick={onAccept}
               isBusy={isBusy}
-              isDisabled={errorMessage !== ''}
+              isDisabled={!!errorMessage}
             />
           </ButtonGroup>
         </>

@@ -7,7 +7,7 @@ interface LinkCardProps {
   title: string
   className?: string
   href: string
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
   children?: React.ReactNode
 }
 
@@ -19,18 +19,20 @@ const LinkCard: React.FC<LinkCardProps> = ({
   children,
 }) => {
   return (
-    <div
-      className={clsx(
-        'rounded-lg bg-card flex gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors',
-        className,
-      )}
-      onClick={onClick}
-    >
-      {/* Title Section */}
-      <Link href={href} className="flex-grow">
+    <Link href={href} prefetch={false} className="w-full" onClick={onClick}>
+      <div
+        className={clsx(
+          'rounded-lg bg-card flex justify-between gap-2 items-center w-full p-5 font-medium text-white hover:bg-card-dark transition-colors',
+          className,
+        )}
+      >
+        {/* Title section */}
         <Heading level="h6" hasNoMargin>
           {title}
         </Heading>
+
+        {/* Title Section */}
+
         <div className="flex items-center gap-2">
           {children && <div>{children}</div>}
           {/* Chevron right icon */}
@@ -50,8 +52,8 @@ const LinkCard: React.FC<LinkCardProps> = ({
             />
           </svg>
         </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   )
 }
 

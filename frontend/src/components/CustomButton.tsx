@@ -5,7 +5,7 @@ import clsx from 'clsx'
 
 interface CustomButtonProps {
   label: string
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
   className?: string
   isBusy?: boolean
   isDisabled?: boolean

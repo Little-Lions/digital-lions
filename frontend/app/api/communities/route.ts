@@ -49,10 +49,17 @@ export async function POST(request: Request): Promise<NextResponse> {
       throw new Error('Access token is undefined')
     }
 
+    const url = new URL(request.url)
+    const implementingPartnerId = url.searchParams.get(
+      'implementing_partner_id',
+    )
+
+    let endpoint = `/communities?implementing_partner_id=${implementingPartnerId}`
+  
     const body = await request.json()
 
     const { message, data } = await apiRequest(
-      '/communities',
+      endpoint,
       'POST',
       accessToken,
       body,

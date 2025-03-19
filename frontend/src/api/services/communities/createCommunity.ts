@@ -10,7 +10,7 @@ interface Community {
 
 const createCommunity = async (
   communityName: string,
-  selectedImplementingPartnerId?: number | null,
+  selectedImplementingPartnerId?: number
 ): Promise<Community> => {
   try {
     const response = await fetch(

@@ -35,7 +35,7 @@ export const ImplementingPartnerProvider: React.FC<{
   }, [])
 
   // Save the selected implementing partner ID to localStorage whenever it changes
-  const updateSelectedImplementingPartnerId = (partnerId: number) => {
+  const updateSelectedImplementingPartnerId = (partnerId: number): void => {
     setSelectedImplementingPartnerId(partnerId)
     localStorage.setItem(
       'selectedImplementingPartnerId',

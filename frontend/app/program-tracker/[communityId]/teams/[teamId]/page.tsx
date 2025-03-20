@@ -13,15 +13,12 @@ import VerticalStepper from '@/components/VerticalStepper'
 
 import getTeamById from '@/api/services/teams/getTeamById'
 import addWorkshopToTeam from '@/api/services/workshops/addWorkshopToTeam'
-import getWorkshopsByTeam from '@/api/services/workshops/getWorkshopsByTeam'
 import getWorkshopById from '@/api/services/workshops/getWorkshopById'
 import updateWorkshopByTeam from '@/api/services/workshops/updateWorkshopByTeam'
 
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
-
-import { WorkshopInfo } from '@/types/workshopInfo.interface'
 
 import SkeletonLoader from '@/components/SkeletonLoader'
 import AlertBanner from '@/components/AlertBanner'
@@ -153,18 +150,19 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     }
   }
 
-  const fetchWorkshops = async (): Promise<WorkshopInfo[]> => {
-    if (!selectedTeam?.id) throw new Error('No team selected')
-    return await getWorkshopsByTeam(selectedTeam.id)
-  }
+  // this might be used in the future for fetching details of all workshops
+  // const fetchWorkshops = async (): Promise<WorkshopInfo[]> => {
+  //   if (!selectedTeam?.id) throw new Error('No team selected')
+  //   return await getWorkshopsByTeam(selectedTeam.id)
+  // }
 
-  const { data: workshopDetails = [], refetch: refetchWorkshops } = useQuery(
-    ['workshops', selectedTeam?.id],
-    fetchWorkshops,
-    {
-      enabled: false, // Disable automatic fetching
-    },
-  )
+  // const { data: workshopDetails = [], refetch: refetchWorkshops } = useQuery(
+  //   ['workshops', selectedTeam?.id],
+  //   fetchWorkshops,
+  //   {
+  //     enabled: false, // Disable automatic fetching
+  //   },
+  // )
 
   const { mutate: handleSaveAttendance, isLoading: isSavingAttendance } =
     useMutation(saveAttendance, {
@@ -227,7 +225,6 @@ const ProgramTrackerAttendancePage: React.FC = () => {
             fetchWorkshopById={fetchWorkshopById}
             onSaveAttendance={handleSaveAttendance}
             teamDetails={selectedTeam}
-            workshopDetails={workshopDetails}
             workshopById={workshopById}
             isLoadingAttendanceData={isLoadingAttendanceData}
             isSavingAttendance={isSavingAttendance}

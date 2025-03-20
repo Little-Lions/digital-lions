@@ -6,7 +6,7 @@ interface ApiResponse<T> {
   message: string | null
   data: T
 }
-
+// this api call might be used in the future to get more details about the workshops
 const getWorkshopsByTeam = async (teamId: number): Promise<WorkshopInfo[]> => {
   try {
     const response = await fetch(`/api/teams/${teamId}/workshops`, {

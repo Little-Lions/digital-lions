@@ -18,14 +18,14 @@ const Navigation: React.FC = () => {
   const { user } = useUser()
   const { customUser } = useCustomUser()
 
-  const toggleMenu = () => {
+  const toggleMenu = (): void => {
     setMenuOpen((prev) => {
       if (!prev) setDropdownOpen(false)
       return !prev
     })
   }
 
-  const toggleDropdown = () => {
+  const toggleDropdown = (): void => {
     setDropdownOpen((prev) => {
       if (!prev) setMenuOpen(false)
       return !prev

@@ -13,7 +13,6 @@ import Text from './Text'
 import { UsersIcon } from '@heroicons/react/24/solid'
 
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
-import { WorkshopInfo } from '@/types/workshopInfo.interface'
 import { AttendanceRecord } from '@/types/workshopAttendance.interface'
 import { AttendanceStatus } from '@/types/attendanceStatus.enum'
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
@@ -29,10 +28,8 @@ interface VerticalStepperProps {
   onDateChange: (date: string) => void
   fetchWorkshopById: (workshopId: number) => void
   teamDetails: TeamWithChildren
-  workshopDetails: WorkshopInfo[]
   workshopById: WorkshopAttendance | null
   childs: Child[]
-  animationDuration?: number
   isSavingAttendance: boolean
   isSaved: boolean
   savedWorkshop: boolean
@@ -46,10 +43,8 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   onSaveAttendance,
   onDateChange,
   fetchWorkshopById,
-  workshopDetails,
   workshopById,
   childs,
-  animationDuration = 1,
   isSavingAttendance,
   isSaved,
   savedWorkshop,
@@ -64,7 +59,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
   const [checked, setChecked] = useState(1)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([])
-  const [animatedSteps, setAnimatedSteps] = useState<number[]>([])
   const stepRefs = useRef<Array<React.RefObject<HTMLDivElement>>>([])
 
   const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -95,7 +89,8 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
     })
     onAttendanceChange(childId, newAttendance)
   }
-  const handleAccordionToggle = (index: number) => {
+
+  const handleAccordionToggle = (index: number): void => {
     const isCurrentlyOpen = openIndex === index
     const isPreviousWorkshop = index < currentWorkshop
 
@@ -124,24 +119,42 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         }
       }
     })
+
+    // Clear attendance data when opening the current workshop
     if (index === currentWorkshop || isCurrentlyOpen) {
       setAttendanceData((prev) =>
         prev.map((record) => ({ ...record, attendance: '' })),
       )
     }
 
-    setOpenIndex(isCurrentlyOpen ? null : index)
+    setOpenIndex(() => {
+      if (isCurrentlyOpen) return null // Close if it's already open
+      if (isPreviousWorkshop && isSaved) return null // Close previous steps on save
+      return index // Open normally
+    })
   }
 
   useEffect(() => {
-    if (workshopById && !isSaved) {
+    if (workshopById && !isSaved && openIndex !== currentWorkshop) {
+      console.log('Updating attendance data from API')
       setAttendanceData(workshopById.attendance)
-    } else {
+    } else if (isSaved && openIndex === currentWorkshop) {
+      console.log('Clearing attendance data after save')
       setAttendanceData((prev) =>
         prev.map((record) => ({ ...record, attendance: '' })),
       )
     }
-  }, [workshopById, isSaved])
+  }, [workshopById, isSaved, openIndex, currentWorkshop])
+
+  // Closes previous workshops, moves forward for current after a save
+  useEffect(() => {
+    if (isSaved) {
+      setOpenIndex((prev) => {
+        if (prev === null) return null
+        return prev < currentWorkshop ? null : prev + 1
+      })
+    }
+  }, [isSaved, currentWorkshop])
 
   useEffect(() => {
     const animateToCurrentWorkshop = (): void => {
@@ -208,7 +221,6 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
         workshops.map((workshop, index) => {
           const isPrevious = index < checked
           const isCurrent = index === checked
-          const isNext = index === checked + 1
           const isOpen = index === openIndex
 
           return (
@@ -368,15 +380,12 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                   </div>
                 </LoadingOverlay>
               </Accordion>
-              {savedWorkshop && (
-                <Toast
-                  variant="success"
-                  message="Successfull updated workshop"
-                />
-              )}
             </div>
           )
         })
+      )}
+      {savedWorkshop && (
+        <Toast variant="success" message="Successfully updated workshop" />
       )}
     </div>
   )

@@ -1,3 +1,5 @@
+// disable eslint rule for explicit any, because we don't know the shape of the data
+// eslint-disable  @typescript-eslint/no-explicit-any
 export const apiRequest = async (
   endpoint: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
@@ -17,17 +19,23 @@ export const apiRequest = async (
 
   const fullUrl = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`
 
-  console.log(`Sending ${method} request to:`, fullUrl)
-  console.log(`Request Body:`, JSON.stringify(body, null, 2))
-
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Sending ${method} request to:`, fullUrl)
+    console.log(`Request Body:`, JSON.stringify(body, null, 2))
+  }
   const response = await fetch(fullUrl, options)
+
   const jsonResponse = await response.json().catch(() => null)
 
-  console.log(`API Response (${response.status}):`, jsonResponse)
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`API Response (${response.status}):`, jsonResponse)
+  }
 
   if (!response.ok) {
-    console.error(`API Error: ${response.statusText}`)
-    console.error(`API Response Detail:`, jsonResponse)
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`API Error: ${response.statusText}`)
+      console.error(`API Response Detail:`, jsonResponse)
+    }
     throw new Error(
       jsonResponse?.message ||
         jsonResponse?.detail ||

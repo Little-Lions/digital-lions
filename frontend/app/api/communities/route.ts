@@ -54,8 +54,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       'implementing_partner_id',
     )
 
-    let endpoint = `/communities?implementing_partner_id=${implementingPartnerId}`
-  
+    const endpoint = `/communities?implementing_partner_id=${implementingPartnerId}`
+
     const body = await request.json()
 
     const { message, data } = await apiRequest(

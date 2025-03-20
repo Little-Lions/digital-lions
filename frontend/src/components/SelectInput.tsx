@@ -10,6 +10,7 @@ interface SelectInputProps {
   disabled?: boolean
   onChange?: (value: string | number) => void
   autoFocus?: boolean
+  required?: boolean // ✅ Correct spelling
 }
 
 const SelectInput: React.FC<SelectInputProps> = ({
@@ -20,6 +21,7 @@ const SelectInput: React.FC<SelectInputProps> = ({
   disabled,
   onChange,
   autoFocus = false,
+  required = false,
 }) => {
   const [inputValue, setInputValue] = useState(value)
 
@@ -55,6 +57,7 @@ const SelectInput: React.FC<SelectInputProps> = ({
           value={inputValue}
           onChange={handleInputChange}
           autoFocus={autoFocus}
+          required={required}
         >
           {children}
         </select>

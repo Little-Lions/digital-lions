@@ -37,6 +37,7 @@ import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { useParams, useRouter } from 'next/navigation'
+import { Child } from '@/types/child.interface'
 
 interface Team {
   name: string
@@ -157,7 +158,7 @@ const TeamsDetailPage: React.FC = () => {
   )
 
   // Mutation to edit a child
-  const editChild = async () => {
+  const editChild = async (): Promise<void> => {
     if (!editChildId) throw new Error('Invalid child ID')
     try {
       return await updateChild({
@@ -194,7 +195,7 @@ const TeamsDetailPage: React.FC = () => {
   )
 
   // Mutation to delete a child
-  const removeChild = async () => {
+  const removeChild = async (): Promise<void> => {
     if (!editChildId) throw new Error('Invalid child ID')
     try {
       await deleteChild(editChildId, false)
@@ -236,6 +237,7 @@ const TeamsDetailPage: React.FC = () => {
     setEditLastName('')
     setEditAge(null)
     setEditGender(null)
+    setErrorMessage(null)
 
     setTimeout(() => {
       latestSelectedElement?.current?.focus()
@@ -400,7 +402,7 @@ const TeamsDetailPage: React.FC = () => {
               acceptText={editMode === 'edit' ? 'Edit' : 'Add'}
               onAccept={editMode === 'edit' ? handleEditChild : handleAddChild}
               isBusy={isAddingChild || isEditingChild}
-              isDisabledButton={!editFirstName || !editLastName}
+              isDisabledButton={!editFirstName || !editLastName || !editGender}
             >
               <form
                 onSubmit={(e) => {
@@ -435,6 +437,7 @@ const TeamsDetailPage: React.FC = () => {
                   className="mb-2"
                   label="Gender"
                   value={editGender ?? ''}
+                  required
                   onChange={(value: string | number) =>
                     setEditGender(String(value))
                   }

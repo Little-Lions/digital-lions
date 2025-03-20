@@ -10,7 +10,7 @@ export async function GET(): Promise<NextResponse> {
       throw new Error('Access token is undefined')
     }
 
-    let endpoint = '/implementing_partners'
+    const endpoint = '/implementing_partners'
 
     const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 

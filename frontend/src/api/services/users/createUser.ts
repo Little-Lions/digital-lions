@@ -1,8 +1,5 @@
-'use client'
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
 export interface ApiBody {
   email: string
@@ -18,26 +15,21 @@ export interface ApiError {
 }
 
 const createUser = async (email: string): Promise<User | ApiError> => {
-  try {
-    const response = await fetch(`/api/users`, {
-      method: 'POST',
-      body: JSON.stringify({ email: email }),
-    })
+  const response = await fetch(`/api/users`, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
 
-    const responseData: ApiResponse<User> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to create user')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to create user')
   }
+
+  const responseData = json as ApiResponse<User>
+  return responseData.data
 }
 
 export default createUser

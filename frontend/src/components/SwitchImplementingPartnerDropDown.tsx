@@ -26,11 +26,10 @@ interface SwitchImplementingPartnerDropDownProps {
 
 const SwitchImplementingPartnerDropDown: React.FC<
   SwitchImplementingPartnerDropDownProps
-> = ({ dropdownOpen, toggleDropdown }) => {
+> = () => {
   const { selectedImplementingPartnerId, setSelectedImplementingPartnerId } =
     useImplementingPartner()
   const [showDropDown, setShowDropDown] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter()
 
   const fetchImplementingPartners = async (): Promise<
@@ -40,7 +39,6 @@ const SwitchImplementingPartnerDropDown: React.FC<
       return await getImplementingPartners()
     } catch (error) {
       if (error instanceof Error) {
-        setErrorMessage(error.message)
         throw error
       } else {
         throw error
@@ -51,7 +49,6 @@ const SwitchImplementingPartnerDropDown: React.FC<
   const {
     data: implementingPartners = [],
     isLoading: isFetchingImplementingPartners,
-    error: hasErrorFetchingImplementingPartners,
     refetch,
   } = useQuery(['implementingPartners'], fetchImplementingPartners, {
     enabled: false,

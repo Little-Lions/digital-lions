@@ -136,10 +136,8 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
 
   useEffect(() => {
     if (workshopById && !isSaved && openIndex !== currentWorkshop) {
-      console.log('Updating attendance data from API')
       setAttendanceData(workshopById.attendance)
     } else if (isSaved && openIndex === currentWorkshop) {
-      console.log('Clearing attendance data after save')
       setAttendanceData((prev) =>
         prev.map((record) => ({ ...record, attendance: '' })),
       )
@@ -339,11 +337,13 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
                                       currentAttendance !== null
                                     }
                                     onChange={() => {
-                                      handleAttendanceChange(
-                                        id,
-                                        status as AttendanceStatus,
-                                      )
-                                      setSelectedWorkshop(index + 1)
+                                      if (id !== undefined) {
+                                        handleAttendanceChange(
+                                          id,
+                                          status as AttendanceStatus,
+                                        )
+                                        setSelectedWorkshop(index + 1)
+                                      }
                                     }}
                                   />
                                   <span className="ml-2 capitalize">

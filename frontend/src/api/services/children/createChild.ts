@@ -1,16 +1,13 @@
-'use client'
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
-
-interface Child {
+export interface Child {
+  id: number
   team_id: number
-  age: number | null
-  gender: string | null
   first_name: string
   last_name: string
+  age: number | null
+  gender: string | null
 }
 
 const createChild = async ({
@@ -26,32 +23,27 @@ const createChild = async ({
   firstName: string
   lastName: string
 }): Promise<Child> => {
-  try {
-    const response = await fetch(`/api/children`, {
-      method: 'POST',
-      body: JSON.stringify({
-        team_id: teamId,
-        age: age,
-        gender: gender,
-        first_name: firstName,
-        last_name: lastName,
-      }),
-    })
+  const response = await fetch(`/api/children`, {
+    method: 'POST',
+    body: JSON.stringify({
+      team_id: teamId,
+      age,
+      gender,
+      first_name: firstName,
+      last_name: lastName,
+    }),
+  })
 
-    const responseData: ApiResponse<Child> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to create child')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to create child')
   }
+
+  const responseData = json as ApiResponse<Child>
+  return responseData.data
 }
 
 export default createChild

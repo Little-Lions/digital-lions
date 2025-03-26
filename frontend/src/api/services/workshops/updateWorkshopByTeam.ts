@@ -1,11 +1,6 @@
-'use client'
-
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
 interface AttendanceRecord {
   attendance: string
@@ -21,25 +16,21 @@ const updateWorkshopByTeam = async (
   workshopId: number,
   data: ApiBody,
 ): Promise<WorkshopAttendance> => {
-  try {
-    const response = await fetch(`/api/teams/workshops/${workshopId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    })
-    const responseData: ApiResponse<WorkshopAttendance> = await response.json()
+  const response = await fetch(`/api/teams/workshops/${workshopId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch workshop by id')
-    }
+  const json = await response.json()
 
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch workshop by id')
   }
+
+  const responseData = json as ApiResponse<WorkshopAttendance>
+  return responseData.data
 }
 
 export default updateWorkshopByTeam

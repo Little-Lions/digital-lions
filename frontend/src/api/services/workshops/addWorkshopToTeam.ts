@@ -1,11 +1,6 @@
-'use client'
-
 import { Workshop } from '@/types/workshop.interface'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 interface AttendanceRecord {
   attendance: string
@@ -22,26 +17,21 @@ const addWorkshopToTeam = async (
   teamId: number,
   data: ApiBody,
 ): Promise<Workshop[]> => {
-  try {
-    const response = await fetch(`/api/teams/${teamId}/workshops`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
+  const response = await fetch(`/api/teams/${teamId}/workshops`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 
-    const responseData: ApiResponse<Workshop[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to add workshop to team')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to add workshop to team')
   }
+
+  const responseData = json as ApiResponse<Workshop[]>
+  return responseData.data
 }
 
 export default addWorkshopToTeam

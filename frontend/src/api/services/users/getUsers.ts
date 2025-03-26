@@ -1,32 +1,22 @@
-'use client'
-
 import { User } from '@/types/user.interface'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 const getUsers = async (): Promise<User[]> => {
-  try {
-    const response = await fetch('/api/users', {
-      method: 'GET',
-    })
+  const response = await fetch('/api/users', {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<User[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch users')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch users')
   }
+
+  const responseData = json as ApiResponse<User[]>
+  return responseData.data
 }
 
 export default getUsers

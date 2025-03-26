@@ -1,3 +1,6 @@
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
+
 interface Child {
   is_active: boolean
   age: number
@@ -22,35 +25,23 @@ interface Attendance {
   workshop: Workshop
 }
 
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
-
 const getAttendancePerChild = async (
   attendanceId: number,
 ): Promise<Attendance[]> => {
-  try {
-    const response = await fetch(`/api/attendance/${attendanceId}`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/attendance/${attendanceId}`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<Attendance[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(
-        responseData.message || 'Failed to fetch attendance per child',
-      )
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch attendance per child')
   }
+
+  const responseData = json as ApiResponse<Attendance[]>
+  return responseData.data
 }
 
 export default getAttendancePerChild

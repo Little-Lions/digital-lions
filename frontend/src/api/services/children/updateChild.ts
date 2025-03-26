@@ -1,9 +1,4 @@
-'use client'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 interface ApiBody {
   is_active: boolean
@@ -28,30 +23,27 @@ const updateChildById = async ({
   firstName: string
   lastName: string
 }): Promise<void> => {
-  try {
-    const body: ApiBody = {
-      is_active: isActive,
-      age: age,
-      gender: gender,
-      first_name: firstName,
-      last_name: lastName,
-    }
+  const body: ApiBody = {
+    is_active: isActive,
+    age,
+    gender,
+    first_name: firstName,
+    last_name: lastName,
+  }
 
-    const response = await fetch(`/api/children?child_id=${childId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body),
-    })
-    const responseData: ApiResponse<void> = await response.json()
+  const response = await fetch(`/api/children?child_id=${childId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to update child')
-    }
-  } catch (error) {
-    throw error
+  if (response.status === 204) return
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to update child')
   }
 }
 

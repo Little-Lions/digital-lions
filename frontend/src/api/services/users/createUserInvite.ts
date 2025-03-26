@@ -1,39 +1,26 @@
-'use client'
-
 import { User } from '@/types/user.interface'
-import { Role } from '@/types/role.type'
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
-
-export interface ApiBody {
-  email: string
-  roles: Role[]
-}
-
-const createUser = async (userId: string): Promise<User[]> => {
-  try {
-    const response = await fetch(`/api/resend-invite?user_id=${userId}`, {
+const resendInvite = async (userId: string): Promise<User[]> => {
+  const response = await fetch(
+    `/api/resend-invite?user_id=${encodeURIComponent(userId)}`,
+    {
       method: 'POST',
-      body: JSON.stringify(userId),
-    })
+      body: JSON.stringify({ user_id: userId }),
+    },
+  )
 
-    const responseData: ApiResponse<User[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to create user invite')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to resend invite')
   }
+
+  const responseData = json as ApiResponse<User[]>
+  return responseData.data
 }
 
-export default createUser
+export default resendInvite

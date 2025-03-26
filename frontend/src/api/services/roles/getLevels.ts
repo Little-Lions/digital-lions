@@ -1,37 +1,24 @@
-'use client'
-
 import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 const getLevels = async (role: Role): Promise<Level[]> => {
-  try {
-    // Construct query string
-    const queryParams = new URLSearchParams({ role })
-    const fetchUrl = `/api/roles/levels?${queryParams.toString()}`
+  const queryParams = new URLSearchParams({ role })
+  const response = await fetch(`/api/roles/levels?${queryParams.toString()}`, {
+    method: 'GET',
+  })
 
-    const response = await fetch(fetchUrl, {
-      method: 'GET',
-    })
+  const json = await response.json()
 
-    const responseData: ApiResponse<Level[]> = await response.json()
-
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch levels')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch levels')
   }
+
+  const responseData = json as ApiResponse<Level[]>
+  return responseData.data
 }
 
 export default getLevels

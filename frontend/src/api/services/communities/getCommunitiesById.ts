@@ -1,9 +1,5 @@
-'use client'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
 interface Community {
   id: number
@@ -13,29 +9,20 @@ interface Community {
 const getCommunitiesById = async (
   communityId: string,
 ): Promise<Community[]> => {
-  try {
-    const response = await fetch(
-      `/api/communities?community_id=${communityId}`,
-      {
-        method: 'GET',
-      },
-    )
+  const response = await fetch(`/api/communities?community_id=${communityId}`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<Community[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch communities')
-    }
-
-    return responseData.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch communities')
   }
+
+  const responseData = json as ApiResponse<Community[]>
+  return responseData.data
 }
 
 export default getCommunitiesById

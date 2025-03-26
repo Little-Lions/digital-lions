@@ -1,34 +1,26 @@
-'use client'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
 interface ApiInput {
   teamId: number
   cascade: boolean
 }
 
 const deleteTeam = async ({ teamId, cascade }: ApiInput): Promise<void> => {
-  try {
-    const response = await fetch(
-      `/api/teams?team_id=${teamId}&cascade=${cascade}`,
-      {
-        method: 'DELETE',
-      },
-    )
+  const response = await fetch(
+    `/api/teams?team_id=${teamId}&cascade=${cascade}`,
+    {
+      method: 'DELETE',
+    },
+  )
 
-    const responseData: ApiResponse<void> = await response.json()
+  if (response.status === 204) return
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to delete team')
-    }
-  } catch (error) {
-    throw error
+  const json = await response.json()
+
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to delete team')
   }
 }
 

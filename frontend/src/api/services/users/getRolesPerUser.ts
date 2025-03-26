@@ -1,32 +1,22 @@
-'use client'
-
 import { UserRoles } from '@/types/userRoles.interface'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 const getRolesPerUser = async (userId: string): Promise<UserRoles[]> => {
-  try {
-    const response = await fetch(`/api/users?user_id=${userId}/roles`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/users?user_id=${userId}/roles`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<UserRoles[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch roles per user')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch roles per user')
   }
+
+  const responseData = json as ApiResponse<UserRoles[]>
+  return responseData.data
 }
 
 export default getRolesPerUser

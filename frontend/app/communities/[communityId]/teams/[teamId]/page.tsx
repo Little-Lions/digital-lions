@@ -13,7 +13,7 @@ import Accordion from '@/components/Accordion'
 import getTeams from '@/api/services/teams/getTeams'
 import getTeamById from '@/api/services/teams/getTeamById'
 
-import createChild from '@/api/services/children/createChild'
+import createChild, { Child } from '@/api/services/children/createChild'
 import updateChild from '@/api/services/children/updateChild'
 import deleteChild from '@/api/services/children/deleteChild'
 
@@ -37,7 +37,6 @@ import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { useParams, useRouter } from 'next/navigation'
-import { Child } from '@/types/child.interface'
 
 interface Team {
   name: string
@@ -75,10 +74,12 @@ const TeamsDetailPage: React.FC = () => {
 
   const [openChildIndex, setOpenChildIndex] = useState<number | null>(null)
 
-  // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
     queryKey,
-  }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
+  }: QueryFunctionContext<
+    [string, string],
+    void
+  >): Promise<TeamWithChildren> => {
     try {
       const [, teamId] = queryKey // Extract teamId from the query key
       const numericTeamId = Number(teamId)
@@ -122,7 +123,7 @@ const TeamsDetailPage: React.FC = () => {
     })
 
   // Mutation to add a child
-  const addChild = async () => {
+  const addChild = async (): Promise<Child> => {
     if (!selectedTeam) throw new Error('No team selected')
     try {
       return await createChild({
@@ -245,11 +246,11 @@ const TeamsDetailPage: React.FC = () => {
   }
 
   const openEditChildModal = (child: {
-    id: number
     first_name: string
     last_name: string
-    age?: number
-    gender?: string
+    id: number
+    age: number
+    gender: string
   }): void => {
     latestSelectedElement.current = document.activeElement as HTMLButtonElement
     setEditChildId(child.id)
@@ -366,14 +367,27 @@ const TeamsDetailPage: React.FC = () => {
                       label="Edit"
                       variant="secondary"
                       icon={<PencilIcon />}
-                      onClick={() => openEditChildModal(child)}
+                      onClick={() =>
+                        child.id !== undefined &&
+                        openEditChildModal(
+                          child as {
+                            first_name: string
+                            last_name: string
+                            id: number
+                            age: number
+                            gender: string
+                          },
+                        )
+                      }
                     />
                     <CustomButton
                       className="mt-4"
                       label="Delete"
                       variant="error"
                       icon={<TrashIcon />}
-                      onClick={() => openDeleteChildModal(child.id)}
+                      onClick={() =>
+                        child.id !== undefined && openDeleteChildModal(child.id)
+                      }
                     />
                   </ButtonGroup>
                 </Accordion>
@@ -407,7 +421,11 @@ const TeamsDetailPage: React.FC = () => {
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
-                  editMode === 'edit' ? handleEditChild() : handleAddChild()
+                  if (editMode === 'edit') {
+                    handleEditChild()
+                  } else {
+                    handleAddChild()
+                  }
                 }}
               >
                 <TextInput

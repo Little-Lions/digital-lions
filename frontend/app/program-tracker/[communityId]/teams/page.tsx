@@ -12,7 +12,6 @@ import CustomButton from '@/components/CustomButton'
 import SkeletonLoader from '@/components/SkeletonLoader'
 import EmptyState from '@/components/EmptyState'
 import Heading from '@/components/Heading'
-import Badge from '@/components/Badge'
 import AlertBanner from '@/components/AlertBanner'
 
 import { UsersIcon } from '@heroicons/react/24/solid'

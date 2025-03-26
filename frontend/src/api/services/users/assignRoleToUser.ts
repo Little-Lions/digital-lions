@@ -1,12 +1,6 @@
-'use client'
-
 import { Level } from '@/types/level.type'
 import { Role } from '@/types/role.type'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 export interface ApiBody {
   role: Role
@@ -26,27 +20,22 @@ const assignRoleToUser = async (
   level: Level,
   resourceId: number,
 ): Promise<void> => {
-  try {
-    const body = createOutput({ role, level, resourceId })
-    const encodedUserId = encodeURIComponent(userId)
-    const response = await fetch(`/api/users/${encodedUserId}/roles`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    })
+  const body = createOutput({ role, level, resourceId })
+  const encodedUserId = encodeURIComponent(userId)
 
-    const responseData: ApiResponse<void> = await response.json()
+  const response = await fetch(`/api/users/${encodedUserId}/roles`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to assign role to user')
-    }
+  if (response.status === 204) return
 
-    return responseData.data
-  } catch (error) {
-    throw error
+  const json = await response.json()
+
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to assign role to user')
   }
 }
 

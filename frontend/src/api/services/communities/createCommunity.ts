@@ -1,9 +1,5 @@
-'use client'
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
-
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 interface Community {
   id: number
 }
@@ -12,29 +8,24 @@ const createCommunity = async (
   communityName: string,
   selectedImplementingPartnerId?: number,
 ): Promise<Community> => {
-  try {
-    const response = await fetch(
-      `/api/communities?implementing_partner_id=${selectedImplementingPartnerId}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ name: communityName }),
-      },
-    )
+  const response = await fetch(
+    `/api/communities?implementing_partner_id=${selectedImplementingPartnerId}`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ name: communityName }),
+    },
+  )
 
-    const responseData: ApiResponse<Community> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to create community')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to create community')
   }
+
+  const responseData = json as ApiResponse<Community>
+  return responseData.data
 }
 
 export default createCommunity

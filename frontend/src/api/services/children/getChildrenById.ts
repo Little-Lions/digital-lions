@@ -1,9 +1,5 @@
-'use client'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 interface ChildrenById {
   is_active: boolean
@@ -16,26 +12,20 @@ interface ChildrenById {
 }
 
 const getChildrenById = async (childId: number): Promise<ChildrenById> => {
-  try {
-    const response = await fetch(`/api/children?child_id=${childId}`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/children?child_id=${childId}`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<ChildrenById> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch children by id')
-    }
-
-    return responseData.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch children by id')
   }
+
+  const responseData = json as ApiResponse<ChildrenById>
+  return responseData.data
 }
 
 export default getChildrenById

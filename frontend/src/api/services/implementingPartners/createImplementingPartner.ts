@@ -1,37 +1,27 @@
-'use client'
-
 import { ImplementingPartner } from '@/types/implementingPartner.interface'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 const createImplementingPartners = async (
   implementingPartnerName: string,
 ): Promise<ImplementingPartner> => {
-  try {
-    const response = await fetch(`/api/implementing_partners`, {
-      method: 'POST',
-      body: JSON.stringify({ name: implementingPartnerName }),
-    })
+  const response = await fetch(`/api/implementing_partners`, {
+    method: 'POST',
+    body: JSON.stringify({ name: implementingPartnerName }),
+  })
 
-    const responseData: ApiResponse<ImplementingPartner> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(
-        responseData.message || 'Failed to create implementing partner',
-      )
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(
+      errorData.message || 'Failed to create implementing partner',
+    )
   }
+
+  const responseData = json as ApiResponse<ImplementingPartner>
+  return responseData.data
 }
 
 export default createImplementingPartners

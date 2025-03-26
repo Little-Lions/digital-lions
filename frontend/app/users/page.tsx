@@ -16,7 +16,7 @@ import Text from '@/components/Text'
 import AlertBanner from '@/components/AlertBanner'
 import ConfirmModal from '@/components/ConfirmModal'
 
-import { TrashIcon, PencilIcon, UserPlusIcon } from '@heroicons/react/16/solid'
+import { TrashIcon, UserPlusIcon } from '@heroicons/react/16/solid'
 
 import getRoles from '@/api/services/roles/getRoles'
 import getLevels from '@/api/services/roles/getLevels'

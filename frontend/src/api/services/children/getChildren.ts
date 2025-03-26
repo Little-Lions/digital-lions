@@ -1,9 +1,5 @@
-'use client'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
 interface Child {
   first_name: string
@@ -12,26 +8,20 @@ interface Child {
 }
 
 const getChildren = async (communityId: number): Promise<Child[]> => {
-  try {
-    const response = await fetch(`/api/children?community_id=${communityId}`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/children?community_id=${communityId}`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<Child[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch children')
-    }
-
-    return responseData.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch children')
   }
+
+  const responseData = json as ApiResponse<Child[]>
+  return responseData.data
 }
 
 export default getChildren

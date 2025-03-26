@@ -1,29 +1,21 @@
-'use client'
-
 import { User } from '@/types/user.interface'
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
-const getCurrentUser = async (): Promise<User> => {
-  try {
-    const response = await fetch('/api/users/me', { method: 'GET' })
+const getCurrentUser = async (): Promise<Omit<User, 'user_id'>> => {
+  const response = await fetch('/api/users/me', { method: 'GET' })
 
-    const responseData: ApiResponse<User> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch current user')
-    }
-    delete responseData.data.user_id
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch current user')
   }
+
+  const responseData = json as ApiResponse<User>
+  delete responseData.data.user_id
+  return responseData.data
 }
 
 export default getCurrentUser

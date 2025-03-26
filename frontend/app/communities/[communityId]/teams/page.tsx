@@ -36,7 +36,7 @@ const TeamsPage: React.FC = () => {
   const latestSelectedElement = useRef<HTMLButtonElement | null>(null)
 
   const [teamName, setTeamName] = useState('')
-  const [isActive, setIsActive] = useState(true)
+  const [isActive, _setIsActive] = useState(true)
 
   const [openAddTeamModal, setOpenAddTeamModal] = useState(false)
   const [isAddingTeamComplete, setIsAddingTeamComplete] = useState(false)

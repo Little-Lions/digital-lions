@@ -1,8 +1,5 @@
-'use client'
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ErrorResponse } from '@/types/errorResponse.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
 
 interface Team {
   id: number
@@ -20,44 +17,26 @@ const createTeam = async ({
   name: string
   communityId: number
 }): Promise<Team> => {
-  try {
-    const response = await fetch(`/api/teams`, {
-      method: 'POST',
-      body: JSON.stringify(
-        createInput({
-          name,
-          communityId,
-        }),
-      ),
-    })
-
-    const responseData: ApiResponse<Team> = await response.json()
-
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to create team')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
-  }
-}
-
-function createInput({
-  name,
-  communityId,
-}: {
-  name: string
-  communityId: number
-}): BodyInput {
-  return {
-    name: name,
+  const body: BodyInput = {
+    name,
     community_id: communityId,
   }
+
+  const response = await fetch(`/api/teams`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+
+  const json = await response.json()
+
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to create team')
+  }
+
+  const responseData = json as ApiResponse<Team>
+  return responseData.data
 }
 
 export default createTeam

@@ -24,7 +24,10 @@
       "rules": {
         "@typescript-eslint/no-unused-vars": [
           "error",
-          { "argsIgnorePattern": "^_" }
+          {
+            "argsIgnorePattern": "^_",
+            "varsIgnorePattern": "^_"
+          }
         ],
         "prettier/prettier": "error",
         "@typescript-eslint/explicit-function-return-type": "warn",

@@ -1,34 +1,22 @@
-'use client'
-
 import { WorkshopInfo } from '@/types/workshopInfo.interface'
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
-// this api call might be used in the future to get more details about the workshops
 const getWorkshopsByTeam = async (teamId: number): Promise<WorkshopInfo[]> => {
-  try {
-    const response = await fetch(`/api/teams/${teamId}/workshops`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/teams/${teamId}/workshops`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<WorkshopInfo[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(
-        responseData.message || 'Failed to fetch workshops by team',
-      )
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch workshops by team')
   }
+
+  const responseData = json as ApiResponse<WorkshopInfo[]>
+  return responseData.data
 }
 
 export default getWorkshopsByTeam

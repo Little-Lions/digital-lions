@@ -57,10 +57,12 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>('')
 
   // Fetch team details when teamId changes
-  // eslint-disable  @typescript-eslint/no-explicit-any
   const fetchTeamById = async ({
     queryKey,
-  }: QueryFunctionContext<string[], any>): Promise<TeamWithChildren> => {
+  }: QueryFunctionContext<
+    [string, string],
+    void
+  >): Promise<TeamWithChildren> => {
     try {
       const [, teamId] = queryKey // Extract teamId from the query key
       const numericTeamId = Number(teamId)
@@ -98,7 +100,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     }))
   }
 
-  const fetchWorkshopById = async (index: number) => {
+  const fetchWorkshopById = async (index: number): Promise<void> => {
     setIsLoadingAttendanceData(true)
     const workshopId = index
 
@@ -199,7 +201,9 @@ const ProgramTrackerAttendancePage: React.FC = () => {
     if (selectedTeam?.children?.length) {
       const initialAttendance: Record<number, string> = {}
       selectedTeam.children.forEach((child) => {
-        initialAttendance[child.id] = ''
+        if (child.id !== undefined) {
+          initialAttendance[child.id] = ''
+        }
       })
       setAttendance(initialAttendance)
     }

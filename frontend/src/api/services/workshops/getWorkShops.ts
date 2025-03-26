@@ -1,9 +1,5 @@
-'use client'
-
-interface ApiResponse<T> {
-  message: string | null
-  data: T
-}
+import { ApiResponse } from '@/types/ApiResponse.interface'
+import { ErrorResponse } from '@/types/errorResponse.interface'
 
 interface Workshop {
   date: string
@@ -14,25 +10,20 @@ interface Workshop {
 }
 
 const getWorkshops = async (): Promise<Workshop[]> => {
-  try {
-    const response = await fetch(`/api/workshops`, {
-      method: 'GET',
-    })
+  const response = await fetch(`/api/workshops`, {
+    method: 'GET',
+  })
 
-    const responseData: ApiResponse<Workshop[]> = await response.json()
+  const json = await response.json()
 
-    if (!response.ok) {
-      console.error(
-        'API Error Detail:',
-        (responseData as any).detail || 'No detail available',
-      )
-      throw new Error(responseData.message || 'Failed to fetch workshops')
-    }
-
-    return responseData.data
-  } catch (error) {
-    throw error
+  if (!response.ok) {
+    const errorData = json as ErrorResponse
+    console.error('API Error Detail:', errorData.detail)
+    throw new Error(errorData.message || 'Failed to fetch workshops')
   }
+
+  const responseData = json as ApiResponse<Workshop[]>
+  return responseData.data
 }
 
 export default getWorkshops

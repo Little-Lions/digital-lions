@@ -31,7 +31,6 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const acceptButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
-    console.log('acceptButtonRef.current', acceptButtonRef.current)
     acceptButtonRef.current?.focus()
   }, [autoFocusAccept]) // Runs when modal opens and autoFocusAccept is true
 

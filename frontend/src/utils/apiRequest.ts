@@ -1,10 +1,9 @@
-// disable eslint rule for explicit any, because we don't know the shape of the data
-// eslint-disable  @typescript-eslint/no-explicit-any
 export const apiRequest = async (
   endpoint: string,
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   accessToken: string,
   body?: Record<string, unknown>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ message: string | null; data: any }> => {
   const headers = {
     'Content-Type': 'application/json',

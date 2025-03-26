@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server'
-import { getAccessToken } from '@auth0/nextjs-auth0'
 import { apiRequest } from '@/utils/apiRequest'
 import { withAuth } from '@/utils/routeWrapper'
 
-export const GET = withAuth(async (req) => {
-  const { accessToken } = await getAccessToken()
-  if (!accessToken) {
-    throw new Error('Access token is undefined')
+export const GET = withAuth(async (request: Request, accessToken: string) => {
+  const role = new URL(request.url).searchParams.get('role')
+
+  if (!role) {
+    return NextResponse.json(
+      { message: '`role` query param is required' },
+      { status: 400 },
+    )
   }
 
-  const role = new URL(req.url).searchParams.get('role')
-  const endpoint = `/roles/levels?role=${role}`
+  const endpoint = `/roles/levels?role=${encodeURIComponent(role)}`
   const { data } = await apiRequest(endpoint, 'GET', accessToken)
+
   return NextResponse.json({ data })
 })

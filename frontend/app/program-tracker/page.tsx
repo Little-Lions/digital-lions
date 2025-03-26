@@ -1,16 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
-
-import { useQuery } from 'react-query'
+import React from 'react'
 
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
 import { useImplementingPartner } from '@/context/ImplementingPartnerContext'
 
-import getCommunities from '@/api/services/communities/getCommunities'
-
-import { Community } from '@/types/community.interface'
 import { UsersIcon } from '@heroicons/react/24/solid'
 
 import { useRouter } from 'next/navigation'
@@ -23,6 +18,8 @@ import Heading from '@/components/Heading'
 import AlertBanner from '@/components/AlertBanner'
 import EmptyState from '@/components/EmptyState'
 
+import { useCommunityService } from '@/hooks/useCommunityService'
+
 const ProgramTrackerCommunityPage: React.FC = () => {
   const { setCommunityName } = useCommunity()
   const { selectedImplementingPartnerId } = useImplementingPartner()
@@ -30,33 +27,15 @@ const ProgramTrackerCommunityPage: React.FC = () => {
 
   const router = useRouter()
 
-  const [errorMessage, setErrorMessage] = useState<string | null>('')
-
-  const fetchCommunities = async (): Promise<Community[]> => {
-    try {
-      return await getCommunities(selectedImplementingPartnerId)
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message)
-        throw error
-      } else {
-        throw error
-      }
-    }
-  }
+  const { communitiesQuery } = useCommunityService(
+    selectedImplementingPartnerId,
+  )
 
   const {
     data: communities = [],
     isLoading,
     error: hasErrorFetchingCommunities,
-  } = useQuery<Community[], Error>(
-    ['communities', selectedImplementingPartnerId],
-    fetchCommunities,
-    {
-      enabled: !!selectedImplementingPartnerId,
-      staleTime: 5 * 60 * 1000,
-    },
-  )
+  } = communitiesQuery
 
   return (
     <>
@@ -109,10 +88,11 @@ const ProgramTrackerCommunityPage: React.FC = () => {
               }
             />
           )}
-          {hasErrorFetchingCommunities && (
+          {!!hasErrorFetchingCommunities && (
             <AlertBanner
               variant="error"
-              message={errorMessage ?? 'Failed to load communities'}
+              message={hasErrorFetchingCommunities.message}
+              isCloseable={false}
             />
           )}
         </div>

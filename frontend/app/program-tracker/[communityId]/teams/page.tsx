@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
@@ -49,7 +49,9 @@ const ProgramTrackerTeamsPage: React.FC = () => {
     data: teams = [],
     isLoading,
     error: hasErrorFetchingTeams,
-  } = useQuery(['teams', communityId], fetchTeams, {
+  } = useQuery({
+    queryKey: ['teams'],
+    queryFn: fetchTeams,
     staleTime: 5 * 60 * 1000,
   })
 

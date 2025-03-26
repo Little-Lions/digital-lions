@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { CheckBadgeIcon, UserCircleIcon } from '@heroicons/react/20/solid'
 
@@ -48,10 +48,12 @@ const SwitchImplementingPartnerDropDown: React.FC<
 
   const {
     data: implementingPartners = [],
-    isLoading: isFetchingImplementingPartners,
+    isPending: isFetchingImplementingPartners,
     refetch,
-  } = useQuery(['implementingPartners'], fetchImplementingPartners, {
-    enabled: false,
+  } = useQuery({
+    queryKey: ['implementingPartners'],
+    queryFn: fetchImplementingPartners,
+    enabled: showDropDown,
     staleTime: 5 * 60 * 1000,
   })
 
@@ -76,7 +78,7 @@ const SwitchImplementingPartnerDropDown: React.FC<
 
   return (
     <div className="relative">
-      {isFetchingImplementingPartners ? (
+      {showDropDown && isFetchingImplementingPartners ? (
         <Spinner />
       ) : (
         <>

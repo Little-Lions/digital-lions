@@ -7,7 +7,7 @@ import {
   useMutation,
   useQueryClient,
   QueryFunctionContext,
-} from 'react-query'
+} from '@tanstack/react-query'
 
 import Accordion from '@/components/Accordion'
 import getTeams from '@/api/services/teams/getTeams'
@@ -76,10 +76,7 @@ const TeamsDetailPage: React.FC = () => {
 
   const fetchTeamById = async ({
     queryKey,
-  }: QueryFunctionContext<
-    [string, string],
-    void
-  >): Promise<TeamWithChildren> => {
+  }: QueryFunctionContext<[string, string]>): Promise<TeamWithChildren> => {
     try {
       const [, teamId] = queryKey // Extract teamId from the query key
       const numericTeamId = Number(teamId)
@@ -99,10 +96,12 @@ const TeamsDetailPage: React.FC = () => {
 
   const {
     data: selectedTeam,
-    isLoading: isLoadingSelectedTeam,
+    isPending: isLoadingSelectedTeam,
     error: hasErrorFetchingTeams,
-  } = useQuery(['team', teamId], fetchTeamById, {
-    enabled: !!teamId,
+  } = useQuery({
+    queryKey: ['team', teamId],
+    queryFn: fetchTeamById,
+    enabled: Boolean(teamId),
     staleTime: 5 * 60 * 1000,
   })
 
@@ -118,7 +117,9 @@ const TeamsDetailPage: React.FC = () => {
   }
 
   const { data: teamsByCommunity = [], isLoading: isLoadingTeamsByCommunity } =
-    useQuery('teamsByCommunity', fetchTeams, {
+    useQuery({
+      queryKey: ['teamsByCommunity'],
+      queryFn: fetchTeams,
       staleTime: 5 * 60 * 1000,
     })
 
@@ -143,20 +144,18 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const { mutate: handleAddChild, isLoading: isAddingChild } = useMutation(
-    addChild,
-    {
-      onSuccess: async () => {
-        setErrorMessage(null)
-        await queryClient.invalidateQueries(['team', teamId]) // Refetch the selected team
-        closeModal()
-        setIsAddingChildComplete(true)
-      },
-      onError: (error: Error) => {
-        setErrorMessage(error.message)
-      },
+  const { mutate: handleAddChild, isPending: isAddingChild } = useMutation({
+    mutationFn: addChild,
+    onSuccess: async () => {
+      setErrorMessage(null)
+      await queryClient.invalidateQueries({ queryKey: ['team', teamId] })
+      closeModal()
+      setIsAddingChildComplete(true)
     },
-  )
+    onError: (error: Error) => {
+      setErrorMessage(error.message)
+    },
+  })
 
   // Mutation to edit a child
   const editChild = async (): Promise<void> => {
@@ -180,20 +179,18 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const { mutate: handleEditChild, isLoading: isEditingChild } = useMutation(
-    editChild,
-    {
-      onSuccess: async () => {
-        setErrorMessage(null)
-        await queryClient.invalidateQueries(['team', teamId])
-        closeModal()
-        setIsEditingChildComplete(true)
-      },
-      onError: (error: Error) => {
-        setErrorMessage(error.message)
-      },
+  const { mutate: handleEditChild, isPending: isEditingChild } = useMutation({
+    mutationFn: editChild,
+    onSuccess: async () => {
+      setErrorMessage(null)
+      await queryClient.invalidateQueries({ queryKey: ['team', teamId] })
+      closeModal()
+      setIsEditingChildComplete(true)
     },
-  )
+    onError: (error: Error) => {
+      setErrorMessage(error.message)
+    },
+  })
 
   // Mutation to delete a child
   const removeChild = async (): Promise<void> => {
@@ -210,12 +207,12 @@ const TeamsDetailPage: React.FC = () => {
     }
   }
 
-  const { mutate: handleDeleteChild, isLoading: isDeletingChild } = useMutation(
-    removeChild,
+  const { mutate: handleDeleteChild, isPending: isDeletingChild } = useMutation(
     {
+      mutationFn: removeChild,
       onSuccess: async () => {
         setErrorMessage(null)
-        await queryClient.invalidateQueries(['team', teamId])
+        await queryClient.invalidateQueries({ queryKey: ['team', teamId] })
         setDeleteChildModalVisible(false)
         setIsDeletingChildComplete(true)
       },

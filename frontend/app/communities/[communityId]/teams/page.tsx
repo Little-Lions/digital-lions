@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useParams } from 'next/navigation'
 
@@ -61,12 +61,13 @@ const TeamsPage: React.FC = () => {
 
   const {
     data: teams = [],
-    isLoading,
+    isPending: isLoading,
     error: hasErrorFetchingTeams,
-  } = useQuery(['teams', communityId], fetchTeams, {
+  } = useQuery({
+    queryKey: ['teams', communityId],
+    queryFn: fetchTeams,
     staleTime: 5 * 60 * 1000,
   })
-
   // Filtered teams (derived dynamically)
   const filteredTeams = isActive
     ? teams.filter((team) => team.is_active)
@@ -115,21 +116,18 @@ const TeamsPage: React.FC = () => {
       }
     }
   }
-
-  const { mutate: handleAddTeam, isLoading: isAddingTeam } = useMutation(
-    addTeam,
-    {
-      onSuccess: async () => {
-        setErrorMessage(null)
-        await queryClient.invalidateQueries(['teams', communityId])
-        handleCloseTeamModal()
-        setIsAddingTeamComplete(true)
-      },
-      onError: (error: Error) => {
-        setErrorMessage(error.message)
-      },
+  const { mutate: handleAddTeam, isPending: isAddingTeam } = useMutation({
+    mutationFn: addTeam,
+    onSuccess: async () => {
+      setErrorMessage(null)
+      await queryClient.invalidateQueries({ queryKey: ['teams', communityId] })
+      handleCloseTeamModal()
+      setIsAddingTeamComplete(true)
     },
-  )
+    onError: (error: Error) => {
+      setErrorMessage(error.message)
+    },
+  })
 
   // const handleToggleChange = (active: boolean): void => {
   //   setIsActive(active)

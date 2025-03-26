@@ -4,7 +4,7 @@ interface Community {
   id: number
 }
 
-const createCommunity = async (
+export const createCommunity = async (
   communityName: string,
   selectedImplementingPartnerId?: number,
 ): Promise<Community> => {
@@ -27,5 +27,3 @@ const createCommunity = async (
   const responseData = json as ApiResponse<Community>
   return responseData.data
 }
-
-export default createCommunity

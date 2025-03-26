@@ -6,7 +6,7 @@ interface Community {
   name: string
 }
 
-const getCommunities = async (
+export const getCommunities = async (
   selectedImplementingPartnerId?: number | null,
 ): Promise<Community[]> => {
   const response = await fetch(
@@ -25,5 +25,3 @@ const getCommunities = async (
   const responseData = json as ApiResponse<Community[]>
   return responseData.data
 }
-
-export default getCommunities

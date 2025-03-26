@@ -1,6 +1,6 @@
 import { ErrorResponse } from '@/types/errorResponse.interface'
 
-const updateCommunity = async (
+export const updateCommunity = async (
   communityId: number,
   communityName: string,
 ): Promise<void> => {
@@ -19,5 +19,3 @@ const updateCommunity = async (
     throw new Error(errorData.message || 'Failed to update community')
   }
 }
-
-export default updateCommunity

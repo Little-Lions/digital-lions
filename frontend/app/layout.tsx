@@ -6,7 +6,7 @@ import { UserProvider } from '@auth0/nextjs-auth0/client'
 import { CustomUserProvider } from '@/context/UserContext'
 
 import { CommunityProvider } from '@/context/CommunityContext'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import '@/styles/globals.css'
 import 'tailwindcss/tailwind.css'

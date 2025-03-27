@@ -60,7 +60,7 @@ const CommunityPage: React.FC = () => {
     }, 0)
   }
 
-  const handleAddCommunity = () => {
+  const handleAddCommunity = (): void => {
     const trimmedName = (communityName ?? '').trim()
     if (!trimmedName) {
       dispatch({
@@ -94,7 +94,7 @@ const CommunityPage: React.FC = () => {
     }, 0)
   }
 
-  const handleDeleteCommunity = () => {
+  const handleDeleteCommunity = (): void => {
     if (!communityId) return
 
     deleteCommunityMutation.mutate(communityId, {
@@ -119,18 +119,18 @@ const CommunityPage: React.FC = () => {
   const handleOpenEditCommunityModal = (communityId: number): void => {
     dispatch({ type: 'OPEN_MODAL', modal: 'edit' })
     latestSelectedElement.current = document.activeElement as HTMLButtonElement
-    setCommunityName('')
     setCommunityId(communityId)
   }
 
   const handleCloseEditCommunityModal = (): void => {
     dispatch({ type: 'CLOSE_MODAL' })
+    setCommunityName('')
     setTimeout(() => {
       latestSelectedElement?.current?.focus()
     }, 0)
   }
 
-  const handleEditCommunity = () => {
+  const handleEditCommunity = (): void => {
     const trimmedName = (communityName ?? '').trim()
     if (!trimmedName || !communityId) {
       dispatch({
@@ -324,6 +324,7 @@ const CommunityPage: React.FC = () => {
               variant="error"
               message={hasErrorFetchingCommunities.message}
               isCloseable={false}
+              className="mt-4"
             />
           )}
         </>

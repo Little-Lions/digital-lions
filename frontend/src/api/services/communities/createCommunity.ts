@@ -2,6 +2,7 @@ import { ErrorResponse } from '@/types/errorResponse.interface'
 import { ApiResponse } from '@/types/ApiResponse.interface'
 interface Community {
   id: number
+  name: string
 }
 
 export const createCommunity = async (

@@ -1,8 +1,11 @@
 import datetime
 from enum import Enum
 
-from models._metadata import (_CreatePropertiesIn, _MetadataPropertiesOut,
-                              _UpdatePropertiesIn)
+from models._metadata import (
+    _CreatePropertiesIn,
+    _MetadataPropertiesOut,
+    _UpdatePropertiesIn,
+)
 from pydantic import BaseModel, Field, field_validator
 
 

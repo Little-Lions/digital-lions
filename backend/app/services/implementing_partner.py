@@ -87,7 +87,7 @@ class ImplementingPartnerService(BaseService):
 
         self.database.implementing_partners.delete(object_id=object_id)
         self.commit()
-        msg = f"Implementing Partner with ID {object_id} deleted."
+        msg = f"IP with ID {object_id} deleted."
         return APIResponse(message=msg)
 
     def _validate_implementing_partner_exists(

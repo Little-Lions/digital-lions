@@ -10,21 +10,21 @@ class BaseAPIException(Exception):
     Each subclass should have its own short message
     which is displayed to the user, and status code."""
 
-    def __init__(self, message):
+    def __init__(self, message: str = None):
         """The error message is what we want to show
         as detail, which is not shown to the user."""
         self.detail = message
 
 
-class BadRequestError(Exception):
+class BadRequestError(BaseAPIException):
     pass
 
 
-class ChildAlreadyExistsError(Exception):
+class ChildAlreadyExistsError(BaseAPIException):
     pass
 
 
-class ChildHasAttendanceError(Exception):
+class ChildHasAttendanceError(BaseAPIException):
     pass
 
 
@@ -42,7 +42,7 @@ class ChildNotInTeam(BaseAPIException):
 
 class CommunityAlreadyExistsError(BaseAPIException):
 
-    message = "Community already exists!"
+    message = "Community name already exists"
     status_code = status.HTTP_409_CONFLICT
 
 
@@ -70,44 +70,46 @@ class ImplementingPartnerAlreadyExistsError(BaseAPIException):
     status_code = status.HTTP_409_CONFLICT
 
 
-class ForbiddenError(Exception):
+class ForbiddenError(BaseAPIException):
     pass
 
 
-class InternalServerError(Exception):
+class InternalServerError(BaseAPIException):
     pass
 
 
-class InsufficientPermissionsError(Exception):
+class InsufficientPermissionsError(BaseAPIException):
     pass
 
 
-class ItemAlreadyExistsError(Exception):
+class ItemAlreadyExistsError(BaseAPIException):
     pass
 
 
-class ItemNotFoundError(Exception):
+class ItemNotFoundError(BaseAPIException):
     pass
 
 
-class ResourceNotFoundError(Exception):
+class ResourceNotFoundError(BaseAPIException):
     pass
 
 
-class RoleAlreadyExistsError(Exception):
+class RoleAlreadyExistsError(BaseAPIException):
     pass
 
 
-class RoleNotFoundError(Exception):
+class RoleNotFoundError(BaseAPIException):
     pass
 
 
-class RoleNotFoundForUserError(Exception):
+class RoleNotFoundForUserError(BaseAPIException):
     pass
 
 
-class TeamAlreadyExistsError(Exception):
-    pass
+class TeamAlreadyExistsError(BaseAPIException):
+
+    message = "Team name already exists"
+    status_code = status.HTTP_409_CONFLICT
 
 
 class TeamHasChildrenError(BaseAPIException):
@@ -134,7 +136,7 @@ class UserNotFoundError(BaseAPIException):
     status_code = status.HTTP_404_NOT_FOUND
 
 
-class UserUnauthorizedError(Exception):
+class UserUnauthorizedError(BaseAPIException):
     pass
 
 

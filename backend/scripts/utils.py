@@ -20,7 +20,9 @@ logger.addHandler(handler)
 
 LOCALE = "zu_ZA"
 URL = "http://localhost:8000/api/v1"
-URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
+# URL = "https://dev.api.littlelionschildcoaching.com/api/v1"
+
+logger.info(f"API URL: {URL}")
 
 fake = Faker(LOCALE)
 Faker.seed(random.randint(0, 100))
@@ -38,26 +40,48 @@ def cli():
 @cli.command()
 def wipe():
     """Wipe all records in database except the Implementing Partner."""
+    # First get all implementing partners
     r = requests.get(
-        f"{URL}/communities",
-        params={"implementing_partner_id": 1},
+        f"{URL}/implementing_partners",
         headers=get_headers(),
     )
     r.raise_for_status()
+    implementing_partners = r.json().get("data")
+    logger.info(f"Found {len(implementing_partners)} implementing partners")
 
-    communities = r.json().get("data")
+    # For each IP, first delete its communities
+    for ip in implementing_partners:
+        ip_id = ip.get("id")
 
-    logger.info(f"Found {len(communities)} implementing partners")
-    for community in communities:
-        id_ = community.get("id")
+        # Get all communities for this IP
+        r = requests.get(
+            f"{URL}/communities",
+            params={"implementing_partner_id": ip_id},
+            headers=get_headers(),
+        )
+        r.raise_for_status()
+        communities = r.json().get("data")
+        logger.info(f"Found {len(communities)} communities for IP {ip_id}")
 
-        logger.info(f"Deleting community with ID {id_}")
-        r_ = requests.delete(
-            f"{URL}/communities/{id_}",
+        # Delete each community
+        for community in communities:
+            community_id = community.get("id")
+            logger.info(f"Deleting community {community_id} from IP {ip_id}")
+            r = requests.delete(
+                f"{URL}/communities/{community_id}",
+                params={"cascade": True},
+                headers=get_headers(),
+            )
+            r.raise_for_status()
+
+        # Now delete the implementing partner
+        logger.info(f"Deleting implementing partner with ID {ip_id}")
+        r = requests.delete(
+            f"{URL}/implementing_partners/{ip_id}",
             params={"cascade": True},
             headers=get_headers(),
         )
-        r_.raise_for_status()
+        r.raise_for_status()
 
 
 @cli.command()
@@ -68,16 +92,41 @@ def populate(communities: int, children: int, teams: int):
     """Populate database with communities,
     teams, children, workshops."""
 
-    # default ipmleenting partner ID
-    ip_id = 1
+    # create IP
+    logger.info("Creating implementing partner")
+    r = requests.post(
+        f"{URL}/implementing_partners",
+        json={"name": "Little Lions"},
+        headers=get_headers(),
+    )
+    r.raise_for_status()
+    ip_id = r.json().get("data").get("id")
+
+    # make user admin of IP such that he or she can get them
+    # todo need to add implementing_partners:read:all permission
+    logger.info("Getting user info from current user")
+    r = requests.get(f"{URL}/users/me", headers=get_headers())
+    r.raise_for_status()
+    user_id = r.json().get("data").get("user_id")
+
+    logger.info(f"Assigning Admin role to IP {ip_id} for user {user_id}")
+    r = requests.post(
+        f"{URL}/users/{user_id}/roles",
+        json={"role": "Admin", "level": "Implementing Partner", "resource_id": ip_id},
+        headers=get_headers(),
+    )
+    r.raise_for_status()
 
     logger.info(f"Adding {communities} communities to the db")
 
     for _ in range(communities):
-        community = {"name": fake.first_name(), "implementing_partner_id": ip_id}
+        community = {"name": fake.first_name()}
         logger.info(f"Creating community {community['name']}")
         response = requests.post(
-            f"{URL}/communities", json=community, headers=get_headers()
+            f"{URL}/communities",
+            params={"implementing_partner_id": ip_id},
+            json=community,
+            headers=get_headers(),
         )
         logger.info(response.json())
         response.raise_for_status()

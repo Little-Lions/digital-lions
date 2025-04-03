@@ -7,12 +7,12 @@ import { useQuery } from '@tanstack/react-query'
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
 
-import LinkCard from '@/components/LinkCard'
+import LinkCard from '@/components/ui/LinkCard'
 import CustomButton from '@/components/CustomButton'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import EmptyState from '@/components/EmptyState'
-import Heading from '@/components/Heading'
-import AlertBanner from '@/components/AlertBanner'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import EmptyState from '@/components/ui/EmptyState'
+import Heading from '@/components/ui/Heading'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 

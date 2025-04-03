@@ -1,6 +1,6 @@
-import Modal from './Modal'
-import TextInput from './TextInput'
-import AlertBanner from './AlertBanner'
+import Modal from './ui/Modal'
+import TextInput from './ui/TextInput'
+import AlertBanner from './ui/AlertBanner'
 
 interface CommunityFormModalProps {
   modalType: 'add' | 'edit' | null

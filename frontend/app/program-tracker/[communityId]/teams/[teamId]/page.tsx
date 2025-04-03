@@ -20,8 +20,8 @@ import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 
-import SkeletonLoader from '@/components/SkeletonLoader'
-import AlertBanner from '@/components/AlertBanner'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 import { useParams } from 'next/navigation'
 

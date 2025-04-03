@@ -4,16 +4,16 @@ import React, { useState, useEffect, useRef } from 'react'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import TextInput from '@/components/TextInput'
+import TextInput from '@/components/ui/TextInput'
 import CustomButton from '@/components/CustomButton'
-import Modal from '@/components/Modal'
-import ButtonGroup from '@/components/ButtonGroup'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import Accordion from '@/components/Accordion'
-import SelectInput from '@/components/SelectInput'
-import Toast from '@/components/Toast'
-import Text from '@/components/Text'
-import AlertBanner from '@/components/AlertBanner'
+import Modal from '@/components/ui/Modal'
+import ButtonGroup from '@/components/ui/ButtonGroup'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import Accordion from '@/components/ui/Accordion'
+import SelectInput from '@/components/ui/SelectInput'
+import Toast from '@/components/ui/Toast'
+import Text from '@/components/ui/Text'
+import AlertBanner from '@/components/ui/AlertBanner'
 import ConfirmModal from '@/components/ConfirmModal'
 
 import { TrashIcon, UserPlusIcon } from '@heroicons/react/16/solid'
@@ -34,7 +34,7 @@ import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
 import { UserRoles } from '@/types/userRoles.interface'
-import LoadingOverlay from '@/components/LoadingOverlay'
+import LoadingOverlay from '@/components/ui/LoadingOverlay'
 
 const UsersPage: React.FC = () => {
   const queryClient = useQueryClient()
@@ -419,7 +419,7 @@ const UsersPage: React.FC = () => {
                 key={user.user_id}
                 title={user.nickname}
                 index={index}
-                id={`accordion-item-${index}`}
+                id={`user-accordion-item-${index}`}
                 totalItems={users.length}
                 buttonRefs={accordionRefs}
                 className="mb-2"

@@ -9,7 +9,7 @@ import {
   QueryFunctionContext,
 } from '@tanstack/react-query'
 
-import Accordion from '@/components/Accordion'
+import Accordion from '@/components/ui/Accordion'
 import getTeams from '@/api/services/teams/getTeams'
 import getTeamById from '@/api/services/teams/getTeamById'
 
@@ -17,19 +17,19 @@ import createChild, { Child } from '@/api/services/children/createChild'
 import updateChild from '@/api/services/children/updateChild'
 import deleteChild from '@/api/services/children/deleteChild'
 
-import Loader from '@/components/Loader'
-import SelectInput from '@/components/SelectInput'
+import Loader from '@/components/ui/Loader'
+import SelectInput from '@/components/ui/SelectInput'
 import CustomButton from '@/components/CustomButton'
-import Modal from '@/components/Modal'
-import TextInput from '@/components/TextInput'
+import Modal from '@/components/ui/Modal'
+import TextInput from '@/components/ui/TextInput'
 import ConfirmModal from '@/components/ConfirmModal'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import ButtonGroup from '@/components/ButtonGroup'
-import Toast from '@/components/Toast'
-import AlertBanner from '@/components/AlertBanner'
-import Text from '@/components/Text'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import ButtonGroup from '@/components/ui/ButtonGroup'
+import Toast from '@/components/ui/Toast'
+import AlertBanner from '@/components/ui/AlertBanner'
+import Text from '@/components/ui/Text'
 
-import EmptyState from '@/components/EmptyState'
+import EmptyState from '@/components/ui/EmptyState'
 
 import { UserIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
@@ -340,7 +340,7 @@ const TeamsDetailPage: React.FC = () => {
                 <Accordion
                   key={index}
                   index={index}
-                  id={`accordion-item-${index}`}
+                  id={`children-accordion-item-${index}`}
                   totalItems={selectedTeam.children.length}
                   buttonRefs={accordionRefs}
                   title={`${child.first_name} ${child.last_name}`}

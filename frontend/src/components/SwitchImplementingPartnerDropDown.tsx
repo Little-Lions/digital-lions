@@ -14,9 +14,9 @@ import { ImplementingPartner } from '@/types/implementingPartner.interface'
 
 import { useRouter } from 'next/navigation'
 
-import Spinner from './Spinner'
+import Spinner from './ui/Spinner'
 import CustomButton from './CustomButton'
-import DropDown from './DropDown'
+import DropDown from './ui/DropDown'
 
 interface SwitchImplementingPartnerDropDownProps {
   children?: React.ReactNode

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-import Modal from './Modal'
+import Modal from './ui/Modal'
 import CustomButton from './CustomButton'
-import ButtonGroup from './ButtonGroup'
-import Text from './Text'
-import AlertBanner from './AlertBanner'
+import ButtonGroup from './ui/ButtonGroup'
+import Text from './ui/Text'
+import AlertBanner from './ui/AlertBanner'
 
 interface ConfirmModalProps {
   title: string

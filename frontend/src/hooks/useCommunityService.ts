@@ -31,8 +31,8 @@ export function useCommunityService(partnerId: number | null): {
 } {
   const queryClient = useQueryClient()
 
-  const invalidateCommunities = (): Promise<void> =>
-    queryClient.invalidateQueries({ queryKey: COMMUNITIES_KEY })
+  const refreshCommunities = (): Promise<void> =>
+    queryClient.invalidateQueries({ queryKey: ['communities', partnerId] })
 
   const communitiesQuery = useQuery<Community[]>({
     queryKey: communitiesKey(partnerId),
@@ -43,7 +43,7 @@ export function useCommunityService(partnerId: number | null): {
 
   const addCommunityMutation = useMutation<Community, Error, string>({
     mutationFn: (name) => createCommunity(name, Number(partnerId)),
-    onSuccess: invalidateCommunities,
+    onSuccess: refreshCommunities,
   })
 
   const editCommunityMutation = useMutation<
@@ -52,12 +52,12 @@ export function useCommunityService(partnerId: number | null): {
     { id: number; name: string }
   >({
     mutationFn: ({ id, name }) => updateCommunity(id, name),
-    onSuccess: invalidateCommunities,
+    onSuccess: refreshCommunities,
   })
 
   const deleteCommunityMutation = useMutation<void, Error, number>({
     mutationFn: (id) => deleteCommunity(id, false),
-    onSuccess: invalidateCommunities,
+    onSuccess: refreshCommunities,
   })
 
   return {

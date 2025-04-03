@@ -1,6 +1,6 @@
 import React from 'react'
-import LinkCard from './LinkCard'
-import ButtonGroup from './ButtonGroup'
+import LinkCard from './ui/LinkCard'
+import ButtonGroup from './ui/ButtonGroup'
 import CustomButton from './CustomButton'
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
@@ -71,4 +71,4 @@ const CommunitiesList: React.FC<CommunitiesListProps> = ({
   )
 }
 
-export default CommunitiesList
+export default React.memo(CommunitiesList)

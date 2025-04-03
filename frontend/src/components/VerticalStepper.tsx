@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
 
-import CustomButton from './CustomButton'
+import CustomButton from './ui/CustomButton'
 import DatePicker from './ui/DatePicker'
 import EmptyState from './ui/EmptyState'
 import Accordion from './ui/Accordion'

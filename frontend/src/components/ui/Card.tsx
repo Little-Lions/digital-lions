@@ -9,9 +9,14 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ className, children }) => {
   return (
     <div
-      className={clsx('w-full rounded-lg bg-card text-white p-4', className)}
+      className={clsx(
+        'rounded-lg bg-card flex items-center justify-between w-full p-5 text-white',
+        className,
+      )}
     >
-      {children}
+      <div className="flex flex-row items-center w-full">
+        <div className="flex-1">{children}</div>
+      </div>
     </div>
   )
 }

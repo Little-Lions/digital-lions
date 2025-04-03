@@ -14,9 +14,9 @@ import '@radix-ui/themes/styles.css'
 
 import { Poppins } from 'next/font/google'
 
-import Navigation from '@/components/Navigation'
+import Navigation from '@/components/ui/Navigation'
 import Footer from '@/components/Footer'
-import PageLayout from '@/components/PageLayout'
+import PageLayout from '@/components/ui/PageLayout'
 import { ImplementingPartnerProvider } from '@/context/ImplementingPartnerContext'
 
 const poppins = Poppins({

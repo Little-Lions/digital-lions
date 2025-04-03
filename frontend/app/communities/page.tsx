@@ -10,7 +10,7 @@ import { useImplementingPartner } from '@/context/ImplementingPartnerContext'
 
 import CommunityFormModal from '@/components/CommunityFormModal'
 
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 import SkeletonLoader from '@/components/ui/SkeletonLoader'
 import Toast from '@/components/ui/Toast'
 import ConfirmModal from '@/components/ConfirmModal'

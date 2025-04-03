@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import Modal from './ui/Modal'
-import CustomButton from './CustomButton'
+import CustomButton from './ui/CustomButton'
 import ButtonGroup from './ui/ButtonGroup'
 import Text from './ui/Text'
 import AlertBanner from './ui/AlertBanner'

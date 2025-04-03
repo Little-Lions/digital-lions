@@ -18,7 +18,7 @@ const NavLink: React.FC<NavLinkProps> = ({
   isExternal = false,
 }) => {
   const baseClasses =
-    'text-white hover:bg-gray-700 relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center'
+    'text-white hover:bg-gray-700 relative px-3 py-2 rounded-lg text-sm inline-flex items-center justify-center min-h-[2.5rem]'
 
   if (isExternal) {
     return (

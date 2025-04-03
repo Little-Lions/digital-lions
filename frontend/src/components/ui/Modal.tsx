@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import CustomButton from '../CustomButton'
+import CustomButton from './CustomButton'
 import ReactDOM from 'react-dom'
 import Heading from './Heading'
 

@@ -96,10 +96,10 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
     title: headingMargins[level || 'h1'],
     text: 'mb-4 rounded-none',
     button: 'mb-4 h-[40px]',
-    card: 'h-[72px] mb-2 w-full',
+    card: 'h-[64px] mb-2 w-full',
     input: 'h-[42px] mb-4 w-full',
     label: 'h-[16px] mb-2 w-[15%] rounded-none',
-    stepper: 'h-[72px]',
+    stepper: 'h-[64px]',
   }
   const isLast = type === 'stepper' && index === (totalItems ?? 0) - 1
 

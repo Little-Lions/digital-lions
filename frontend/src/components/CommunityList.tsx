@@ -1,7 +1,7 @@
 import React from 'react'
 import LinkCard from './ui/LinkCard'
 import ButtonGroup from './ui/ButtonGroup'
-import CustomButton from './CustomButton'
+import CustomButton from './ui/CustomButton'
 import { TrashIcon, PencilIcon } from '@heroicons/react/16/solid'
 
 interface Community {

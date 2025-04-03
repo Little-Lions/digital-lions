@@ -15,7 +15,7 @@ import { ImplementingPartner } from '@/types/implementingPartner.interface'
 import { useRouter } from 'next/navigation'
 
 import Spinner from './ui/Spinner'
-import CustomButton from './CustomButton'
+import CustomButton from './ui/CustomButton'
 import DropDown from './ui/DropDown'
 
 interface SwitchImplementingPartnerDropDownProps {

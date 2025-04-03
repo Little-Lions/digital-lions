@@ -7,7 +7,7 @@ import NavigationButton from './NavigationButton'
 import { useUser } from '@auth0/nextjs-auth0/client'
 
 import { useCustomUser } from '@/context/UserContext'
-import CustomButton from '../CustomButton'
+import CustomButton from './CustomButton'
 import SwitchImplementingPartnerDropDown from '../SwitchImplementingPartnerDropDown'
 
 const Navigation: React.FC = () => {
@@ -65,7 +65,7 @@ const Navigation: React.FC = () => {
 
   return (
     <nav className="bg-gray-800 sticky top-0 z-50">
-      <div className="mx-auto px-4 py-4 flex-1 bg-gray-800">
+      <div className="container mx-auto px-4 py-4 flex-1">
         <div className="flex items-center justify-between">
           <div
             className={`flex items-center ${
@@ -148,7 +148,7 @@ const Navigation: React.FC = () => {
                 <button
                   data-collapse-toggle="navbar-hamburger"
                   type="button"
-                  className="bg-white inline-flex items-center justify-center w-10 h-10 text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="bg-white inline-flex items-center justify-center p-2 w-10 h-10 text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200   "
                   aria-controls="navbar-hamburger"
                   aria-expanded="false"
                   onClick={toggleMenu}

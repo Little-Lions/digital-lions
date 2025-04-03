@@ -8,7 +8,7 @@ import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
 
 import LinkCard from '@/components/ui/LinkCard'
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 import SkeletonLoader from '@/components/ui/SkeletonLoader'
 import EmptyState from '@/components/ui/EmptyState'
 import Heading from '@/components/ui/Heading'

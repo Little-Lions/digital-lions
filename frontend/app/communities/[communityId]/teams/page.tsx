@@ -15,7 +15,7 @@ import SkeletonLoader from '@/components/ui/SkeletonLoader'
 import Toast from '@/components/ui/Toast'
 import AlertBanner from '@/components/ui/AlertBanner'
 import Heading from '@/components/ui/Heading'
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 
 import createTeam from '@/api/services/teams/createTeam'
 import getTeamsOfCommunity from '@/api/services/teams/getTeamsOfCommunity'

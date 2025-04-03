@@ -6,8 +6,6 @@ import clsx from 'clsx'
 import Heading from './Heading'
 import Text from './Text'
 
-import { ChevronDownIcon } from '@heroicons/react/24/solid'
-
 interface AccordionProps {
   title: string | React.ReactNode
   description?: string
@@ -97,25 +95,32 @@ const Accordion: React.FC<AccordionProps> = ({
         type="button"
         onKeyDown={handleKeyDown}
         className={clsx(
-          'bg-card w-full ',
-          isOpen ? 'rounded-t-lg' : 'rounded-lg rounded-t-lg',
+          'bg-card flex items-center justify-between w-full p-5 font-medium text-white',
+          isOpen ? ' rounded-t-lg' : 'rounded-lg rounded-t-lg',
           !isDisabled && 'hover:bg-card-dark',
         )}
       >
-        <div className="p-4 flex items-center justify-between text-white">
-          <Heading level="default" hasNoMargin={true}>
-            {title}
-          </Heading>
-          {!isDisabled && (
-            <ChevronDownIcon
-              className={clsx(
-                'w-4 h-4 shrink-0 transition-transform',
-                !isOpen && 'rotate-180',
-              )}
-              aria-hidden="true"
+        <Heading level="default" hasNoMargin={true}>
+          {title}
+        </Heading>
+        {!isDisabled && (
+          <svg
+            data-accordion-icon
+            className={`w-3 h-3 ${!isOpen ? 'rotate-180' : ''} transition-transform`}
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 10 6"
+          >
+            <path
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 5 5 1 1 5"
             />
-          )}
-        </div>
+          </svg>
+        )}
       </button>
       <div
         ref={(el) => {
@@ -126,14 +131,11 @@ const Accordion: React.FC<AccordionProps> = ({
         id={`${id}-body`}
         aria-labelledby={`${id}-header`}
         role="region"
-        className="w-full overflow-hidden"
+        className={`transition-max-height duration-50 ease-in-out ${
+          isOpen ? 'max-h-screen' : 'max-h-0'
+        }`}
         style={{
-          maxHeight:
-            isOpen && typeof index === 'number'
-              ? panelRefs.current[index]?.scrollHeight
-              : 0,
-          overflow: 'hidden',
-          transition: 'max-height 0.2s ease-in-out',
+          overflow: isOpen ? 'visible' : 'hidden',
         }}
       >
         <div className="bg-card p-5 rounded-b-lg">

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import TextInput from '@/components/ui/TextInput'
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 import Modal from '@/components/ui/Modal'
 import ButtonGroup from '@/components/ui/ButtonGroup'
 import SkeletonLoader from '@/components/ui/SkeletonLoader'

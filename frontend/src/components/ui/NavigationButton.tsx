@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import CustomButton from '../CustomButton'
+import CustomButton from './CustomButton'
 
 // import { useTransitions } from '@/hooks/UseTransitions'
 interface NavigationButtonProps {

@@ -6,7 +6,7 @@ import { useCustomUser } from '@/context/UserContext'
 
 import LinkCard from '@/components/ui/LinkCard'
 
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 
 import EmptyState from '@/components/ui/EmptyState'
 import { UsersIcon } from '@heroicons/react/24/solid'

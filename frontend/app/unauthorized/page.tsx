@@ -7,7 +7,7 @@ import NavigationButton from '@/components/ui/NavigationButton'
 import ButtonGroup from '@/components/ui/ButtonGroup'
 import Heading from '@/components/ui/Heading'
 import Text from '@/components/ui/Text'
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 
 const UnauthorizedPage: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false)

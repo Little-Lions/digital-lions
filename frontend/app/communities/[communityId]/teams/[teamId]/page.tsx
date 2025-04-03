@@ -19,7 +19,7 @@ import deleteChild from '@/api/services/children/deleteChild'
 
 import Loader from '@/components/ui/Loader'
 import SelectInput from '@/components/ui/SelectInput'
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 import Modal from '@/components/ui/Modal'
 import TextInput from '@/components/ui/TextInput'
 import ConfirmModal from '@/components/ConfirmModal'

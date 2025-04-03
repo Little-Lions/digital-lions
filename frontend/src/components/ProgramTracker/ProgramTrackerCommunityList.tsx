@@ -7,7 +7,7 @@ import { useCustomUser } from '@/context/UserContext'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
-import CustomButton from '@/components/CustomButton'
+import CustomButton from '@/components/ui/CustomButton'
 import LinkCard from '@/components/ui/LinkCard'
 
 import Badge from '@/components/ui/Badge'

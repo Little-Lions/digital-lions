@@ -52,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <ImplementingPartnerProvider>
                   <Navigation />
                   <main className="flex-1">
-                    <div className="container mx-auto px-4 py-4 flex-1">
+                    <div className="container mx-auto px-4 py-4">
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 md:col-start-1 lg:col-span-8 xl:col-span-6">
                           <div ref={wrapperRef}>

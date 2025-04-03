@@ -226,7 +226,7 @@ const CommunityPage: React.FC = () => {
         <>
           <SkeletonLoader width="142px" type="button" />
           {Array.from({ length: 8 }, (_, i) => (
-            <SkeletonLoader key={i} type="card" />
+            <SkeletonLoader key={i} height="80px" type="card" />
           ))}
         </>
       ) : (

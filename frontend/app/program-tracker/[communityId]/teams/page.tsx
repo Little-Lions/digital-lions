@@ -61,7 +61,7 @@ const ProgramTrackerTeamsPage: React.FC = () => {
         <>
           <SkeletonLoader width="301px" height="36px" type="title" level="h3" />
           {Array.from({ length: 5 }, (_, i) => (
-            <SkeletonLoader key={i} height="90px" type="card" />
+            <SkeletonLoader key={i} type="card" />
           ))}
         </>
       ) : (

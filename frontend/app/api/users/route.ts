@@ -1,111 +1,45 @@
 import { NextResponse } from 'next/server'
-import { getAccessToken } from '@auth0/nextjs-auth0'
 import { apiRequest } from '@/utils/apiRequest'
+import { withAuth } from '@/utils/routeWrapper'
 
-// Handle GET (single user or all users based on query)
-export async function GET(request: Request): Promise<NextResponse> {
-  try {
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) {
-      throw new Error('Access token is undefined')
-    }
+export const GET = withAuth(async (req: Request, accessToken: string) => {
+  const url = new URL(req.url)
+  const userId = url.searchParams.get('user_id')
 
-    const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
+  const endpoint = userId ? `/users/${encodeURIComponent(userId)}` : '/users'
 
-    const endpoint = userId ? `/users/${userId}` : '/users'
+  const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
+  return NextResponse.json({ message, data }, { status: 200 })
+})
 
-    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
+export const POST = withAuth(async (req: Request, accessToken: string) => {
+  const url = new URL(req.url)
+  const userId = url.searchParams.get('user_id')
+  const body = await req.json()
 
-    return NextResponse.json({ message, data }, { status: 200 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in GET /api/users:', error)
-    }
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
-    )
+  const endpoint = userId
+    ? `/resend-invite/${encodeURIComponent(userId)}`
+    : '/users'
+
+  const { message, data } = await apiRequest(
+    endpoint,
+    'POST',
+    accessToken,
+    body,
+  )
+  return NextResponse.json({ message, data }, { status: 201 })
+})
+
+export const DELETE = withAuth(async (req: Request, accessToken: string) => {
+  const url = new URL(req.url)
+  const userId = url.searchParams.get('user_id')
+
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
   }
-}
 
-// Handle POST (create user or resend invite based on payload)
-export async function POST(request: Request): Promise<NextResponse> {
-  try {
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) {
-      throw new Error('Access token is undefined')
-    }
+  const endpoint = `/users/${encodeURIComponent(userId)}`
+  await apiRequest(endpoint, 'DELETE', accessToken)
 
-    const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
-
-    const body = await request.json()
-
-    const endpoint = userId ? `/resend-invite/${userId}` : '/users'
-
-    const { message, data } = await apiRequest(
-      endpoint,
-      'POST',
-      accessToken,
-      body,
-    )
-
-    return NextResponse.json({ message, data }, { status: 201 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in POST /api/users:', error)
-    }
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
-    )
-  }
-}
-
-// Handle DELETE (delete a specific user)
-export async function DELETE(request: Request): Promise<NextResponse> {
-  try {
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) {
-      throw new Error('Access token is undefined')
-    }
-
-    const url = new URL(request.url)
-    const userId = url.searchParams.get('user_id')
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 },
-      )
-    }
-
-    const encodedUserId = encodeURIComponent(userId)
-    const endpoint = `/users/${encodedUserId}`
-
-    // const { message, data } = await apiRequest(endpoint, 'DELETE', accessToken)
-
-    await apiRequest(endpoint, 'DELETE', accessToken)
-    // Return a 204 response without a body
-    return new NextResponse(null, { status: 204 })
-    // return NextResponse.json({ message, data }, { status: 200 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in DELETE /api/users:', error)
-    }
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
-    )
-  }
-}
+  return new NextResponse(null, { status: 204 })
+})

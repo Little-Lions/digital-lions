@@ -6,6 +6,7 @@ interface AlertBannerProps {
   variant: 'info' | 'error' | 'success' | 'warning'
   isCloseable?: boolean
   onClose?: () => void
+  className?: string
 }
 
 const AlertBanner: React.FC<AlertBannerProps> = ({
@@ -13,6 +14,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
   variant,
   isCloseable = true,
   onClose,
+  className,
 }) => {
   const variantClasses: Record<typeof variant, string> = {
     info: 'text-white bg-info border-info-dark',
@@ -26,6 +28,7 @@ const AlertBanner: React.FC<AlertBannerProps> = ({
       className={clsx(
         'flex items-center p-4 mb-2 border-t-4 rounded-md',
         variantClasses[variant],
+        className,
       )}
       role="alert"
     >

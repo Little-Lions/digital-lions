@@ -2,7 +2,7 @@
 
 import { useCustomUser } from '@/context/UserContext'
 import { useUser } from '@auth0/nextjs-auth0/client'
-import Loader from '@/components/Loader'
+import Loader from '@/components/ui/Loader'
 
 interface PageLayoutProps {
   children: React.ReactNode

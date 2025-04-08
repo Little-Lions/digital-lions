@@ -1,35 +1,21 @@
 import { NextResponse } from 'next/server'
-import { getAccessToken } from '@auth0/nextjs-auth0'
+import { withAuth } from '@/utils/routeWrapper'
 import { apiRequest } from '@/utils/apiRequest'
 
-export async function GET(request: Request): Promise<NextResponse> {
-  try {
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) {
-      throw new Error('Access token is undefined')
-    }
+export const GET = withAuth(async (request: Request, accessToken: string) => {
+  const url = new URL(request.url)
+  const role = url.searchParams.get('role')
+  const level = url.searchParams.get('level')
 
-    const url = new URL(request.url)
-    const role = url.searchParams.get('role')
-    const level = url.searchParams.get('level') || ''
-
-    const encodedLevel = encodeURIComponent(level)
-
-    const endpoint = `/roles/resources?role=${role}&level=${encodedLevel}`
-
-    const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
-
-    return NextResponse.json({ message, data }, { status: 200 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in GET /api/roles/resources/level:', error)
-    }
+  if (!role || !level) {
     return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
+      { message: '`role` and `level` query params are required' },
+      { status: 400 },
     )
   }
-}
+
+  const endpoint = `/roles/resources?role=${encodeURIComponent(role)}&level=${encodeURIComponent(level)}`
+  const { data } = await apiRequest(endpoint, 'GET', accessToken)
+
+  return NextResponse.json({ data })
+})

@@ -1,19 +1,14 @@
 import { NextResponse } from 'next/server'
-import { getAccessToken } from '@auth0/nextjs-auth0'
 import { apiRequest } from '@/utils/apiRequest'
+import { withAuth } from '@/utils/routeWrapper'
 
-interface Params {
-  params: {
-    teamId: string
-  }
-}
-
-export async function GET(
-  request: Request,
-  { params }: Params,
-): Promise<NextResponse> {
-  try {
-    const { teamId } = params
+export const GET = withAuth(
+  async (
+    _req: Request,
+    accessToken: string,
+    context: { params: Record<string, string> },
+  ) => {
+    const { teamId } = context.params
 
     if (!teamId) {
       return NextResponse.json(
@@ -22,34 +17,20 @@ export async function GET(
       )
     }
 
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) throw new Error('Access token is undefined')
-
-    const endpoint = `/teams/${teamId}/workshops`
-
+    const endpoint = `/teams/${encodeURIComponent(teamId)}/workshops`
     const { message, data } = await apiRequest(endpoint, 'GET', accessToken)
 
     return NextResponse.json({ message, data }, { status: 200 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in GET /api/teams/[teamId]/workshops:', error)
-    }
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
-    )
-  }
-}
+  },
+)
 
-export async function POST(
-  request: Request,
-  { params }: Params,
-): Promise<NextResponse> {
-  try {
-    const { teamId } = params
+export const POST = withAuth(
+  async (
+    req: Request,
+    accessToken: string,
+    context: { params: Record<string, string> },
+  ) => {
+    const { teamId } = context.params
 
     if (!teamId) {
       return NextResponse.json(
@@ -58,14 +39,9 @@ export async function POST(
       )
     }
 
-    const { accessToken } = await getAccessToken()
-    if (!accessToken) throw new Error('Access token is undefined')
+    const body = await req.json()
+    const endpoint = `/teams/${encodeURIComponent(teamId)}/workshops`
 
-    const body = await request.json()
-
-    const endpoint = `/teams/${teamId}/workshops`
-
-    // Call the actual API
     const { message, data } = await apiRequest(
       endpoint,
       'POST',
@@ -74,16 +50,5 @@ export async function POST(
     )
 
     return NextResponse.json({ message, data }, { status: 201 })
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error in POST /api/teams/[teamId]/workshops:', error)
-    }
-    return NextResponse.json(
-      {
-        message:
-          error instanceof Error ? error.message : 'Internal Server Error',
-      },
-      { status: 500 },
-    )
-  }
-}
+  },
+)

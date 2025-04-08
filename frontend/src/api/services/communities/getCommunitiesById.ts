@@ -6,7 +6,7 @@ interface Community {
   name: string
 }
 
-const getCommunitiesById = async (
+export const getCommunitiesById = async (
   communityId: string,
 ): Promise<Community[]> => {
   const response = await fetch(`/api/communities?community_id=${communityId}`, {
@@ -24,5 +24,3 @@ const getCommunitiesById = async (
   const responseData = json as ApiResponse<Community[]>
   return responseData.data
 }
-
-export default getCommunitiesById

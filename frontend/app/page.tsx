@@ -2,9 +2,9 @@
 
 import React from 'react'
 
-import Card from '@/components/Card'
-import List from '@/components/List'
-import Heading from '@/components/Heading'
+import Card from '@/components/ui/Card'
+import List from '@/components/ui/List'
+import Heading from '@/components/ui/Heading'
 
 const Home: React.FC = () => {
   return (

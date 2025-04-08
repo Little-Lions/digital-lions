@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 
-import { useQuery, useMutation, useQueryClient } from 'react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import TextInput from '@/components/TextInput'
-import CustomButton from '@/components/CustomButton'
-import Modal from '@/components/Modal'
-import ButtonGroup from '@/components/ButtonGroup'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import Accordion from '@/components/Accordion'
-import SelectInput from '@/components/SelectInput'
-import Toast from '@/components/Toast'
-import Text from '@/components/Text'
-import AlertBanner from '@/components/AlertBanner'
+import TextInput from '@/components/ui/TextInput'
+import CustomButton from '@/components/ui/CustomButton'
+import Modal from '@/components/ui/Modal'
+import ButtonGroup from '@/components/ui/ButtonGroup'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import Accordion from '@/components/ui/Accordion'
+import SelectInput from '@/components/ui/SelectInput'
+import Toast from '@/components/ui/Toast'
+import Text from '@/components/ui/Text'
+import AlertBanner from '@/components/ui/AlertBanner'
 import ConfirmModal from '@/components/ConfirmModal'
 
 import { TrashIcon, UserPlusIcon } from '@heroicons/react/16/solid'
@@ -34,7 +34,7 @@ import { Role } from '@/types/role.type'
 import { Level } from '@/types/level.type'
 import { Resource } from '@/types/resource.interface'
 import { UserRoles } from '@/types/userRoles.interface'
-import LoadingOverlay from '@/components/LoadingOverlay'
+import LoadingOverlay from '@/components/ui/LoadingOverlay'
 
 const UsersPage: React.FC = () => {
   const queryClient = useQueryClient()
@@ -115,9 +115,11 @@ const UsersPage: React.FC = () => {
 
   const {
     data: users = [],
-    isLoading,
+    isPending: isLoading,
     error: hasErrorFetchingUsers,
-  } = useQuery<User[], Error>('users', fetchUsers, {
+  } = useQuery<User[], Error>({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
     staleTime: 5 * 60 * 1000,
   })
 
@@ -163,16 +165,14 @@ const UsersPage: React.FC = () => {
 
   const {
     data: rolesPerUser = [],
-    isLoading: isLoadingRolesPerUser,
+    isPending: isLoadingRolesPerUser,
     error: hasErrorFetchingRolesPerUser,
-  } = useQuery<UserRoles[], Error>(
-    ['rolesPerUser', selectedUserId],
-    () => fetchRolesPerUser(selectedUserId as string),
-    {
-      enabled: !!selectedUserId,
-      staleTime: 5 * 60 * 1000,
-    },
-  )
+  } = useQuery<UserRoles[], Error>({
+    queryKey: ['rolesPerUser', selectedUserId],
+    queryFn: () => fetchRolesPerUser(selectedUserId as string),
+    enabled: Boolean(selectedUserId),
+    staleTime: 5 * 60 * 1000,
+  })
 
   const handleAccordionClick = (userId: string): void => {
     setSelectedUserId(userId)
@@ -294,19 +294,17 @@ const UsersPage: React.FC = () => {
     }
   }
 
-  const { mutate: handleAddUser, isLoading: isAddingUser } = useMutation(
-    (email: string) => AddUser(email),
-    {
-      onSuccess: async () => {
-        handleCloseAddUserModal()
-        setIsAddingUserComplete(true)
-        await queryClient.invalidateQueries('users')
-      },
-      onError: (error: Error) => {
-        setAddUserError(error.message)
-      },
+  const { mutate: handleAddUser, isPending: isAddingUser } = useMutation({
+    mutationFn: (email: string) => AddUser(email),
+    onSuccess: async () => {
+      handleCloseAddUserModal()
+      setIsAddingUserComplete(true)
+      await queryClient.invalidateQueries({ queryKey: ['users'] })
     },
-  )
+    onError: (error: Error) => {
+      setAddUserError(error.message)
+    },
+  })
 
   // const handleAddUserInvite = async () => {
   //   if (!selectedUserId) return;
@@ -338,19 +336,17 @@ const UsersPage: React.FC = () => {
     }
   }
 
-  const { mutate: handleDeleteUser, isLoading: isDeletingUser } = useMutation(
-    () => removeUser(selectedUserId!),
-    {
-      onSuccess: async () => {
-        handleCloseDeleteUserModal()
-        setIsDeletingUserComplete(true)
-        await queryClient.invalidateQueries('users')
-      },
-      onError: (error: Error) => {
-        setErrorMessage(error.message)
-      },
+  const { mutate: handleDeleteUser, isPending: isDeletingUser } = useMutation({
+    mutationFn: () => removeUser(selectedUserId!),
+    onSuccess: async () => {
+      handleCloseDeleteUserModal()
+      setIsDeletingUserComplete(true)
+      await queryClient.invalidateQueries({ queryKey: ['users'] })
     },
-  )
+    onError: (error: Error) => {
+      setErrorMessage(error.message)
+    },
+  })
 
   const fetchRoles = async (): Promise<void> => {
     try {
@@ -423,7 +419,7 @@ const UsersPage: React.FC = () => {
                 key={user.user_id}
                 title={user.nickname}
                 index={index}
-                id={`accordion-item-${index}`}
+                id={`user-accordion-item-${index}`}
                 totalItems={users.length}
                 buttonRefs={accordionRefs}
                 className="mb-2"

@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react'
 
-import { useQuery } from 'react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { useCommunity } from '@/context/CommunityContext'
 import { useCustomUser } from '@/context/UserContext'
 
-import LinkCard from '@/components/LinkCard'
-import CustomButton from '@/components/CustomButton'
-import SkeletonLoader from '@/components/SkeletonLoader'
-import EmptyState from '@/components/EmptyState'
-import Heading from '@/components/Heading'
-import AlertBanner from '@/components/AlertBanner'
+import LinkCard from '@/components/ui/LinkCard'
+import CustomButton from '@/components/ui/CustomButton'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import EmptyState from '@/components/ui/EmptyState'
+import Heading from '@/components/ui/Heading'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -49,7 +49,9 @@ const ProgramTrackerTeamsPage: React.FC = () => {
     data: teams = [],
     isLoading,
     error: hasErrorFetchingTeams,
-  } = useQuery(['teams', communityId], fetchTeams, {
+  } = useQuery({
+    queryKey: ['teams'],
+    queryFn: fetchTeams,
     staleTime: 5 * 60 * 1000,
   })
 
@@ -59,7 +61,7 @@ const ProgramTrackerTeamsPage: React.FC = () => {
         <>
           <SkeletonLoader width="301px" height="36px" type="title" level="h3" />
           {Array.from({ length: 5 }, (_, i) => (
-            <SkeletonLoader key={i} height="90px" type="card" />
+            <SkeletonLoader key={i} type="card" />
           ))}
         </>
       ) : (

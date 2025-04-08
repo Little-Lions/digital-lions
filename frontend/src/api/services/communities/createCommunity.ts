@@ -2,9 +2,10 @@ import { ErrorResponse } from '@/types/errorResponse.interface'
 import { ApiResponse } from '@/types/ApiResponse.interface'
 interface Community {
   id: number
+  name: string
 }
 
-const createCommunity = async (
+export const createCommunity = async (
   communityName: string,
   selectedImplementingPartnerId?: number,
 ): Promise<Community> => {
@@ -27,5 +28,3 @@ const createCommunity = async (
   const responseData = json as ApiResponse<Community>
   return responseData.data
 }
-
-export default createCommunity

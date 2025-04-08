@@ -8,7 +8,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 
 import { useCustomUser } from '@/context/UserContext'
 import CustomButton from './CustomButton'
-import SwitchImplementingPartnerDropDown from './SwitchImplementingPartnerDropDown'
+import SwitchImplementingPartnerDropDown from '../SwitchImplementingPartnerDropDown'
 
 const Navigation: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false)

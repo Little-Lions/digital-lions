@@ -7,7 +7,7 @@ import {
   useMutation,
   useQueryClient,
   QueryFunctionContext,
-} from 'react-query'
+} from '@tanstack/react-query'
 
 import VerticalStepper from '@/components/VerticalStepper'
 
@@ -20,8 +20,8 @@ import { TeamWithChildren } from '@/types/teamWithChildren.interface'
 
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 
-import SkeletonLoader from '@/components/SkeletonLoader'
-import AlertBanner from '@/components/AlertBanner'
+import SkeletonLoader from '@/components/ui/SkeletonLoader'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 import { useParams } from 'next/navigation'
 
@@ -59,10 +59,7 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   // Fetch team details when teamId changes
   const fetchTeamById = async ({
     queryKey,
-  }: QueryFunctionContext<
-    [string, string],
-    void
-  >): Promise<TeamWithChildren> => {
+  }: QueryFunctionContext<[string, string]>): Promise<TeamWithChildren> => {
     try {
       const [, teamId] = queryKey // Extract teamId from the query key
       const numericTeamId = Number(teamId)
@@ -82,13 +79,14 @@ const ProgramTrackerAttendancePage: React.FC = () => {
 
   const {
     data: selectedTeam,
-    isLoading: isLoadingTeam,
+    isPending: isLoadingTeam,
     error: hasErrorFetchingTeam,
-  } = useQuery(['team', teamId], fetchTeamById, {
-    enabled: !!teamId,
+  } = useQuery({
+    queryKey: ['team', teamId],
+    queryFn: fetchTeamById,
+    enabled: Boolean(teamId),
     staleTime: 5 * 60 * 1000,
   })
-
   const handleDateChange = (date: string): void => {
     setSelectedDate(date)
   }
@@ -166,11 +164,12 @@ const ProgramTrackerAttendancePage: React.FC = () => {
   //   },
   // )
 
-  const { mutate: handleSaveAttendance, isLoading: isSavingAttendance } =
-    useMutation(saveAttendance, {
+  const { mutate: handleSaveAttendance, isPending: isSavingAttendance } =
+    useMutation({
+      mutationFn: saveAttendance,
       onSuccess: async () => {
         setErrorMessage(null)
-        await queryClient.invalidateQueries(['team', teamId])
+        await queryClient.invalidateQueries({ queryKey: ['team', teamId] })
         setSavedWorkshop(true)
         setIsSaved(true)
         setTimeout(() => setIsSaved(false), 100)

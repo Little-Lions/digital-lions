@@ -6,7 +6,7 @@ import { UserProvider } from '@auth0/nextjs-auth0/client'
 import { CustomUserProvider } from '@/context/UserContext'
 
 import { CommunityProvider } from '@/context/CommunityContext'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import '@/styles/globals.css'
 import 'tailwindcss/tailwind.css'
@@ -14,9 +14,9 @@ import '@radix-ui/themes/styles.css'
 
 import { Poppins } from 'next/font/google'
 
-import Navigation from '@/components/Navigation'
+import Navigation from '@/components/ui/Navigation'
 import Footer from '@/components/Footer'
-import PageLayout from '@/components/PageLayout'
+import PageLayout from '@/components/ui/PageLayout'
 import { ImplementingPartnerProvider } from '@/context/ImplementingPartnerContext'
 
 const poppins = Poppins({
@@ -52,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <ImplementingPartnerProvider>
                   <Navigation />
                   <main className="flex-1">
-                    <div className="container mx-auto px-4 py-4 flex-1">
+                    <div className="container mx-auto px-4 py-4">
                       <div className="grid grid-cols-12 gap-4">
                         <div className="col-span-12 md:col-start-1 lg:col-span-8 xl:col-span-6">
                           <div ref={wrapperRef}>

@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 
-import Card from '@/components/Card'
-import NavigationButton from '@/components/NavigationButton'
-import ButtonGroup from '@/components/ButtonGroup'
-import Heading from '@/components/Heading'
-import Text from '@/components/Text'
-import CustomButton from '@/components/CustomButton'
+import Card from '@/components/ui/Card'
+import NavigationButton from '@/components/ui/NavigationButton'
+import ButtonGroup from '@/components/ui/ButtonGroup'
+import Heading from '@/components/ui/Heading'
+import Text from '@/components/ui/Text'
+import CustomButton from '@/components/ui/CustomButton'
 
 const UnauthorizedPage: React.FC = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false)

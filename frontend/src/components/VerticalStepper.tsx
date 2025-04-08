@@ -3,12 +3,12 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { useRouter, useParams } from 'next/navigation'
 
-import CustomButton from './CustomButton'
-import DatePicker from './DatePicker'
-import EmptyState from './EmptyState'
-import Accordion from './Accordion'
-import LoadingOverlay from './LoadingOverlay'
-import Text from './Text'
+import CustomButton from './ui/CustomButton'
+import DatePicker from './ui/DatePicker'
+import EmptyState from './ui/EmptyState'
+import Accordion from './ui/Accordion'
+import LoadingOverlay from './ui/LoadingOverlay'
+import Text from './ui/Text'
 
 import { UsersIcon } from '@heroicons/react/24/solid'
 
@@ -17,7 +17,7 @@ import { AttendanceRecord } from '@/types/workshopAttendance.interface'
 import { AttendanceStatus } from '@/types/attendanceStatus.enum'
 import { WorkshopAttendance } from '@/types/workshopAttendance.interface'
 import { Child } from '@/types/child.interface'
-import Toast from './Toast'
+import Toast from './ui/Toast'
 
 interface VerticalStepperProps {
   workshops: string[]
@@ -226,7 +226,7 @@ const VerticalStepper: React.FC<VerticalStepperProps> = ({
               <Accordion
                 key={index}
                 index={index}
-                id={`accordion-item-${index}`}
+                id={`vertical-stepper-item-${index}`}
                 isOpen={isOpen}
                 onClick={() => handleAccordionToggle(index)}
                 buttonRefs={buttonRefs}

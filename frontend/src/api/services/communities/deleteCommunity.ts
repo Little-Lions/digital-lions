@@ -1,6 +1,6 @@
 import { ErrorResponse } from '@/types/errorResponse.interface'
 
-const deleteCommunity = async (
+export const deleteCommunity = async (
   communityId: number,
   cascade: boolean,
 ): Promise<void> => {
@@ -21,5 +21,3 @@ const deleteCommunity = async (
     throw new Error(errorData.message || 'Failed to delete community')
   }
 }
-
-export default deleteCommunity

@@ -5,8 +5,11 @@ export
 SERVICE=backend
 POETRY := $(shell which poetry)
 
-shell: 
-	poetry shell
+install:
+	poetry install
+
+app:
+	cd app; poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 build:
 	docker compose build ${SERVICE}
@@ -14,13 +17,7 @@ build:
 run:
 	docker compose up ${SERVICE}
 
-deploy:
-	make -C .. backend.deploy
-
-app:
-	cd app; poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-#TODO: use dev container with mounted code instead of env -i prefix
+#TODO: use devcontainers with mounted code instead of env -i prefix
 test:
 	env -i $(POETRY) run python -m pytest tests --disable-warnings -vvv --cov=app --cov-report=term-missing tests
 

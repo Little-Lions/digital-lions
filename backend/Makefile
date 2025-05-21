@@ -37,6 +37,9 @@ db.check:
 token:
 	$(MAKE) -C .. token
 
+token.copy:
+	$(MAKE) -C .. token.copy
+
 # wipe local database via API script
 scripts.wipe:
 	poetry run python scripts/utils.py wipe

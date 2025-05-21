@@ -2,7 +2,7 @@ from functools import lru_cache
 from typing import Annotated, Any
 
 from fastapi import Depends
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     POSTGRES_DATABASE_URL: str
 
     # feature flags
-    FEATURE_AUTH0: bool | None = True
+    FEATURE_AUTH0: bool | None = Field(
+        default=True, description="Feature flag for checking the identity of the caller"
+    )
     FEATURE_VERIFY_PERMISSIONS: bool | None = True
 
     # Auth0
@@ -45,7 +47,11 @@ class Settings(BaseSettings):
             raise ValueError("FEATURE_AUTH0 is True but AUTH0_SERVER is not set")
         if self.FEATURE_AUTH0 and not self.AUTH0_AUDIENCE:
             raise ValueError("FEATURE_AUTH0 is True but AUTH0_AUDIENCE is not set")
-        return
+        if self.FEATURE_VERIFY_PERMISSIONS and not self.FEATURE_AUTH0:
+            raise ValueError(
+                "Can only verify permissions if FEATURE_AUTH0 is set to true"
+            )
+        return self
 
 
 @lru_cache

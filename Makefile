@@ -37,3 +37,6 @@ key:
 token:
 	backend/scripts/token.sh
 
+token.copy:
+	backend/scripts/token_copy.sh
+

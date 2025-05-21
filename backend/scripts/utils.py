@@ -1,11 +1,12 @@
 """Utility script to populate db with records."""
 
 import logging
+import os
 import random
 import sys
-import click
-import os
+from functools import lru_cache
 
+import click
 import requests
 from faker import Faker
 
@@ -28,8 +29,28 @@ fake = Faker(LOCALE)
 Faker.seed(random.randint(0, 100))
 
 
+@lru_cache
+def get_token() -> str:
+    logger.info("Getting Bearer token from authorization server")
+    AUTH0_SERVER = os.environ.get("AUTH0_SERVER")
+    r = requests.post(
+        f"https://{AUTH0_SERVER}/oauth/token",
+        headers={"content-type": "application/x-www-form-urlencoded"},
+        data={
+            "grant_type": "password",
+            "client_id": os.environ.get("AUTH0_CLIENT_ID"),
+            "client_secret": os.environ.get("AUTH0_CLIENT_SECRET"),
+            "audience": os.environ.get("AUTH0_AUDIENCE"),
+            "username": os.environ.get("USERNAME"),
+            "password": os.environ.get("PASSWORD"),
+        },
+    )
+    r.raise_for_status()
+    return r.json().get("access_token")
+
+
 def get_headers():
-    return {"Authorization": "Bearer " + os.environ["BEARER"]}
+    return {"Authorization": "Bearer " + get_token()}
 
 
 @click.group()

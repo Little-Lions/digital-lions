@@ -1,7 +1,7 @@
-.PHONY: deploy serve
+.PHONY: build serve
 
-deploy:
-	$(MAKE) -C .. frontend.deploy
+build: 
+	npm run build 
 
 serve:
 	npm run dev

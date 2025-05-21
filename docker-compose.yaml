@@ -14,13 +14,13 @@ services:
     image: postgres
     environment:
       POSTGRES_USER:
-      POSTGRES_PASSWORD: 
-      POSTGRES_DB:
+      POSTGRES_PASSWORD:
+      POSTGRES_DB: digitallions
       PGDATA: /var/lib/postgresql/data/${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-    - postgres
+      - postgres
 
   backend:
     container_name: backend
@@ -30,27 +30,27 @@ services:
       context: ./backend
     environment:
       POSTGRES_DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
-      ALLOWED_ORIGINS: 
-      AUTH0_SERVER: 
+      ALLOWED_ORIGINS:
+      AUTH0_SERVER:
       AUTH0_AUDIENCE:
       AUTH0_CLIENT_ID: ${BACKEND_AUTH0_CLIENT_ID}
       AUTH0_CLIENT_SECRET: ${BACKEND_AUTH0_CLIENT_SECRET}
       AUTH0_CONNECTION_ID: ${BACKEND_AUTH0_CONNECTION_ID}
-      RESEND_API_KEY: 
+      RESEND_API_KEY:
       RESEND_SENDER:
       PORT: 8000
     ports:
       - 8000:8000
     networks:
       - postgres
-      
+
   frontend:
     container_name: frontend
     image: "${DOCKER_IMAGE:-lions-frontend}:${DOCKER_TAG:-latest}"
     build:
       context: ./frontend
     environment:
-      AUTH0_AUDIENCE: 
+      AUTH0_AUDIENCE:
       AUTH0_BASE_URL: ${FRONTEND_AUTH0_BASE_URL}
       AUTH0_CLIENT_ID: ${FRONTEND_AUTH0_CLIENT_ID}
       AUTH0_CLIENT_SECRET: ${FRONTEND_AUTH0_CLIENT_SECRET}
@@ -60,4 +60,3 @@ services:
       PORT: 3000
     ports:
       - 3000:3000
-

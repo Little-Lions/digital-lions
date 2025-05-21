@@ -102,7 +102,7 @@ cd backend && make app
 
 The interactive Swagger docs of the backend API should now be available at `http://localhost:8000/api/v1/docs#/`.
 
-#### Populate the database
+#### Populate the database programatically (**recommended**)
 
 There are utility scripts to populate the database with records in a programmatic way. From the backend folder simply run
 
@@ -110,7 +110,7 @@ There are utility scripts to populate the database with records in a programmati
 make scripts.populate
 ```
 
-to populate the database with a few fake records. Subsequently wipe the database content with
+to populate the database with a few fake records. This will also make sure you as a user have the right permissions on the created resources (such that they are visible). Subsequently wipe the database content with
 
 ```
 make scripts.wipe
@@ -123,6 +123,8 @@ cd frontend && npm run dev
 ```
 
 The frontend should now be available at `http://localhost:5173`.
+
+**:bug:** If you open the frontend the first time you need to manually select the implementing partner to set the right ID. You do this with the dropdown under the person button top right.
 
 ### Authorization & authentication
 

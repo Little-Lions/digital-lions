@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     FEATURE_AUTH0: bool | None = Field(
         default=True, description="Feature flag for checking the identity of the caller"
     )
-    FEATURE_VERIFY_PERMISSIONS: bool | None = True
+    FEATURE_VERIFY_PERMISSIONS: bool | None = False
 
     # Auth0
     AUTH0_SERVER: str
